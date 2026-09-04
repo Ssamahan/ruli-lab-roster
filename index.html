@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ruli DH Laboratory — Smart Roster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root{
+  --teal:#0d9488; --teal-d:#0f766e; --navy:#0f2b46; --ink:#0f2437;
+  --glass:rgba(255,255,255,.62); --glass-b:rgba(255,255,255,.75);
+  --stroke:rgba(255,255,255,.65);
+  --r:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+  color:var(--ink); min-height:100vh; overflow-x:hidden;
+  background:linear-gradient(135deg,#dff5f2 0%,#d7e9fb 35%,#e8e2fa 70%,#d9f2ea 100%);
+  background-attachment:fixed;
+}
+body::before,body::after{
+  content:"";position:fixed;border-radius:50%;filter:blur(90px);z-index:-1;opacity:.55;
+}
+body::before{width:60vmax;height:60vmax;left:-15vmax;top:-18vmax;
+  background:radial-gradient(circle at 30% 30%,#4fd1c5,#38b2ac 45%,transparent 70%);
+  animation:blob1 26s ease-in-out infinite alternate;}
+body::after{width:55vmax;height:55vmax;right:-12vmax;bottom:-20vmax;
+  background:radial-gradient(circle at 60% 60%,#93c5fd,#a78bfa 50%,transparent 75%);
+  animation:blob2 32s ease-in-out infinite alternate;}
+@keyframes blob1{to{transform:translate(12vmax,10vmax) scale(1.15) rotate(25deg)}}
+@keyframes blob2{to{transform:translate(-10vmax,-8vmax) scale(1.1) rotate(-20deg)}}
+
+.wrap{max-width:1420px;margin:0 auto;padding:14px 16px 90px}
+header.hero{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:linear-gradient(120deg,rgba(13,148,136,.92),rgba(15,118,110,.88) 55%,rgba(30,64,175,.82));
+  backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);
+  border:1px solid rgba(255,255,255,.35);border-radius:var(--r);
+  padding:16px 22px;color:#fff;box-shadow:0 18px 45px -18px rgba(13,148,136,.55);
+  position:relative;overflow:hidden;
+}
+header.hero::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.22) 45%,transparent 60%);
+  transform:translateX(-120%);animation:sheen 7s ease-in-out infinite;}
+@keyframes sheen{15%,100%{transform:translateX(130%)}}
+.logo{width:54px;height:54px;border-radius:16px;background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.45);display:grid;place-items:center;font-size:28px;flex:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+header.hero h1{font-size:1.25rem;letter-spacing:.3px}
+header.hero p{font-size:.8rem;opacity:.92}
+.badge-live{margin-left:auto;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.4);
+  border-radius:999px;padding:6px 14px;font-size:.72rem;display:flex;align-items:center;gap:7px}
+.pulse{width:9px;height:9px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 0 rgba(74,222,128,.7);animation:pl 1.8s infinite}
+@keyframes pl{70%{box-shadow:0 0 0 9px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+
+nav.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;position:sticky;top:8px;z-index:50;
+  background:var(--glass);backdrop-filter:blur(26px) saturate(170%);-webkit-backdrop-filter:blur(26px) saturate(170%);
+  border:1px solid var(--stroke);border-radius:18px;padding:8px;box-shadow:0 10px 30px -12px rgba(15,43,70,.25)}
+nav.tabs button{
+  border:none;background:transparent;padding:9px 15px;border-radius:12px;cursor:pointer;
+  font-size:.82rem;font-weight:600;color:#33526b;transition:.25s;display:flex;gap:6px;align-items:center}
+nav.tabs button:hover{background:rgba(255,255,255,.7)}
+nav.tabs button.on{background:linear-gradient(120deg,var(--teal),#0891b2);color:#fff;
+  box-shadow:0 8px 18px -6px rgba(13,148,136,.55)}
+
+.glass{background:var(--glass);backdrop-filter:blur(28px) saturate(175%);-webkit-backdrop-filter:blur(28px) saturate(175%);
+  border:1px solid var(--stroke);border-radius:var(--r);padding:18px;
+  box-shadow:0 14px 38px -16px rgba(15,43,70,.28), inset 0 1px 0 rgba(255,255,255,.8);
+  margin-bottom:16px;position:relative}
+.glass h2{font-size:1.02rem;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--navy)}
+.glass h3{font-size:.9rem;margin:10px 0 8px;color:var(--navy)}
+.sub{font-size:.75rem;color:#4b6b85}
+
+.grid-kpi{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
+.kpi{background:var(--glass-b);border:1px solid var(--stroke);border-radius:18px;padding:13px 14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 8px 20px -12px rgba(15,43,70,.25);
+  transition:.25s;overflow:hidden;position:relative}
+.kpi:hover{transform:translateY(-3px)}
+.kpi .ic{font-size:1.15rem}
+.kpi .v{font-size:1.45rem;font-weight:800;color:var(--teal-d);line-height:1.15}
+.kpi .l{font-size:.68rem;color:#4b6b85;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.kpi .s{font-size:.66rem;color:#6b8aa5;margin-top:2px}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:none;cursor:pointer;border-radius:13px;padding:10px 16px;font-weight:700;font-size:.8rem;
+  display:inline-flex;align-items:center;gap:7px;transition:.2s;
+  background:linear-gradient(120deg,var(--teal),#0891b2);color:#fff;
+  box-shadow:0 10px 22px -8px rgba(13,148,136,.55)}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.btn.sec{background:rgba(255,255,255,.8);color:var(--teal-d);border:1px solid rgba(13,148,136,.35);box-shadow:none}
+.btn.warn{background:linear-gradient(120deg,#f59e0b,#f97316)}
+.btn.dang{background:linear-gradient(120deg,#ef4444,#dc2626)}
+.btn.ghost{background:transparent;border:1px dashed rgba(13,148,136,.5);color:var(--teal-d);box-shadow:none}
+.btn.sm{padding:6px 10px;font-size:.7rem;border-radius:10px}
+input,select,textarea{
+  background:rgba(255,255,255,.85);border:1px solid rgba(148,180,200,.55);border-radius:12px;
+  padding:9px 12px;font-size:.82rem;color:var(--ink);outline:none;font-family:inherit;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.18)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.7rem;font-weight:700;color:#3d5d78}
+
+.tbl-scroll{overflow:auto;border-radius:14px;border:1px solid rgba(226,232,240,.7);max-height:72vh}
+table.plan{border-collapse:separate;border-spacing:0;font-size:.68rem;min-width:100%}
+table.plan th,table.plan td{border-right:1px solid rgba(226,232,240,.55);border-bottom:1px solid rgba(226,232,240,.55);
+  padding:4px 3px;text-align:center;white-space:nowrap;background:rgba(255,255,255,.72)}
+table.plan thead th{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,#0d9488,#0f766e);color:#fff;font-size:.62rem;padding:5px 3px}
+table.plan thead tr:nth-child(2) th{top:0}
+table.plan .nm{position:sticky;left:0;z-index:6;text-align:left;font-weight:700;min-width:150px;
+  background:rgba(240,253,250,.97)!important;font-size:.7rem;padding-left:8px}
+table.plan thead .nm{z-index:8;background:#0f766e!important;color:#fff}
+table.plan td.cell{cursor:pointer;font-weight:800;min-width:30px;transition:.12s}
+table.plan td.cell:hover{outline:2px solid var(--teal);outline-offset:-2px}
+.we{background:rgba(254,243,199,.75)!important}
+.hd{background:rgba(254,226,226,.8)!important}
+.c-D{background:#d1fae5!important;color:#065f46}
+.c-N{background:#312e81!important;color:#e0e7ff}
+.c-DN{background:#6d28d9!important;color:#f3e8ff}
+.c-OFF{background:#f1f5f9!important;color:#94a3b8}
+.c-AL{background:#fef3c7!important;color:#92400e}
+.c-ML{background:#fce7f3!important;color:#9d174d}
+.c-SL{background:#fee2e2!important;color:#b91c1c}
+.c-CL{background:#ffedd5!important;color:#c2410c}
+.c-TR{background:#dbeafe!important;color:#1d4ed8}
+.c-W{background:#a9c064!important;color:#2f3a10}
+.c-ABS{background:#ef4444!important;color:#fff}
+.c-X{background:#fff7ed!important;color:#b45309}
+.legend{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0;font-size:.65rem}
+.legend span{padding:3px 9px;border-radius:8px;font-weight:700;border:1px solid rgba(0,0,0,.06)}
+
+table.simple{width:100%;border-collapse:collapse;font-size:.78rem}
+table.simple th{background:linear-gradient(120deg,var(--teal),#0891b2);color:#fff;padding:8px;font-size:.7rem;text-align:left}
+table.simple td{padding:7px 8px;border-bottom:1px solid rgba(226,232,240,.6);background:rgba(255,255,255,.5)}
+table.simple tr:hover td{background:rgba(255,255,255,.85)}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.63rem;font-weight:700}
+.tg-teal{background:#ccfbf1;color:#0f766e}.tg-amber{background:#fef3c7;color:#92400e}
+.tg-rose{background:#ffe4e6;color:#be123c}.tg-blue{background:#dbeafe;color:#1d4ed8}
+.tg-gray{background:#e2e8f0;color:#475569}.tg-purple{background:#f3e8ff;color:#7e22ce}
+
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.chart-card{background:var(--glass-b);border:1px solid var(--stroke);border-radius:18px;padding:14px;min-height:250px}
+.chart-card h3{margin-top:0}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(120px);z-index:300;
+  background:linear-gradient(120deg,#0f2b46,#164e63);color:#fff;padding:12px 22px;border-radius:14px;
+  font-size:.8rem;font-weight:600;box-shadow:0 15px 40px -10px rgba(0,0,0,.4);transition:.35s;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+.modal-bk{position:fixed;inset:0;background:rgba(15,36,55,.45);backdrop-filter:blur(6px);z-index:200;
+  display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bk.open{display:flex}
+.modal{background:rgba(255,255,255,.92);backdrop-filter:blur(30px);border:1px solid #fff;border-radius:20px;
+  padding:20px;max-width:520px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 30px 70px -20px rgba(0,0,0,.45)}
+.modal h3{margin-bottom:12px;color:var(--navy)}
+
+.chat-box{height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:12px;
+  background:rgba(255,255,255,.4);border-radius:16px;border:1px solid var(--stroke)}
+.msg{max-width:82%;padding:10px 14px;border-radius:16px;font-size:.8rem;line-height:1.45;white-space:pre-wrap}
+.msg.user{align-self:flex-end;background:linear-gradient(120deg,var(--teal),#0891b2);color:#fff;border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:rgba(255,255,255,.9);border:1px solid rgba(148,180,200,.4);border-bottom-left-radius:4px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chips button{background:rgba(255,255,255,.75);border:1px solid rgba(13,148,136,.4);color:var(--teal-d);
+  border-radius:999px;padding:5px 12px;font-size:.68rem;font-weight:700;cursor:pointer}
+.chips button:hover{background:#ccfbf1}
+
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px}
+.unit-card{background:var(--glass-b);border:1px solid var(--stroke);border-radius:16px;padding:12px}
+.unit-card b{font-size:.78rem;color:var(--teal-d);display:flex;gap:6px;align-items:center}
+.unit-card select{width:100%;margin-top:7px;font-size:.75rem}
+.req-badge{background:linear-gradient(120deg,#f59e0b,#f97316);color:#fff;padding:6px 12px;border-radius:12px;
+  font-size:.72rem;font-weight:700;display:inline-flex;gap:6px;align-items:center;margin-top:8px}
+body.viewer-mode .btn.dang,body.viewer-mode .btn.warn:not(.exp-ok){opacity:.55}
+body.viewer-mode td.cell{cursor:not-allowed}
+section.tab{display:none;animation:fadeUp .35s ease}
+section.tab.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.hr{height:1px;background:linear-gradient(90deg,transparent,rgba(13,148,136,.45),transparent);margin:14px 0;border:none}
+.mini{font-size:.68rem;color:#5c7d98}
+#rotateHint{display:none;position:fixed;inset:0;z-index:500;background:linear-gradient(135deg,#0f2b46,#0f766e);color:#fff;
+  flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;gap:16px}
+#rotateHint .ph{font-size:64px;animation:rot 2.2s ease-in-out infinite}
+@keyframes rot{0%,20%{transform:rotate(0)}55%,80%{transform:rotate(90deg)}100%{transform:rotate(90deg)}}
+@media (orientation:portrait) and (max-width:900px){#rotateHint.armed{display:flex}}
+#printZone{display:none}
+@media print{
+  body>*{display:none!important}
+  #printZone{display:block!important;position:absolute;left:0;top:0;width:100%;background:#fff;color:#000;font-family:'Trebuchet MS','Trebuchet',Tahoma,sans-serif}
+  #printZone table,#printZone th,#printZone td,#printZone h1,#printZone h2,#printZone p{font-family:'Trebuchet MS','Trebuchet',Tahoma,sans-serif!important}
+  #printZone table{border-collapse:collapse;width:100%}
+  #printZone th,#printZone td{border:1px solid #e2e6eb;padding:2px 3px;font-size:7px;text-align:center}
+  #printZone .pz-nm{text-align:left;font-weight:700;font-size:8px}
+  #printZone h1{font-size:15px;color:#0f766e;margin:0}
+  #printZone h2{font-size:11px;margin:2px 0 8px}
+  #printZone *{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  @page{size:A4 landscape;margin:6mm}
+  #printZone table{table-layout:fixed}
+  #printZone th,#printZone td{overflow:hidden;word-break:break-word}
+  #printZone td.pz-nm,#printZone th.pz-nm{width:72px}
+  #printZone h1{font-size:13px}#printZone h2{font-size:10px}
+  #printZone th,#printZone td{font-size:6px;padding:1px 1px}
+}
+@media(max-width:700px){
+  .wrap{padding:10px 8px 80px} header.hero h1{font-size:1rem}
+  .glass{padding:13px} table.plan .nm{min-width:108px;font-size:.62rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="logo">🧪</div>
+  <div>
+    <h1>Ruli District Hospital — Laboratory Smart Roster</h1>
+    <p>Working Plan • Weekly Unit Roster • Leave Engine • Version History &nbsp;|&nbsp; Lab Manager: Kelvin SAMAHANI</p>
+  </div>
+  <div class="badge-live"><span class="pulse"></span> Live workspace — data saved on this device</div>
+</header>
+
+<div class="glass" style="padding:10px 14px;margin:12px 0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+  <b style="font-size:.72rem;color:#0f766e">🔗 Lab Links Hub:</b>
+  <span id="linksBar" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+  <button class="btn sm ghost" onclick="addLinkPrompt()">➕ Add link</button>
+</div>
+
+<nav class="tabs" id="tabs">
+  <button data-t="dash" class="on">📊 Dashboard</button>
+  <button data-t="plan">📅 Working Plan</button>
+  <button data-t="roster">🔬 Weekly Roster</button>
+  <button data-t="staff">👥 Staff</button>
+  <button data-t="leave">🌴 Leave & Absence</button>
+  <button data-t="train">📚 Trainings</button>
+  <button data-t="versions">🗂️ Versions</button>
+  <button data-t="io">📤 Import / Export</button>
+  <button data-t="cloud">☁️ Live Sync</button>
+  <button data-t="chat">💬 Ask the Assistant</button>
+</nav>
+
+<!-- ============ DASHBOARD ============ -->
+<section class="tab on" id="tab-dash">
+  <div class="glass" style="padding:14px 18px">
+    <div class="row">
+      <div style="font-size:1.1rem">🔎</div>
+      <input id="searchIn" style="flex:1;min-width:200px;font-size:.9rem;padding:11px 14px" placeholder="Search anything… staff, shifts, leave, trainings, units, links (e.g. 'Patrick', 'night 15/08', 'training', 'requisition')" onkeydown="if(event.key==='Enter')runSearch()">
+      <button class="btn" onclick="runSearch()">Search</button>
+      <button class="btn sec" onclick="document.getElementById('searchIn').value='';document.getElementById('searchOut').innerHTML=''">✕</button>
+    </div>
+    <div id="searchOut" style="margin-top:10px"></div>
+  </div>
+  <div class="glass">
+    <h2>📊 Command Dashboard <span class="sub" id="dashMonthLbl"></span></h2>
+    <div class="grid-kpi" id="kpiGrid"></div>
+  </div>
+  <div class="glass">
+    <h2>📈 Analytics</h2>
+    <div class="charts">
+      <div class="chart-card"><h3>Shift distribution per staff</h3><canvas id="chShifts"></canvas></div>
+      <div class="chart-card"><h3>Night-shift fairness</h3><canvas id="chNights"></canvas></div>
+      <div class="chart-card"><h3>Monthly hours workload</h3><canvas id="chHours"></canvas></div>
+      <div class="chart-card"><h3>Leave usage (days)</h3><canvas id="chLeave"></canvas></div>
+    </div>
+  </div>
+  <div class="glass">
+    <h2>🔔 Alerts & Insights</h2>
+    <div id="alertsBox"></div>
+  </div>
+</section>
+
+<!-- ============ WORKING PLAN ============ -->
+<section class="tab" id="tab-plan">
+  <div class="glass">
+    <h2>📅 Monthly Working Plan <span class="sub">(covers full month + first week of next month — report week protected)</span></h2>
+    <div class="row" style="margin-bottom:12px">
+      <label class="f">Month
+        <input type="month" id="planMonth">
+      </label>
+      <button class="btn" onclick="generatePlan(true)">⚡ Generate fair plan</button>
+      <button class="btn sec" onclick="renderPlan()">↻ Refresh view</button>
+      <button class="btn warn" onclick="exportPDF()">🧾 Export PDF</button>
+      <button class="btn warn" onclick="exportExcel()">📗 Export Excel</button>
+      <button class="btn sec" onclick="printPlan()">🖨️ Print / Save as PDF</button>
+    </div>
+    <div class="legend">
+      <span class="c-D">D — Day 08:00–17:00</span><span class="c-N">N — Night 17:00–08:00</span>
+      <span class="c-DN">DN — Day+Night</span><span class="c-OFF">OFF — Rest</span>
+      <span class="c-AL">AL — Annual leave</span><span class="c-ML">ML — Maternity (14 wks)</span>
+      <span class="c-SL">SL — Sick leave</span><span class="c-CL">CL — Other authorized</span>
+      <span class="c-TR">TR — Training</span><span class="c-W">W — Wedding day</span><span class="c-ABS">ABS — Absent</span><span class="c-X">H — Public holiday</span>
+    </div>
+    <p class="mini">💡 Tap any cell to edit it. Every edit or regeneration is stored as a re-exportable version. Weekend columns are amber, public holidays red.</p>
+    <div id="holLegend" class="legend"></div>
+    <div class="tbl-scroll" id="planTableWrap" style="margin-top:8px"></div>
+    <div id="planSummary" style="margin-top:12px"></div>
+  </div>
+</section>
+
+<!-- ============ WEEKLY ROSTER ============ -->
+<section class="tab" id="tab-roster">
+  <div class="glass">
+    <h2>🔬 Weekly Unit Roster</h2>
+    <div class="row" style="margin-bottom:10px">
+      <label class="f">Week starting (Monday)
+        <input type="date" id="rosterWeek">
+      </label>
+      <button class="btn" onclick="generateRoster()">⚡ Auto-assign units</button>
+      <button class="btn warn" onclick="exportRosterPDF()">🧾 Roster PDF</button>
+      <button class="btn sec" onclick="printRoster()">🖨️ Print / Save as PDF</button>
+    </div>
+    <p class="mini">Units: Reception • Phlebotomy • Hematology • Biochemistry • Serology (shared room with Biochem) • Parasitology • TB/Molecular. One staff can cover multiple units. Monday reagents & consumables requisition is auto-assigned to the Hematology staff.</p>
+    <div id="rosterOut" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- ============ STAFF ============ -->
+<section class="tab" id="tab-staff">
+  <div class="glass">
+    <h2>👥 Staff Registry</h2>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn" onclick="openStaffModal()">➕ Register new staff</button>
+    </div>
+    <div class="tbl-scroll"><table class="simple" id="staffTbl"></table></div>
+    <p class="mini" style="margin-top:8px">Exited staff are kept in historical records but never suggested in new plans or rosters.</p>
+  </div>
+</section>
+
+<!-- ============ LEAVE ============ -->
+<section class="tab" id="tab-leave">
+  <div class="glass">
+    <h2>🌴 Leave Planner</h2>
+    <div class="row" style="align-items:flex-end;margin-bottom:12px">
+      <label class="f">Staff<select id="lvStaff"></select></label>
+      <label class="f">Type<select id="lvType">
+        <option value="AL">Annual leave</option><option value="ML">Maternity (auto 14 weeks)</option>
+        <option value="SL">Sick leave</option><option value="CL">Other authorized leave</option>
+        <option value="TR">Training</option>
+        <option value="W">Wedding day</option></select></label>
+      <label class="f">Start<input type="date" id="lvStart"></label>
+      <label class="f">End<input type="date" id="lvEnd"></label>
+      <label class="f">Note<input type="text" id="lvNote" placeholder="optional"></label>
+      <button class="btn" onclick="addLeave()">➕ Add & re-plan</button>
+    </div>
+    <p class="mini">Rules engine: <b>Statute staff</b> 30 calendar days AL (weekends & holidays counted) • <b>Contractual</b> 18 working days (weekends excluded) • <b>Maternity</b> 14 consecutive weeks — return date auto-computed and the plan & roster instantly re-adapt.</p>
+    <div id="leaveList" style="margin-top:10px"></div>
+  </div>
+  <div class="glass">
+    <h2>🚨 Log an Absence (auto re-roster)</h2>
+    <div class="row" style="align-items:flex-end">
+      <label class="f">Staff<select id="abStaff"></select></label>
+      <label class="f">Date<input type="date" id="abDate"></label>
+      <label class="f">Reason<input type="text" id="abReason" placeholder="e.g. emergency"></label>
+      <button class="btn dang" onclick="logAbsence()">⚠ Log absence</button>
+    </div>
+    <div id="absList" style="margin-top:10px"></div>
+  </div>
+  <div class="glass">
+    <h2>🎉 Public Holidays (Rwanda)</h2>
+    <div class="row" style="align-items:flex-end;margin-bottom:8px">
+      <label class="f">Date<input type="date" id="hdDate"></label>
+      <label class="f">Name<input type="text" id="hdName" placeholder="Holiday name"></label>
+      <button class="btn sec" onclick="addHoliday()">➕ Add official</button>
+      <button class="btn dang" onclick="logUnforeseenHoliday()">🚨 Log unforeseen holiday (auto re-plan, nights kept)</button>
+    </div>
+    <p class="mini" style="margin:6px 0">Weekend holidays automatically create the following <b>Monday (observed)</b> per Rwanda's in-lieu rule. Unforeseen holidays (presidential order…) instantly release planned day staff to H — keeping one fair day-duty person — while <b>night shifts stay exactly as planned</b>.</p>
+    <div id="holidayList"></div>
+  </div>
+</section>
+
+<!-- ============ TRAININGS ============ -->
+<section class="tab" id="tab-train">
+  <div class="glass">
+    <h2>📚 Trainings <span class="sub">— read-only mirror of your Training Tracker (recording happens ONLY there)</span></h2>
+    <div class="row" style="margin-bottom:10px">
+      <a class="btn" href="https://claude.ai/public/artifacts/44c69a5b-aa24-4277-9ba6-98afb5b40630" target="_blank">🔗 Open Training Tracker</a>
+      <button class="btn warn" id="aiSyncBtn" style="display:none" onclick="aiSync()">🤖 Ask Claude to sync tracker data</button>
+      <button class="btn sec" onclick="copySyncPrompt()">📋 Copy Claude sync prompt</button>
+      <label class="btn ghost" style="cursor:pointer">📥 Import tracker export (Excel/CSV/JSON)<input type="file" id="trFile" accept=".xlsx,.xls,.csv,.json" style="display:none"></label>
+    </div>
+    <div class="glass" style="padding:12px;background:rgba(219,234,254,.55)">
+      <b style="font-size:.78rem;color:#1d4ed8">🔄 How the Claude sync works (2 minutes)</b>
+      <ol style="font-size:.74rem;margin:6px 0 0 18px;line-height:1.6">
+        <li>Click <b>📋 Copy Claude sync prompt</b> below.</li>
+        <li>Open a Claude chat <b>in the same conversation/project where your Training Tracker lives</b> and paste the prompt — Claude reads the tracker and replies with a JSON block.</li>
+        <li>Copy that JSON, come back here, paste it in the box below and press <b>⚡ Sync</b>. Trainings appear instantly, attendees are blocked as TR, staff exits are applied, and a plan version is stored.</li>
+      </ol>
+      <p class="mini" style="margin-top:6px">When this app itself is published as a Claude artifact, an extra <b>🤖 one-click sync button</b> appears automatically (it uses Claude's built-in AI to structure whatever tracker text you paste). Direct background fetching of another artifact is blocked by Claude's security for all apps — this assisted sync is the closest possible integration.</p>
+    </div>
+    <textarea id="trPaste" style="width:100%;min-height:90px;margin-top:10px" placeholder='Paste the JSON Claude gives you — or raw tracker text/lines like: "Equipment QC training | 2026-08-12 | 2026-08-14 | Patrick ISHIMWE, Diane UWASE"'></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="btn" onclick="parseTrainingPaste()">⚡ Sync</button>
+    </div>
+    <hr class="hr">
+    <h3>📖 Synced trainings (read-only — edit or add them in the Training Tracker, then re-sync)</h3>
+    <div id="trainList" style="margin-top:6px"></div>
+  </div>
+</section>
+
+<!-- ============ VERSIONS ============ -->
+<section class="tab" id="tab-versions">
+  <div class="glass">
+    <h2>🗂️ Version History <span class="sub">— every change is kept; any version can be restored or re-exported</span></h2>
+    <div id="versionList"></div>
+  </div>
+</section>
+
+<!-- ============ IMPORT/EXPORT ============ -->
+<section class="tab" id="tab-io">
+  <div class="glass">
+    <h2>📥 Import previous months (Excel)</h2>
+    <p class="mini" style="margin-bottom:10px">Upload .xlsx/.xls of past working plans. Rows = staff names, columns = days, cells = D/N/DN/OFF/AL… The fairness engine uses this history to balance the next plan.</p>
+    <input type="file" id="xlIn" accept=".xlsx,.xls,.csv">
+    <div id="importOut" style="margin-top:10px"></div>
+  </div>
+  <div class="glass">
+    <h2>📤 Exports</h2>
+    <div class="row">
+      <button class="btn warn" onclick="exportPDF()">🧾 Working Plan — PDF</button>
+      <button class="btn warn" onclick="exportExcel()">📗 Working Plan — Excel</button>
+      <button class="btn warn" onclick="exportRosterPDF()">🔬 Weekly Roster — PDF</button>
+      <button class="btn sec" onclick="backupJSON()">💾 Full backup (JSON)</button>
+      <label class="btn ghost" style="cursor:pointer">📂 Restore backup<input type="file" id="jsonIn" accept=".json" style="display:none"></label>
+    </div>
+    <p class="mini" style="margin-top:10px">Exports carry the hospital header and signature block — Prepared: <b>Kelvin SAMAHANI</b> (Lab Manager) • Verified: <b>Dr. Judson B. MUMBERE</b> (Clinical Director) • Approved: <b>Jean de Dieu SIBOMANA</b> (Human Resources Officer).</p>
+  </div>
+</section>
+
+<!-- ============ CLOUD SYNC ============ -->
+<section class="tab" id="tab-cloud">
+  <div class="glass">
+    <h2>☁️ Live Sync <span class="sub">— one master (you), everyone else sees the live plan read-only</span></h2>
+    <div id="cloudStatus" class="row" style="margin-bottom:12px">
+      <span class="tag tg-gray" id="cloudStateTag">⚪ Offline mode — data stays on this device only</span>
+      <span class="tag tg-blue" id="cloudRoleTag" style="display:none"></span>
+      <span class="tag tg-teal" id="cloudLastTag" style="display:none"></span>
+    </div>
+
+    <div class="glass" style="padding:14px;background:rgba(219,234,254,.5)" id="cloudSetupBox">
+      <b style="font-size:.8rem;color:#1d4ed8">🧭 One-time setup (~10 minutes, free forever for a lab this size)</b>
+      <ol style="font-size:.74rem;margin:8px 0 0 18px;line-height:1.7">
+        <li>Go to <a href="https://console.firebase.google.com" target="_blank"><b>console.firebase.google.com</b></a> → sign in with any Google account → <b>Add project</b> → name it <i>ruli-lab-roster</i> (disable Analytics) → Create.</li>
+        <li>In the project: <b>Build → Realtime Database → Create database</b> → choose <i>Belgium (europe-west1)</i> → start in <b>locked mode</b>.</li>
+        <li>Open the database's <b>Rules</b> tab, replace everything with the rules below, press <b>Publish</b>:<br>
+        <code style="display:block;background:#0f2b46;color:#a5f3fc;padding:8px;border-radius:8px;margin:6px 0;font-size:.68rem">{
+  "rules": {
+    "labRoster": {
+      ".read": true,
+      ".write": "auth != null"
+    }
+  }
+}</code>
+        <span class="mini">→ anyone can view, only a signed-in manager can write. Enforced by Google's servers, not by this page.</span></li>
+        <li><b>Build → Authentication → Get started → Email/Password → Enable</b>. Then in the <b>Users</b> tab press <b>Add user</b>: your email + a strong password (this is your manager login).</li>
+        <li>Click the <b>⚙️ gear → Project settings</b> → under <i>Your apps</i> press the <b>&lt;/&gt; (web)</b> icon → register app (no hosting) → copy the <code>firebaseConfig = {...}</code> object and paste it below.</li>
+      </ol>
+    </div>
+
+    <h3 style="margin-top:14px">🔌 Connect this device</h3>
+    <textarea id="fbConfig" style="width:100%;min-height:90px" placeholder='Paste the firebaseConfig here — the {...} part or the whole snippet, e.g.
+{ "apiKey":"AIza…", "authDomain":"ruli-lab-roster.firebaseapp.com", "databaseURL":"https://ruli-lab-roster-default-rtdb.europe-west1.firebasedatabase.app", "projectId":"ruli-lab-roster", … }'></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="btn" onclick="cloudConnect()">🔌 Connect</button>
+      <button class="btn dang" onclick="cloudDisconnect()">✕ Disconnect this device</button>
+    </div>
+
+    <hr class="hr">
+    <h3>🔐 Manager sign-in (edit rights)</h3>
+    <div class="row" style="align-items:flex-end">
+      <label class="f">Email<input id="fbEmail" type="email" placeholder="you@gmail.com"></label>
+      <label class="f">Password<input id="fbPass" type="password" placeholder="••••••••"></label>
+      <button class="btn" onclick="cloudLogin()">🔓 Sign in as Manager</button>
+      <button class="btn sec" onclick="cloudLogout()">Sign out</button>
+    </div>
+    <p class="mini" style="margin-top:8px">Staff simply open the shared link and <b>do nothing here</b> — they automatically become live read-only observers: they always see your current plan, and every edit button politely refuses. You sign in on your own devices only. Never share the manager password.</p>
+
+    <hr class="hr">
+    <div class="row">
+      <button class="btn warn" onclick="cloudPushNow()">⬆️ Push my data to cloud now</button>
+      <button class="btn sec" onclick="cloudPullNow()">⬇️ Pull latest from cloud</button>
+    </div>
+    <p class="mini" style="margin-top:8px">While signed in, every change auto-syncs within a second — no buttons needed. These are just for first-time seeding or recovery.</p>
+  </div>
+</section>
+
+<!-- ============ CHAT ============ -->
+<section class="tab" id="tab-chat">
+  <div class="glass">
+    <h2>💬 Ask the Assistant</h2>
+    <div class="chat-box" id="chatBox"></div>
+    <div class="chips">
+      <button onclick="chip('Who works tonight?')">Who works tonight?</button>
+      <button onclick="chip('Who is on leave?')">Who is on leave?</button>
+      <button onclick="chip('Night counts this month')">Night counts</button>
+      <button onclick="chip('Who does the requisition this week?')">Requisition duty</button>
+      <button onclick="chip('Leave balance of Diane')">Leave balance</button>
+      <button onclick="chip('Is the plan fair?')">Fairness check</button>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <label class="btn sec" style="cursor:pointer" title="Attach Excel/CSV/JSON — the assistant reads it and helps">📎<input type="file" id="chatFile" accept=".xlsx,.xls,.csv,.json,.txt" style="display:none"></label>
+      <input id="chatIn" style="flex:1;min-width:180px" placeholder="Ask about shifts, leave, fairness, trainings… or attach a file 📎" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="btn" onclick="sendChat()">Send ➤</button>
+    </div>
+    <p class="mini" style="margin-top:8px">This built-in assistant answers instantly from your live roster data. For deeper changes (e.g. pasting a training tracker for automatic plan adjustment), come back to me in the Arena chat any time — I stay available.</p>
+  </div>
+</section>
+
+</div>
+
+<!-- staff modal -->
+<div class="modal-bk" id="staffModalBk">
+  <div class="modal">
+    <h3 id="staffModalTitle">➕ Register staff</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label class="f" style="grid-column:1/-1">Full name<input id="sfName"></label>
+      <label class="f">Role / Position<input id="sfRole" placeholder="Lab Technician"></label>
+      <label class="f">Contract<select id="sfCat"><option value="statute">Under statute (30d AL)</option><option value="contractual">Contractual (18d AL)</option></select></label>
+      <label class="f">Work pattern<select id="sfPattern">
+        <option value="standard">Standard (D + rotating N)</option>
+        <option value="dayonly">Mon–Fri days only (no nights, no weekends)</option>
+        <option value="weekendonly">Weekend only (Sat & Sun, D & N)</option>
+        <option value="manager">Manager (Mon–Fri days, no weekends/holidays)</option>
+      </select></label>
+      <label class="f">Night preference<select id="sfNight">
+        <option value="2">Normal (max 2 consecutive)</option>
+        <option value="3">Night lover (up to 3 consecutive)</option>
+        <option value="min">Minimal nights</option>
+        <option value="0">No nights</option>
+      </select></label>
+      <label class="f">Max nights / month<input id="sfMaxN" type="number" value="6" min="0" max="16"></label>
+      <label class="f">Status<select id="sfActive"><option value="1">Active</option><option value="0">Exited / inactive</option></select></label>
+      <label class="f">Exit date (if exited)<input id="sfExit" type="date"></label>
+    </div>
+    <div class="row" style="margin-top:14px;justify-content:flex-end">
+      <button class="btn sec" onclick="closeModal('staffModalBk')">Cancel</button>
+      <button class="btn" id="sfSaveBtn" onclick="saveStaff()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- cell edit modal -->
+<div class="modal-bk" id="cellModalBk">
+  <div class="modal">
+    <h3 id="cellModalTitle">Edit shift</h3>
+    <div class="row" id="cellBtns" style="gap:8px;flex-wrap:wrap"></div>
+    <div class="row" style="margin-top:14px;justify-content:flex-end">
+      <button class="btn sec" onclick="closeModal('cellModalBk')">Close</button>
+    </div>
+  </div>
+</div>
+
+<footer style="max-width:1420px;margin:0 auto;padding:6px 16px 26px">
+  <div class="glass" style="padding:12px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:0">
+    <span style="font-size:.7rem;font-weight:700;color:#0f766e">🏥 Ruli District Hospital — Laboratory Service</span>
+    <span id="linksFooter" style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto"></span>
+  </div>
+</footer>
+
+<!-- export modal: guarantees the file is reachable in ANY environment -->
+<div class="modal-bk" id="exportModalBk">
+  <div class="modal" style="text-align:center">
+    <h3>📦 Your file is ready</h3>
+    <p style="font-size:.85rem;margin-bottom:4px"><b id="expFileName">file.pdf</b></p>
+    <p class="mini" id="expFileSize" style="margin-bottom:14px"></p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn" id="expSaveAs" style="justify-content:center">💾 Choose where to save…</button>
+      <a class="btn warn" id="expDownload" style="justify-content:center;text-decoration:none">⬇️ Download (goes to Downloads folder)</a>
+      <a class="btn sec" id="expOpenTab" target="_blank" style="justify-content:center;text-decoration:none">🔗 Open in new tab (then use its Save button)</a>
+      <button class="btn ghost" onclick="closeExportModal();(_expName||'').includes('Roster')?printRoster():printPlan()" style="justify-content:center">🖨️ Print / Save as PDF instead (always works)</button>
+    </div>
+    <p class="mini" style="margin-top:12px">If nothing happens with one button, try the next — some environments (like the Claude artifact frame) block direct downloads. Opening the app in a full browser tab (Chrome/Safari) always allows normal downloads.</p>
+    <div class="row" style="margin-top:12px;justify-content:center">
+      <button class="btn sec" onclick="closeExportModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<div id="rotateHint" class="armed">
+  <div class="ph">📱</div>
+  <h2 style="font-size:1.2rem">Rotate to landscape</h2>
+  <p style="font-size:.85rem;max-width:320px;opacity:.9">The working plan tables are wide — landscape gives you the full month at a glance.</p>
+  <button class="btn" style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.45)" onclick="tryLockLandscape()">🔒 Lock landscape & continue</button>
+  <button class="btn sec" style="background:transparent;color:#cbd5e1;border-color:#64748b" onclick="document.getElementById('rotateHint').classList.remove('armed')">Continue in portrait anyway</button>
+</div>
+<div id="printZone"></div>
+<div class="toast" id="toast"></div>
+<script>
+/* ================= RULI DH LAB ROSTER ENGINE ================= */
+const LS_KEY='ruliLabRoster_v1';
+const UNITS=['Reception','Phlebotomy','Hematology','Biochemistry','Serology','Parasitology','TB/Molecular'];
+const CODES={D:'Day 08:00–17:00',N:'Night 17:00–08:00',DN:'Day+Night',OFF:'Rest day',AL:'Annual leave',ML:'Maternity leave',SL:'Sick leave',CL:'Authorized leave',TR:'Training',W:'Wedding day',ABS:'Absent',H:'Public holiday'};
+const uid=()=>Math.random().toString(36).slice(2,10);
+
+let state=load()||seed();
+
+function seed(){
+  const S=(name,role,cat,pattern,nightPref,maxN)=>({id:uid(),name,role,cat,pattern,nightPref,maxN,active:1,joined:'2024-01-01',exitDate:null});
+  const st={
+    staff:[
+      S('Kelvin SAMAHANI','Laboratory Manager','statute','manager','0',0),
+      S('Diane UWASE','Lab Quality Officer','statute','standard','min',2),
+      S('Beatrice NGEZEKURE','Lab Technician','statute','dayonly','0',0),
+      S('Patrick ISHIMWE','Lab Technician','statute','standard','3',12),
+      S('Dieudonne NIYIDUHABYOSE','Lab Technician','statute','standard','2',8),
+      S('Jean Paul NSENGIYUMVA','Lab Technician','statute','standard','2',6),
+      S('Faustin NTAMBARA','Lab Technician','contractual','standard','2',6),
+      S('Aurelie YANSONEYE','Lab Technician','statute','weekendonly','2',16),
+    ],
+    plans:{}, leaves:[], absences:[], holidays:[
+      {date:'2026-01-01',name:"New Year's Day"},{date:'2026-01-02',name:'Day after New Year'},
+      {date:'2026-02-01',name:'National Heroes Day'},{date:'2026-04-03',name:'Good Friday'},
+      {date:'2026-04-06',name:'Easter Monday'},{date:'2026-10-01',name:'Patriotism Day'},
+      {date:'2026-04-07',name:'Genocide Memorial Day'},{date:'2026-05-01',name:'Labour Day'},
+      {date:'2026-07-01',name:'Independence Day'},{date:'2026-07-04',name:'Liberation Day'},
+      {date:'2026-08-07',name:'Umuganura Day'},{date:'2026-08-15',name:'Assumption Day'},
+      {date:'2026-12-25',name:'Christmas Day'},{date:'2026-12-26',name:'Boxing Day'}
+    ],
+    versions:[], history:{}, currentMonth:'2026-08', trainings:[], holidayDuty:{},
+    links:[{id:'tt',name:'📚 Training Tracker (Claude)',url:'https://claude.ai/public/artifacts/44c69a5b-aa24-4277-9ba6-98afb5b40630'}]
+  };
+  seedLeaves(st);
+  return st;
+}
+function seedLeaves(st){
+  const find=n=>{const s=st.staff.find(x=>x.name.includes(n));return s?s.id:null;};
+  const ensure=(sid,type,start,end,note)=>{
+    if(!sid)return;
+    if(!st.leaves.some(l=>l.staffId===sid&&l.type===type&&l.start===start)){
+      st.leaves.push({id:uid(),staffId:sid,type,start,end,note});st.__regen=true;}
+  };
+  // Diane: AL from 13/07/2026, 30 calendar days (statute) → back 12/08/2026; June leave already taken earlier
+  ensure(find('UWASE'),'AL','2026-07-13','2026-08-11','Annual leave (also took leave in June)');
+  // Patrick: 60 days from 17/08/2026 (2025/2026 carry-over + 2026/2027 entitlement) → back 16/10/2026
+  ensure(find('ISHIMWE'),'AL','2026-08-17','2026-10-15','60 days — 2025/2026 carry-over + 2026/2027 entitlement');
+  // Patrick's wedding 💍
+  ensure(find('ISHIMWE'),'W','2026-08-29','2026-08-29','Wedding day 💍');
+}
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(state));if(typeof cloudPush==='function')try{cloudPush();}catch(e){}}
+function load(){try{const st=JSON.parse(localStorage.getItem(LS_KEY));if(st)migrate(st);return st;}catch(e){return null;}}
+function migrate(st){
+  (st.staff||[]).forEach(s=>{
+    if(s.exitDate===undefined)s.exitDate=null;
+    if(/NSENGIYUMVA|YANSONEYE/.test(s.name))s.cat='statute';
+    if(/NTAMBARA/.test(s.name))s.cat='contractual';
+    if(/NIYIDUHABYOSE/.test(s.name)&&s.nightPref==='3')s.nightPref='2'; // only Patrick works 3 consecutive
+    if(/ISHIMWE/.test(s.name)&&s.maxN<12)s.maxN=12; // room for a 4th triple in 5-week months
+  });
+  if(!st.trainings)st.trainings=[];
+  if(!st.holidayDuty)st.holidayDuty={};
+  if(!st.links)st.links=[{id:'tt',name:'📚 Training Tracker (Claude)',url:'https://claude.ai/public/artifacts/44c69a5b-aa24-4277-9ba6-98afb5b40630'}];
+  seedLeaves(st);
+  [['2026-04-06','Easter Monday'],['2026-10-01','Patriotism Day']].forEach(([d,n])=>{
+    if(!st.holidays.some(x=>x.date===d))st.holidays.push({date:d,name:n});});
+  // in-lieu Mondays for weekend holidays
+  for(const hd of [...st.holidays]){
+    if(hd.observed)continue;
+    const w=new Date(hd.date+'T00:00:00').getDay();
+    if(w===6||w===0){
+      const d=new Date(hd.date+'T00:00:00');d.setDate(d.getDate()+(w===6?2:1));
+      const p2=n=>String(n).padStart(2,'0');
+      const mon=d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+      if(!st.holidays.some(x=>x.date===mon))st.holidays.push({date:mon,name:hd.name+' (observed)',observed:true,src:hd.date});
+    }
+  }
+}
+
+/* ---------- date utils ---------- */
+const fmt=d=>{const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}; // local date — never UTC-shifted
+function addD(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function parseD(s){return new Date(s+'T00:00:00');}
+function dow(s){return parseD(s).getDay();} // 0 Sun..6 Sat
+const isWE=s=>{const d=dow(s);return d===0||d===6;};
+const isHol=s=>state.holidays.some(h=>h.date===s);
+function planDays(month){ // month 'YYYY-MM' → array of date strings: full month + 7 days
+  const [y,m]=month.split('-').map(Number);
+  const start=new Date(y,m-1,1), end=new Date(y,m,0);
+  const days=[]; let d=new Date(start);
+  const stop=addD(end,7);
+  while(d<=stop){days.push(fmt(d));d=addD(d,1);}
+  return days;
+}
+/* Rwanda rule: a public holiday falling on Sat/Sun is observed the following Monday ("in lieu") */
+function expandObservedHolidays(){
+  const adds=[];
+  for(const hd of state.holidays){
+    if(hd.observed)continue;
+    const w=dow(hd.date);
+    if(w===6||w===0){
+      const mon=fmt(addD(parseD(hd.date),w===6?2:1));
+      if(!state.holidays.some(x=>x.date===mon))adds.push({date:mon,name:hd.name+' (observed)',observed:true,src:hd.date});
+    }
+  }
+  if(adds.length){state.holidays.push(...adds);save();}
+  return adds;
+}
+function leaveOn(staffId,ds){
+  let found=null;
+  for(const l of state.leaves){if(l.staffId===staffId&&ds>=l.start&&ds<=l.end){if(l.type==='W')return 'W';if(!found)found=l.type;}}
+  return found;
+}
+function absentOn(staffId,ds){return state.absences.some(a=>a.staffId===staffId&&a.date===ds);}
+
+/* ---------- history bias (imported excel) ---------- */
+function histNights(name){
+  let n=0;for(const mk in state.history){const rec=state.history[mk][name];if(rec)n+=rec.N||0;}
+  return n;
+}
+
+/* ---------- PLAN GENERATOR ---------- */
+function generatePlan(saveVersion){
+  expandObservedHolidays();
+  const month=document.getElementById('planMonth').value||state.currentMonth;
+  state.currentMonth=month;
+  const days=planDays(month);
+  const active=state.staff.filter(s=>s.active==1);
+  // exited staff still shown until their exit date (#exit rule)
+  const exited=state.staff.filter(s=>s.active==0&&s.exitDate&&s.exitDate>=days[0]);
+  const roster=[...active,...exited];
+  const inService=(s,ds)=>!(s.exitDate&&ds>s.exitDate);
+  const cells={}; roster.forEach(s=>cells[s.id]={});
+  const nightCount={},blockCount={};
+  roster.forEach(s=>{nightCount[s.id]=0;blockCount[s.id]=0;});
+  const aurelie=active.find(s=>s.pattern==='weekendonly');
+  const aurOn=ds=>aurelie&&!leaveOn(aurelie.id,ds)&&!absentOn(aurelie.id,ds)&&inService(aurelie,ds);
+  const nightPool=roster.filter(s=>s.pattern==='standard'&&s.nightPref!=='0');
+  const holWeekday=ds=>isHol(ds)&&!isWE(ds);
+
+  function canNight(s,i,len){
+    for(let k=0;k<len;k++){
+      const ds=days[i+k]; if(!ds)return false;
+      if(!inService(s,ds))return false;
+      if(isWE(ds)&&aurOn(ds))return false; // Aurelie owns weekend nights
+      if(leaveOn(s.id,ds)||absentOn(s.id,ds))return false;
+      if(cells[s.id][ds])return false;
+    }
+    if(nightCount[s.id]+len>s.maxN)return false;
+    const prev=days[i-1]; if(prev&&cells[s.id][prev]==='N')return false;
+    return true;
+  }
+  // Single nights are rare: try preferred consecutive lengths first (rule #8)
+  function blockLen(s,i){
+    // 3-consecutive-night blocks are exclusively Patrick's; everyone else (incl. Diane) works 2 consecutive
+    const pref=(s.nightPref==='3'&&/ISHIMWE/.test(s.name))?[3,2]:[2];
+    for(const L of pref){if(canNight(s,i,L))return L;}
+    if(canNight(s,i,1))return 1; // single night only when the week cannot fit 2/3
+    return 0;
+  }
+  // 1) Night blocks, day by day
+  for(let i=0;i<days.length;i++){
+    const ds=days[i];
+    if(isWE(ds)&&aurOn(ds))continue; // Aurelie DN covers it
+    if(roster.some(s=>cells[s.id][ds]==='N'))continue;
+    const wd=dow(ds);
+    // measure the uncovered weekday gap starting here (stops at weekend covered by Aurelie or an assigned night)
+    let gap=0;
+    for(let k=i;k<days.length;k++){
+      const dd=days[k];
+      if(isWE(dd)&&aurOn(dd))break;
+      if(roster.some(s=>['N','DN'].includes(cells[s.id][dd])))break;
+      gap++;
+    }
+    // odd gap (3,5,…) needs exactly one 3-block to avoid a lone single night → steer Patrick's triple here
+    let cands;
+    if(gap%2===1&&gap>=3){
+      cands=nightPool.filter(s=>/ISHIMWE/.test(s.name)&&canNight(s,i,3));
+      if(!cands.length)cands=nightPool.filter(s=>blockLen(s,i)>=2);
+    }else{
+      cands=nightPool.filter(s=>blockLen(s,i)>=2);
+    }
+    if(!cands.length)cands=nightPool.filter(s=>s.nightPref!=='min'&&blockLen(s,i)>0); // single night: true last resort — never Diane (min-nights staff only work in pairs)
+    if(!cands.length)cands=nightPool.filter(s=>blockLen(s,i)>0);
+    cands=cands.sort((a,b)=>{
+      const w=s=>{
+        let sc=nightCount[s.id]*10+histNights(s.name)*0.5;
+        const isPatrick=/ISHIMWE/.test(s.name);
+        if(isPatrick){sc-=6; if(blockCount[s.id]<3)sc-=45; if(wd===1||wd===3)sc-=12;} // Patrick: >=3 triple sessions, preferring Mon-Wed / Wed-Fri starts
+        if(/NIYIDUHABYOSE/.test(s.name))sc-=5; // Dieudonne: frequent 2-night lover
+        if(s.nightPref==='min')sc+=(blockCount[s.id]===0?14:100); // Diane: exactly one 2-night block/month, never more
+        return sc+Math.random()*2;
+      };
+      return w(a)-w(b);
+    });
+    if(!cands.length)continue;
+    const s=cands[0];
+    let len=blockLen(s,i);
+    if(gap%2===1&&gap>=3&&/ISHIMWE/.test(s.name)&&canNight(s,i,3))len=3;
+    if(len>gap&&gap>0)len=Math.min(len,Math.max(gap,1));
+    for(let k=0;k<len;k++){cells[s.id][days[i+k]]='N';nightCount[s.id]++;}
+    blockCount[s.id]++;
+    const offs=Math.min(len,2);
+    for(let k=len;k<len+offs;k++){const dd=days[i+k];if(dd&&!cells[s.id][dd]&&!leaveOn(s.id,dd))cells[s.id][dd]='OFF';}
+  }
+
+  // Leave always overrides any pre-set OFF/D
+  for(const s of roster){for(const ds of days){const lv=leaveOn(s.id,ds);if(lv&&cells[s.id][ds]&&cells[s.id][ds]!=='N')cells[s.id][ds]=lv;}}
+
+  // 2) Weekday-holiday duty: exactly ONE day-shift staff, rotated fairly (rule: holidays observed)
+  if(!state.holidayDuty)state.holidayDuty={};
+  const holAssign={};
+  for(const ds of days.filter(holWeekday)){
+    const elig=roster.filter(s=>['standard','dayonly'].includes(s.pattern)&&inService(s,ds)&&!leaveOn(s.id,ds)&&!absentOn(s.id,ds)&&!cells[s.id][ds]);
+    elig.sort((a,b)=>((state.holidayDuty[a.id]||0)-(state.holidayDuty[b.id]||0))||(Math.random()-.5));
+    if(elig.length){holAssign[ds]=elig[0].id;state.holidayDuty[elig[0].id]=(state.holidayDuty[elig[0].id]||0)+1;}
+  }
+
+  // 3) Fill remaining cells
+  for(const s of roster){
+    for(let i=0;i<days.length;i++){
+      const ds=days[i];
+      if(cells[s.id][ds])continue;
+      if(!inService(s,ds)){cells[s.id][ds]='';continue;} // after exit date: blank
+      const lv=leaveOn(s.id,ds);
+      if(lv){cells[s.id][ds]=lv;continue;}
+      if(absentOn(s.id,ds)){cells[s.id][ds]='ABS';continue;}
+      const we=isWE(ds),hol=isHol(ds);
+      if(s.pattern==='weekendonly'){cells[s.id][ds]=we?'DN':'OFF';continue;} // weekend holiday: works as usual; never weekday holidays
+      if(s.pattern==='manager'){cells[s.id][ds]=we?'OFF':(hol?'H':'D');continue;} // head of lab: no holidays
+      if(holWeekday(ds)){cells[s.id][ds]=(holAssign[ds]===s.id)?'D':'H';continue;} // one day staff only
+      if(s.pattern==='dayonly'){cells[s.id][ds]=we?'OFF':'D';continue;}
+      if(we){
+        if(aurOn(ds)){cells[s.id][ds]='OFF';}
+        else{
+          const hasD=roster.some(x=>cells[x.id][ds]==='D');
+          const hasN=roster.some(x=>cells[x.id][ds]==='N');
+          if(!hasN&&s.nightPref!=='0'&&nightCount[s.id]<s.maxN){cells[s.id][ds]='N';nightCount[s.id]++;}
+          else if(!hasD)cells[s.id][ds]='D';
+          else cells[s.id][ds]='OFF';
+        }
+        continue;
+      }
+      cells[s.id][ds]='D';
+    }
+  }
+
+  // 4) Weekend-day compensation offs on Thu/Fri (Mon-Wed stays rich)
+  for(const s of roster){
+    if(s.pattern!=='standard')continue;
+    for(let i=0;i<days.length;i++){
+      const ds=days[i];
+      if(cells[s.id][ds]==='D'&&isWE(ds)){
+        for(let k=1;k<=6;k++){
+          const dd=days[i+k];if(!dd)break;
+          const w=dow(dd);
+          if((w===4||w===5)&&cells[s.id][dd]==='D'){cells[s.id][dd]='OFF';break;}
+        }
+      }
+    }
+  }
+
+  state.plans[month]={cells,generatedAt:new Date().toISOString(),days};
+  if(saveVersion)snapshot('Plan generated — '+month);
+  save();renderAll();toast('✅ Fair working plan generated for '+month+' (+1 week)');
+}
+
+/* ---------- versioning ---------- */
+function snapshot(label){
+  const m=state.currentMonth,p=state.plans[m];if(!p)return;
+  state.versions.unshift({ts:new Date().toISOString(),label,month:m,cells:JSON.parse(JSON.stringify(p.cells)),days:[...p.days]});
+  if(state.versions.length>60)state.versions.pop();
+  save();
+}
+function restoreVersion(i){
+  const v=state.versions[i];
+  state.plans[v.month]={cells:JSON.parse(JSON.stringify(v.cells)),days:[...v.days],generatedAt:v.ts};
+  state.currentMonth=v.month;document.getElementById('planMonth').value=v.month;
+  save();renderAll();toast('↩ Restored: '+v.label);
+}
+function exportVersion(i){
+  const v=state.versions[i];
+  const keep=state.plans[v.month],keepM=state.currentMonth;
+  state.plans[v.month]={cells:v.cells,days:v.days};state.currentMonth=v.month;
+  exportPDF(v.label);
+  state.plans[v.month]=keep;state.currentMonth=keepM;
+}
+
+/* ---------- RENDER PLAN ---------- */
+function renderPlan(){
+  const m=document.getElementById('planMonth').value||state.currentMonth;
+  const p=state.plans[m];const wrap=document.getElementById('planTableWrap');
+  if(!p){wrap.innerHTML='<p class="mini" style="padding:20px">No plan yet for '+m+'. Click <b>⚡ Generate fair plan</b>.</p>';document.getElementById('planSummary').innerHTML='';return;}
+  const active=state.staff.filter(s=>p.cells[s.id]);
+  const DOWL=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let h='<table class="plan"><thead><tr><th class="nm">Staff</th>';
+  p.days.forEach(ds=>{const cls=isHol(ds)?'hd':(isWE(ds)?'we':'');const hn=(state.holidays.find(x=>x.date===ds)||{}).name||'';h+=`<th class="${cls}" title="${hn}">${DOWL[dow(ds)]}<br>${ds.slice(8)}<br><span style="opacity:.7;font-size:.55rem">${ds.slice(5,7)}</span></th>`;});
+  h+='<th>D</th><th>N</th><th>Hrs</th></tr></thead><tbody>';
+  for(const s of active){
+    let dC=0,nC=0,hrs=0;
+    const exitTag=s.exitDate?` <span style="color:#b91c1c;font-size:.55rem">· Exited ${s.exitDate}</span>`:'';
+    h+=`<tr style="${s.active==0?'opacity:.75':''}"><td class="nm">${s.name}${exitTag}<br><span style="font-weight:400;font-size:.58rem;color:#5c7d98">${s.role}</span></td>`;
+    p.days.forEach(ds=>{
+      const c=p.cells[s.id][ds]||'';
+      if(c==='D'){dC++;hrs+=9}if(c==='N'){nC++;hrs+=15}if(c==='DN'){dC++;nC++;hrs+=24}
+      const cls=(isHol(ds)?'hd ':(isWE(ds)?'we ':''))+'c-'+c;
+      h+=`<td class="cell ${cls}" onclick="editCell('${s.id}','${ds}')">${c}</td>`;
+    });
+    h+=`<td><b>${dC}</b></td><td><b>${nC}</b></td><td><b>${hrs}</b></td></tr>`;
+  }
+  h+='</tbody></table>';
+  wrap.innerHTML=h;
+  // holiday names legend (#5)
+  const hols=state.holidays.filter(x=>p.days.includes(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('holLegend').innerHTML=hols.length?('<span class="c-X" style="font-weight:800">🎉 Holidays in this plan:</span> '+hols.map(x=>`<span class="c-X">${x.date.slice(8)}/${x.date.slice(5,7)} — ${x.name}</span>`).join('')):'';
+  // summary
+  const nights=active.map(s=>({n:s.name.split(' ')[0],c:p.days.filter(d=>['N','DN'].includes(p.cells[s.id][d])).length}));
+  document.getElementById('planSummary').innerHTML='<div class="row">'+nights.map(x=>`<span class="tag tg-purple">🌙 ${x.n}: ${x.c}</span>`).join('')+'</div>';
+}
+function editCell(sid,ds){
+  const s=state.staff.find(x=>x.id===sid);
+  document.getElementById('cellModalTitle').textContent=s.name+' — '+ds;
+  const box=document.getElementById('cellBtns');
+  box.innerHTML=Object.keys(CODES).map(c=>`<button class="btn sm ${c===state.plans[state.currentMonth].cells[sid][ds]?'':'sec'}" onclick="setCell('${sid}','${ds}','${c}')">${c} <span style="font-weight:400">${CODES[c]}</span></button>`).join('');
+  openModal('cellModalBk');
+}
+function setCell(sid,ds,c){
+  const p=state.plans[state.currentMonth];p.cells[sid][ds]=c;
+  snapshot('Manual edit: '+state.staff.find(x=>x.id===sid).name.split(' ')[0]+' → '+c+' on '+ds);
+  save();closeModal('cellModalBk');renderAll();toast('✏️ Updated & versioned');
+}
+
+/* ---------- STAFF ---------- */
+let editingStaff=null;
+function renderStaff(){
+  const t=document.getElementById('staffTbl');
+  t.innerHTML='<tr><th>Name</th><th>Role</th><th>Contract</th><th>Pattern</th><th>Nights</th><th>Status</th><th></th></tr>'+
+  state.staff.map(s=>{
+    const pat={standard:'D + rotating N',dayonly:'Mon–Fri days only',weekendonly:'Weekends (Sat+Sun D&N)',manager:'Manager Mon–Fri'}[s.pattern];
+    const np={'0':'None','2':'Max 2 consec.','3':'Night lover (3)','min':'Minimal'}[s.nightPref];
+    return `<tr style="${s.active==0?'opacity:.5':''}"><td><b>${s.name}</b></td><td>${s.role}</td>
+    <td><span class="tag ${s.cat==='statute'?'tg-teal':'tg-blue'}">${s.cat==='statute'?'Statute · 30d AL':'Contractual · 18d AL'}</span></td>
+    <td>${pat}</td><td>${np} · cap ${s.maxN}/mo</td>
+    <td>${s.active==1?'<span class="tag tg-teal">Active</span>':'<span class="tag tg-gray">Exited '+(s.exitDate||'')+' (records kept)</span>'}</td>
+    <td class="row" style="gap:4px"><button class="btn sm sec" onclick="openStaffModal('${s.id}')">✏️</button>
+    ${s.active==1?`<button class="btn sm dang" onclick="exitStaff('${s.id}')">🚪 Exit</button>`:`<button class="btn sm" onclick="reactivate('${s.id}')">↩</button>`}</td></tr>`;
+  }).join('');
+  // dropdowns
+  ['lvStaff','abStaff'].forEach(id=>{
+    document.getElementById(id).innerHTML=state.staff.filter(s=>s.active==1).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  });
+}
+function openStaffModal(id){
+  editingStaff=id||null;
+  document.getElementById('staffModalTitle').textContent=id?'✏️ Edit staff':'➕ Register staff';
+  if(id){const s=state.staff.find(x=>x.id===id);
+    sfName.value=s.name;sfRole.value=s.role;sfCat.value=s.cat;sfPattern.value=s.pattern;
+    sfNight.value=s.nightPref;sfMaxN.value=s.maxN;sfActive.value=s.active;sfExit.value=s.exitDate||'';
+  }else{sfName.value='';sfRole.value='Lab Technician';sfCat.value='statute';sfPattern.value='standard';sfNight.value='2';sfMaxN.value=6;sfActive.value='1';sfExit.value='';}
+  openModal('staffModalBk');
+}
+function saveStaff(){
+  if(!sfName.value.trim())return toast('⚠ Name required');
+  const data={name:sfName.value.trim(),role:sfRole.value,cat:sfCat.value,pattern:sfPattern.value,nightPref:sfNight.value,maxN:+sfMaxN.value,active:+sfActive.value,exitDate:sfExit.value||null};
+  if(data.active===0&&!data.exitDate)data.exitDate=fmt(new Date());
+  if(editingStaff)Object.assign(state.staff.find(x=>x.id===editingStaff),data);
+  else state.staff.push({id:uid(),joined:fmt(new Date()),...data});
+  save();closeModal('staffModalBk');renderAll();toast('💾 Staff saved — will appear in next generated plan');
+}
+function exitStaff(id){
+  if(!confirm('Mark as exited? Kept in history (with exit date shown on plans), excluded from future plans.'))return;
+  const d=prompt('Exit date (YYYY-MM-DD):',fmt(new Date()));
+  const s=state.staff.find(x=>x.id===id);s.active=0;s.exitDate=d||fmt(new Date());
+  save();renderAll();toast('🚪 Staff exited on '+s.exitDate+' — history retained');
+}
+function reactivate(id){state.staff.find(x=>x.id===id).active=1;save();renderAll();}
+
+/* ---------- LEAVE ---------- */
+function alUsed(s,year){
+  let n=0;
+  for(const l of state.leaves.filter(l=>l.staffId===s.id&&l.type==='AL'&&l.start.slice(0,4)==String(year))){
+    let d=parseD(l.start);const e=parseD(l.end);
+    while(d<=e){const ds=fmt(d);
+      if(s.cat==='statute')n++; else if(!isWE(ds))n++;
+      d=addD(d,1);}
+  }
+  return n;
+}
+function addLeave(){
+  const sid=lvStaff.value,type=lvType.value;let st=lvStart.value,en=lvEnd.value;
+  if(!st)return toast('⚠ Start date required');
+  if(type==='ML'){en=fmt(addD(parseD(st),97));} // 14 weeks = 98 days incl start
+  if(type==='W'&&!en){en=st;} // wedding: single day by default
+  if(!en)return toast('⚠ End date required');
+  const s=state.staff.find(x=>x.id===sid);
+  state.leaves.push({id:uid(),staffId:sid,type,start:st,end:en,note:lvNote.value});
+  save();
+  if(state.plans[state.currentMonth]){generatePlan(false);snapshot('Leave added: '+s.name.split(' ')[0]+' '+type+' '+st+'→'+en);}
+  renderAll();
+  toast(type==='ML'?('🤱 Maternity: '+s.name.split(' ')[0]+' returns '+fmt(addD(parseD(en),1))+' — plan re-adapted'):'🌴 Leave added — plan & roster re-adapted');
+}
+function delLeave(id){state.leaves=state.leaves.filter(l=>l.id!==id);save();if(state.plans[state.currentMonth]){generatePlan(false);snapshot('Leave removed');}renderAll();}
+function renderLeaves(){
+  const names={AL:'Annual',ML:'Maternity',SL:'Sick',CL:'Authorized',TR:'Training',W:'Wedding 💍'};
+  document.getElementById('leaveList').innerHTML=state.leaves.length?'<table class="simple"><tr><th>Staff</th><th>Type</th><th>From</th><th>To</th><th>Back on</th><th>Note</th><th></th></tr>'+
+    state.leaves.slice().sort((a,b)=>b.start.localeCompare(a.start)).map(l=>{
+      const s=state.staff.find(x=>x.id===l.staffId);
+      return `<tr><td><b>${s?s.name:'?'}</b></td><td><span class="tag tg-amber">${names[l.type]}</span></td><td>${l.start}</td><td>${l.end}</td><td><b>${fmt(addD(parseD(l.end),1))}</b></td><td>${l.note||''}</td>
+      <td><button class="btn sm dang" onclick="delLeave('${l.id}')">🗑</button></td></tr>`;}).join('')+'</table>':'<p class="mini">No leave recorded yet.</p>';
+  document.getElementById('holidayList').innerHTML='<div class="row">'+state.holidays.sort((a,b)=>a.date.localeCompare(b.date)).map(h=>`<span class="tag ${h.unforeseen?'tg-amber':h.observed?'tg-purple':'tg-rose'}">${h.date} · ${h.name}${h.unforeseen?' ⚡':''} <a style="cursor:pointer" onclick="delHoliday('${h.date}')">✕</a></span>`).join('')+'</div>';
+}
+function addHoliday(){
+  if(!hdDate.value)return;
+  state.holidays.push({date:hdDate.value,name:hdName.value||'Holiday'});
+  const obs=expandObservedHolidays();
+  save();renderAll();
+  toast('🎉 Holiday added'+(obs.length?' + observed Monday auto-added':''));
+}
+/* Unforeseen holiday (presidential order etc.): adjust the CURRENT plan in place — nights untouched */
+function logUnforeseenHoliday(){
+  if(!hdDate.value)return toast('⚠ Pick the date first');
+  const ds=hdDate.value,name=hdName.value||'Special holiday (presidential order)';
+  if(!state.holidays.some(x=>x.date===ds))state.holidays.push({date:ds,name,unforeseen:true});
+  expandObservedHolidays();
+  const p=state.plans[state.currentMonth];
+  let changed=0,keptNight=null,dayKeeper=null;
+  if(p&&p.days.includes(ds)){
+    const active=state.staff.filter(s=>s.active==1&&p.cells[s.id]);
+    // choose ONE fair day-duty keeper among those currently on D (nights stay exactly as planned)
+    const dayFolk=active.filter(s=>p.cells[s.id][ds]==='D'&&!['manager','weekendonly'].includes(s.pattern));
+    dayFolk.sort((a,b)=>((state.holidayDuty[a.id]||0)-(state.holidayDuty[b.id]||0))||(Math.random()-.5));
+    dayKeeper=dayFolk[0]||null;
+    if(dayKeeper)state.holidayDuty[dayKeeper.id]=(state.holidayDuty[dayKeeper.id]||0)+1;
+    for(const s of active){
+      const c=p.cells[s.id][ds];
+      if(c==='N'||c==='DN'){keptNight=s;continue;}           // nights never touched
+      if(['AL','ML','SL','CL','TR','W','ABS','OFF','',null,undefined].includes(c))continue; // leave/off untouched
+      if(c==='D'&&s===dayKeeper)continue;                     // one day staff stays
+      if(c==='D'||c==='H'){p.cells[s.id][ds]=isWE(ds)?'OFF':'H';changed++;}
+    }
+    snapshot('Unforeseen holiday: '+name+' on '+ds+(dayKeeper?' — day duty kept by '+dayKeeper.name.split(' ')[0]:'')+(keptNight?', night unchanged ('+keptNight.name.split(' ')[0]+')':''));
+    save();renderAll();
+    toast('🚨 '+name+' applied to '+ds+': '+changed+' staff released, night shift unchanged'+(dayKeeper?', '+dayKeeper.name.split(' ')[0]+' covers the day':''));
+  }else{
+    save();renderAll();
+    toast('🎉 Holiday logged — it will apply when that month\'s plan is generated');
+  }
+}
+function delHoliday(d){state.holidays=state.holidays.filter(h=>h.date!==d);save();renderAll();}
+
+/* ---------- ABSENCE with auto re-roster ---------- */
+function logAbsence(){
+  const sid=abStaff.value,ds=abDate.value;if(!ds)return toast('⚠ Date required');
+  const s=state.staff.find(x=>x.id===sid);
+  const p=state.plans[state.currentMonth];
+  let repl=null;
+  if(p&&p.cells[sid]&&p.days.includes(ds)){
+    const had=p.cells[sid][ds];
+    p.cells[sid][ds]='ABS';
+    if(had==='N'||had==='DN'){ // find night replacement
+      const cand=state.staff.filter(x=>x.active==1&&x.id!==sid&&x.nightPref!=='0'&&['D','OFF'].includes(p.cells[x.id]?.[ds])&&!leaveOn(x.id,ds))
+        .sort((a,b)=>{const nc=y=>p.days.filter(d=>['N','DN'].includes(p.cells[y.id][d])).length;return nc(a)-nc(b);});
+      if(cand.length){repl=cand[0];p.cells[repl.id][ds]=p.cells[repl.id][ds]==='D'?'DN':'N';
+        const nx=p.days[p.days.indexOf(ds)+1];if(nx&&p.cells[repl.id][nx]==='D')p.cells[repl.id][nx]='OFF';}
+    }
+    snapshot('Absence: '+s.name.split(' ')[0]+' on '+ds+(repl?' → covered by '+repl.name.split(' ')[0]:''));
+  }
+  state.absences.push({id:uid(),staffId:sid,date:ds,reason:abReason.value,replacedBy:repl?repl.name:null});
+  save();renderAll();
+  toast(repl?('🔄 '+repl.name.split(' ')[0]+' auto-assigned to cover the night'):'⚠ Absence logged & plan updated');
+}
+function renderAbs(){
+  document.getElementById('absList').innerHTML=state.absences.length?'<table class="simple"><tr><th>Staff</th><th>Date</th><th>Reason</th><th>Covered by</th></tr>'+
+  state.absences.slice().reverse().map(a=>{const s=state.staff.find(x=>x.id===a.staffId);
+    return `<tr><td><b>${s?s.name:'?'}</b></td><td>${a.date}</td><td>${a.reason||''}</td><td>${a.replacedBy?'<span class="tag tg-teal">'+a.replacedBy+'</span>':'—'}</td></tr>`;}).join('')+'</table>':'<p class="mini">No absences logged.</p>';
+}
+
+/* ---------- WEEKLY ROSTER ---------- */
+function generateRoster(){
+  let wk=document.getElementById('rosterWeek').value;
+  if(!wk){toast('⚠ Pick the Monday of the week');return;}
+  const mon=parseD(wk);if(mon.getDay()!==1){toast('⚠ Please pick a Monday');return;}
+  const p=state.plans[state.currentMonth];
+  if(!p){toast('⚠ Generate the working plan first');return;}
+  const days=[...Array(7)].map((_,i)=>fmt(addD(mon,i)));
+  const out=[];
+  for(const ds of days){
+    if(!p.days.includes(ds)){out.push({ds,missing:true});continue;}
+    let dayStaff=state.staff.filter(s=>s.active==1&&p.cells[s.id]&&['D','DN'].includes(p.cells[s.id][ds]));
+    // Kelvin (manager) joins the bench only as the 3rd person when <=2 other day staff are available
+    const mgr=dayStaff.find(s=>s.pattern==='manager');
+    if(mgr){const others=dayStaff.filter(s=>s!==mgr);if(others.length>2)dayStaff=others;}
+    const nightStaff=state.staff.filter(s=>s.active==1&&p.cells[s.id]&&['N','DN'].includes(p.cells[s.id][ds]));
+    // distribute units round-robin with per-staff unit restrictions
+    const assign={};UNITS.forEach(u=>assign[u]=[]);
+    if(dayStaff.length){
+      const beatrice=dayStaff.find(s=>/NGEZEKURE/.test(s.name));
+      // Beatrice: Reception first; Parasitology only when staff are limited; never Phlebotomy or TB/Molecular
+      if(beatrice){
+        assign['Reception'].push(beatrice.name);
+        if(dayStaff.length<=4)assign['Parasitology'].push(beatrice.name);
+      }
+      const others=dayStaff.filter(s=>s!==beatrice);
+      const rot=[...others].sort((a,b)=>a.name.localeCompare(b.name));
+      if(rot.length){
+        const offset=parseD(ds).getDate()%rot.length;
+        const order=rot.slice(offset).concat(rot.slice(0,offset));
+        let k=0;
+        UNITS.forEach(u=>{
+          if(assign[u].length)return; // already covered (Beatrice)
+          assign[u].push(order[k%order.length].name);k++;
+        });
+      }else if(beatrice){
+        // Beatrice alone: cover her allowed units only
+        ['Hematology','Biochemistry','Serology'].forEach(u=>{if(!assign[u].length)assign[u].push(beatrice.name);});
+      }
+    }
+    const req=(dow(ds)===1&&assign['Hematology'][0])?assign['Hematology'][0]:null;
+    out.push({ds,assign,night:nightStaff.map(s=>s.name),req,dayStaff:dayStaff.map(s=>s.name)});
+  }
+  state.lastRoster={week:wk,out};save();
+  renderRoster();toast('🔬 Weekly roster assigned');
+}
+function renderRoster(){
+  const box=document.getElementById('rosterOut');
+  if(!state.lastRoster){box.innerHTML='<p class="mini">Pick a Monday and click auto-assign.</p>';return;}
+  const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  box.innerHTML=state.lastRoster.out.map(d=>{
+    if(d.missing)return `<div class="unit-card" style="margin-bottom:10px"><b>${d.ds}</b><p class="mini">Outside the generated plan range.</p></div>`;
+    return `<div class="glass" style="padding:14px;margin-bottom:10px">
+      <h3 style="margin-top:0">${DN[dow(d.ds)]} ${d.ds} ${isHol(d.ds)?'<span class="tag tg-rose">🎉 '+((state.holidays.find(x=>x.date===d.ds)||{}).name||'Holiday')+'</span>':''} ${isWE(d.ds)?'<span class="tag tg-amber">Weekend</span>':''}</h3>
+      <div class="unit-grid">${UNITS.map(u=>`<div class="unit-card"><b>${{'Reception':'🛎️','Phlebotomy':'💉','Hematology':'🩸','Biochemistry':'⚗️','Serology':'🧫','Parasitology':'🦠','TB/Molecular':'🧬'}[u]} ${u}</b><div style="font-size:.75rem;margin-top:5px">${d.assign[u].join(', ')||'<i class="mini">—</i>'}</div></div>`).join('')}
+      <div class="unit-card" style="background:rgba(49,46,129,.9);color:#e0e7ff"><b style="color:#c7d2fe">🌙 Night shift</b><div style="font-size:.75rem;margin-top:5px">${d.night.join(', ')||'—'}</div></div></div>
+      ${d.req?`<div class="req-badge">📦 Reagents & consumables requisition: ${d.req} (Hematology)</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* ---------- DASHBOARD ---------- */
+let charts={};
+function renderDash(){
+  const m=state.currentMonth,p=state.plans[m];
+  document.getElementById('dashMonthLbl').textContent=p?('— '+m+' plan'):'— no plan generated yet';
+  const active=state.staff.filter(s=>s.active==1);
+  const yr=new Date().getFullYear();
+  let kp=[
+    {ic:'👥',v:active.length,l:'Active staff',s:state.staff.length-active.length+' exited (archived)'},
+    {ic:'🗂️',v:state.versions.length,l:'Plan versions',s:'all re-exportable'},
+    {ic:'🌴',v:state.leaves.filter(l=>l.end>=fmt(new Date())).length,l:'Ongoing/upcoming leave',s:state.leaves.length+' total records'},
+    {ic:'🚨',v:state.absences.length,l:'Absences logged',s:'auto-covered'},
+    {ic:'🎉',v:state.holidays.filter(h=>h.date.slice(0,4)==yr).length,l:'Holidays '+yr,s:'Rwanda calendar'},
+  ];
+  if(p){
+    const tot=c=>active.reduce((a,s)=>a+p.days.filter(d=>p.cells[s.id]&&p.cells[s.id][d]===c).length,0);
+    const nightsArr=active.filter(s=>s.pattern==='standard').map(s=>p.days.filter(d=>['N','DN'].includes(p.cells[s.id]?.[d])).length);
+    const spread=nightsArr.length?Math.max(...nightsArr)-Math.min(...nightsArr):0;
+    const fair=Math.max(0,100-spread*12);
+    const covered=p.days.filter(ds=>active.some(s=>['N','DN'].includes(p.cells[s.id]?.[ds]))).length;
+    kp=kp.concat([
+      {ic:'📅',v:p.days.length,l:'Days planned',s:'month + report week'},
+      {ic:'☀️',v:tot('D')+tot('DN'),l:'Day shifts',s:'9h each'},
+      {ic:'🌙',v:tot('N')+tot('DN'),l:'Night shifts',s:'15h each'},
+      {ic:'🛡️',v:Math.round(covered/p.days.length*100)+'%',l:'Night coverage',s:covered+'/'+p.days.length+' nights staffed'},
+      {ic:'⚖️',v:fair+'%',l:'Fairness index',s:'night spread ±'+spread},
+      {ic:'😴',v:tot('OFF'),l:'Rest days',s:'post-night + weekend comp'},
+      {ic:'📚',v:tot('TR'),l:'Training days',s:'in current plan'},
+    ]);
+  }
+  document.getElementById('kpiGrid').innerHTML=kp.map(k=>`<div class="kpi"><div class="ic">${k.ic}</div><div class="v">${k.v}</div><div class="l">${k.l}</div><div class="s">${k.s}</div></div>`).join('');
+  // alerts
+  const al=[];
+  if(p){
+    active.forEach(s=>{
+      const n=p.days.filter(d=>['N','DN'].includes(p.cells[s.id]?.[d])).length;
+      if(n>s.maxN&&s.pattern!=='weekendonly')al.push('⚠ <b>'+s.name+'</b> exceeds night cap ('+n+'/'+s.maxN+')');
+    });
+    p.days.forEach(ds=>{if(!active.some(s=>['N','DN'].includes(p.cells[s.id]?.[ds])))al.push('🌙 No night cover on <b>'+ds+'</b> — tap a cell to assign');});
+  } else al.push('👉 Go to <b>Working Plan</b> and generate '+m);
+  state.leaves.forEach(l=>{const s=state.staff.find(x=>x.id===l.staffId);
+    if(l.type==='ML')al.push('🤱 <b>'+(s?s.name:'')+'</b> maternity until <b>'+l.end+'</b>, back '+fmt(addD(parseD(l.end),1)));});
+  active.filter(s=>s.cat==='statute').forEach(s=>{const u=alUsed(s,yr);if(u>30)al.push('🌴 <b>'+s.name+'</b>: '+u+' AL days in '+yr+' (>30 — OK if carry-over from previous year, e.g. Patrick\'s 60-day leave)');});
+  active.filter(s=>s.cat==='contractual').forEach(s=>{const u=alUsed(s,yr);if(u>18)al.push('🌴 <b>'+s.name+'</b> over 18-day contractual AL ('+u+'d)');});
+  document.getElementById('alertsBox').innerHTML=al.length?al.slice(0,12).map(a=>`<p style="font-size:.78rem;padding:7px 12px;background:rgba(255,255,255,.6);border-radius:10px;margin-bottom:6px;border-left:3px solid var(--teal)">${a}</p>`).join(''):'<p class="mini">✅ All clear — no issues detected.</p>';
+  renderCharts();
+}
+function renderCharts(){
+  const p=state.plans[state.currentMonth];if(!p||typeof Chart==='undefined')return;
+  const active=state.staff.filter(s=>s.active==1&&p.cells[s.id]);
+  const names=active.map(s=>s.name.split(' ')[0]);
+  const cnt=(s,codes)=>p.days.filter(d=>codes.includes(p.cells[s.id][d])).length;
+  const mk=(id,cfg)=>{if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),cfg);};
+  Chart.defaults.font.size=10;
+  mk('chShifts',{type:'bar',data:{labels:names,datasets:[
+    {label:'Day',data:active.map(s=>cnt(s,['D','DN'])),backgroundColor:'#10b981'},
+    {label:'Night',data:active.map(s=>cnt(s,['N','DN'])),backgroundColor:'#4338ca'},
+    {label:'Off',data:active.map(s=>cnt(s,['OFF'])),backgroundColor:'#cbd5e1'}]},
+    options:{responsive:true,scales:{x:{stacked:true},y:{stacked:true}}}});
+  mk('chNights',{type:'doughnut',data:{labels:names,datasets:[{data:active.map(s=>cnt(s,['N','DN'])),
+    backgroundColor:['#0d9488','#6366f1','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16','#f97316']}]},
+    options:{plugins:{legend:{position:'right'}}}});
+  mk('chHours',{type:'bar',data:{labels:names,datasets:[{label:'Hours',data:active.map(s=>cnt(s,['D'])*9+cnt(s,['N'])*15+cnt(s,['DN'])*24),
+    backgroundColor:'rgba(13,148,136,.75)',borderRadius:8}]},options:{indexAxis:'y'}});
+  const yr=new Date().getFullYear();
+  mk('chLeave',{type:'bar',data:{labels:names,datasets:[
+    {label:'AL used',data:active.map(s=>alUsed(s,yr)),backgroundColor:'#f59e0b',borderRadius:6},
+    {label:'AL entitlement',data:active.map(s=>s.cat==='statute'?30:18),backgroundColor:'rgba(148,163,184,.4)',borderRadius:6}]},options:{}});
+}
+
+/* ---------- EXPORTS ---------- */
+const SIGN=[['Prepared by','Kelvin SAMAHANI','Laboratory Manager'],['Verified by','Dr. Judson B. MUMBERE','Clinical Director'],['Approved by','Jean de Dieu SIBOMANA','Human Resources Officer']];
+/* Trebuchet for jsPDF: Istok Web is the libre Trebuchet-metric substitute; fetched once, cached, helvetica fallback */
+let _pdfFontReady=null;
+function ensurePdfFont(doc){
+  const reg=()=>{ if(window._trebR){doc.addFileToVFS('TrebR.ttf',window._trebR);doc.addFont('TrebR.ttf','Trebuchet','normal');
+      doc.addFileToVFS('TrebB.ttf',window._trebB||window._trebR);doc.addFont('TrebB.ttf','Trebuchet','bold');return 'Trebuchet';} return 'helvetica'; };
+  if(window._trebR)return Promise.resolve(reg());
+  if(!_pdfFontReady){
+    const get=u=>fetch(u).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(buf=>{
+      let bin='';const by=new Uint8Array(buf);const CH=0x8000;
+      for(let i=0;i<by.length;i+=CH)bin+=String.fromCharCode.apply(null,by.subarray(i,i+CH));
+      return btoa(bin);});
+    _pdfFontReady=Promise.all([
+      get('https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/istokweb/IstokWeb-Regular.ttf'),
+      get('https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/istokweb/IstokWeb-Bold.ttf').catch(()=>null)
+    ]).then(([r,b])=>{window._trebR=r;window._trebB=b;}).catch(()=>{});
+  }
+  return _pdfFontReady.then(reg).catch(()=>'helvetica');
+}
+async function saveBlob(blob,filename){
+  _expBlob=blob;_expName=filename;
+  // Attempt 1 (silent): File System Access API — asks WHERE to save
+  if(window.showSaveFilePicker&&window.self===window.top){
+    try{
+      const fh=await window.showSaveFilePicker({suggestedName:filename,types:_pickerTypes(filename)});
+      const ws=await fh.createWritable();await ws.write(blob);await ws.close();
+      toast('💾 Saved: '+filename);return;
+    }catch(e){if(e&&e.name==='AbortError')return;}
+  }
+  // Otherwise: show the export panel so the file is NEVER lost silently
+  if(_expUrl)URL.revokeObjectURL(_expUrl);
+  _expUrl=URL.createObjectURL(blob);
+  document.getElementById('expFileName').textContent=filename;
+  document.getElementById('expFileSize').textContent=(blob.size/1024).toFixed(0)+' KB · '+(filename.endsWith('.pdf')?'PDF document':filename.endsWith('.xlsx')?'Excel workbook':'file');
+  const dl=document.getElementById('expDownload');dl.href=_expUrl;dl.download=filename;
+  const op=document.getElementById('expOpenTab');op.href=_expUrl;
+  openModal('exportModalBk');
+  // also fire a best-effort silent download right away (works in normal browsers)
+  try{const a=document.createElement('a');a.href=_expUrl;a.download=filename;document.body.appendChild(a);a.click();a.remove();}catch(e){}
+}
+function _pickerTypes(filename){
+  const ext=filename.split('.').pop();
+  if(ext==='pdf')return [{description:'PDF',accept:{'application/pdf':['.pdf']}}];
+  if(ext==='xlsx')return [{description:'Excel',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}}];
+  if(ext==='json')return [{description:'JSON',accept:{'application/json':['.json']}}];
+  return [{description:'File',accept:{'application/octet-stream':['.'+ext]}}];
+}
+document.getElementById('expSaveAs').addEventListener('click',async()=>{
+  if(!_expBlob)return;
+  if(window.showSaveFilePicker){
+    try{
+      const fh=await window.showSaveFilePicker({suggestedName:_expName,types:_pickerTypes(_expName)});
+      const ws=await fh.createWritable();await ws.write(_expBlob);await ws.close();
+      toast('💾 Saved: '+_expName);closeExportModal();return;
+    }catch(e){if(e&&e.name==='AbortError')return;toast('⚠ Save-as blocked here — use the Download or Open-in-tab button');}
+  }else toast('⚠ This browser has no save-as dialog — use the Download button');
+});
+function closeExportModal(){closeModal('exportModalBk');}
+async function tryLockLandscape(){
+  document.getElementById('rotateHint').classList.remove('armed');
+  try{
+    if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();
+    if(screen.orientation&&screen.orientation.lock)await screen.orientation.lock('landscape');
+    toast('🔒 Landscape locked — exit fullscreen to release');
+  }catch(e){toast('↻ Just rotate your phone — auto-lock is not supported by this browser');}
+}
+async function exportPDF(versionLabel){
+  const m=state.currentMonth,p=state.plans[m];
+  if(!p)return toast('⚠ Generate a plan first');
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'}); // A4 landscape (297×210)
+  const FONT=await ensurePdfFont(doc);
+  doc.setFont(FONT,'normal');
+  const W=doc.internal.pageSize.getWidth();
+  // header band
+  doc.setFillColor(13,148,136);doc.rect(0,0,W,19,'F');
+  doc.setFillColor(15,118,110);doc.rect(0,19,W,1.4,'F');
+  doc.setTextColor(255);doc.setFont(FONT,'bold');doc.setFontSize(12);
+  doc.text('RULI DISTRICT HOSPITAL — LABORATORY SERVICE',W/2,8,{align:'center'});
+  doc.setFontSize(9);doc.text('MONTHLY WORKING PLAN — '+new Date(m+'-01').toLocaleString('en',{month:'long',year:'numeric'}).toUpperCase()+' (+ first week of next month)',W/2,13.5,{align:'center'});
+  doc.setFontSize(6);doc.setFont(FONT,'normal');
+  doc.text('Generated: '+new Date().toLocaleString()+(versionLabel?('  |  Version: '+versionLabel):''),W/2,17.5,{align:'center'});
+  const active=state.staff.filter(s=>p.cells[s.id]);
+  const DOWL=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const head=[['Staff / Role',...p.days.map(d=>DOWL[dow(d)]+'\n'+d.slice(8)+'/'+d.slice(5,7)),'D','N','Hrs']];
+  const body=active.map(s=>{
+    let dC=0,nC=0,hrs=0;
+    const row=[s.name+(s.exitDate?' (Exited '+s.exitDate+')':'')+'\n'+s.role,...p.days.map(ds=>{const c=p.cells[s.id][ds]||'';
+      if(c==='D'){dC++;hrs+=9}if(c==='N'){nC++;hrs+=15}if(c==='DN'){dC++;nC++;hrs+=24}return c;})];
+    row.push(String(dC),String(nC),String(hrs));return row;
+  });
+  const colors={D:[209,250,229],N:[67,56,202],DN:[109,40,217],OFF:[241,245,249],AL:[254,243,199],ML:[252,231,243],SL:[254,226,226],CL:[255,237,213],TR:[219,234,254],W:[169,192,100],ABS:[239,68,68],H:[254,226,226]};
+  const tcol={N:[255,255,255],DN:[255,255,255],ABS:[255,255,255]};
+  const nameW=30,statW=5.5,margin=6;
+  const dayW=(W-2*margin-nameW-3*statW)/p.days.length; // exact fit on A4
+  const colStyles={0:{halign:'left',fontStyle:'bold',fontSize:5.2,cellWidth:nameW}};
+  for(let i=1;i<=p.days.length;i++)colStyles[i]={cellWidth:dayW};
+  [1,2,3].forEach(k=>colStyles[p.days.length+k]={cellWidth:statW});
+  doc.autoTable({head,body,startY:23,margin:{left:margin,right:margin},styles:{font:FONT,fontSize:4.6,cellPadding:.45,halign:'center',valign:'middle',lineColor:[233,236,241],lineWidth:.06,overflow:'hidden'},
+    headStyles:{fillColor:[15,118,110],fontSize:4.4,cellPadding:.4},
+    columnStyles:colStyles,
+    didParseCell:d=>{
+      if(d.section==='body'&&d.column.index>0&&d.column.index<=p.days.length){
+        const c=d.cell.raw;
+        if(colors[c]){d.cell.styles.fillColor=colors[c];d.cell.styles.fontStyle='bold';if(tcol[c])d.cell.styles.textColor=tcol[c];}
+        const ds=p.days[d.column.index-1];
+        if(!colors[c]&&isWE(ds))d.cell.styles.fillColor=[254,243,199];
+      }
+      if(d.section==='head'&&d.column.index>0&&d.column.index<=p.days.length){
+        const ds=p.days[d.column.index-1];
+        if(isHol(ds))d.cell.styles.fillColor=[190,18,60];else if(isWE(ds))d.cell.styles.fillColor=[180,83,9];
+      }
+    }});
+  let y=doc.lastAutoTable.finalY+4;
+  if(y>168)y=168;
+  doc.setTextColor(60);doc.setFontSize(5.5);
+  doc.text('Legend:  D = Day 08:00–17:00   N = Night 17:00–08:00   DN = Day+Night   OFF = Rest   AL = Annual leave   ML = Maternity (14 wks)   SL = Sick   CL = Authorized   TR = Training   W = Wedding day   ABS = Absent   H = Holiday',6,y);
+  const holsInPlan=state.holidays.filter(x=>p.days.includes(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
+  if(holsInPlan.length){y+=3.6;doc.setTextColor(190,18,60);doc.setFont(FONT,'bold');
+    doc.text('Public holidays observed:  '+holsInPlan.map(x=>x.date.slice(8)+'/'+x.date.slice(5,7)+' — '+x.name).join('   '),6,y);
+    doc.setFont(FONT,'normal');}
+  y+=7;
+  const colW=(W-12)/3;
+  SIGN.forEach((s,i)=>{const x=6+i*colW;
+    doc.setFont(FONT,'bold');doc.setFontSize(7);doc.setTextColor(15,118,110);doc.text(s[0]+':',x,y);
+    doc.setTextColor(30);doc.text(s[1],x,y+4);
+    doc.setFont(FONT,'normal');doc.setFontSize(6);doc.setTextColor(90);doc.text(s[2],x,y+7.5);
+    doc.setDrawColor(150);doc.line(x,y+13,x+colW-14,y+13);doc.setFontSize(5.5);doc.text('Signature & date',x,y+16);});
+  saveBlob(doc.output('blob'),'Ruli_Lab_WorkingPlan_'+m+(versionLabel?'_version':'')+'.pdf');
+}
+function exportExcel(){
+  const m=state.currentMonth,p=state.plans[m];
+  if(!p)return toast('⚠ Generate a plan first');
+  const active=state.staff.filter(s=>p.cells[s.id]);
+  const DOWL=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const aoa=[['RULI DISTRICT HOSPITAL — LABORATORY SERVICE'],['MONTHLY WORKING PLAN — '+m+' (+1 week)'],[],
+    ['Staff','Role',...p.days.map(d=>DOWL[dow(d)]+' '+d.slice(8)+'/'+d.slice(5,7)),'Days','Nights','Hours']];
+  active.forEach(s=>{let dC=0,nC=0,hrs=0;
+    const row=[s.name,s.role,...p.days.map(ds=>{const c=p.cells[s.id][ds]||'';
+      if(c==='D'){dC++;hrs+=9}if(c==='N'){nC++;hrs+=15}if(c==='DN'){dC++;nC++;hrs+=24}return c;}),dC,nC,hrs];
+    aoa.push(row);});
+  const holsX=state.holidays.filter(x=>p.days.includes(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
+  if(holsX.length)aoa.push([],['Public holidays observed:',holsX.map(x=>x.date.slice(8)+'/'+x.date.slice(5,7)+' — '+x.name).join('   ')]);
+  aoa.push([]);SIGN.forEach(s=>aoa.push([s[0],s[1]+' — '+s[2],'Signature: ______________','Date: ________']));
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  const fills={D:'D1FAE5',N:'4338CA',DN:'6D28D9',OFF:'F1F5F9',AL:'FEF3C7',ML:'FCE7F3',SL:'FEE2E2',CL:'FFEDD5',TR:'DBEAFE',W:'A9C064',ABS:'EF4444',H:'FECACA'};
+  const range=XLSX.utils.decode_range(ws['!ref']);
+  for(let R=0;R<=range.e.r;R++)for(let C=0;C<=range.e.c;C++){
+    const addr=XLSX.utils.encode_cell({r:R,c:C});const cell=ws[addr];if(!cell)continue;
+    cell.s={font:{name:'Trebuchet MS',sz:9},alignment:{horizontal:'center',vertical:'center'},border:{top:{style:'hair',color:{rgb:'E9ECF1'}},bottom:{style:'hair',color:{rgb:'E9ECF1'}},left:{style:'hair',color:{rgb:'E9ECF1'}},right:{style:'hair',color:{rgb:'E9ECF1'}}}};
+    if(R===0){cell.s.font={name:'Trebuchet MS',bold:true,sz:14,color:{rgb:'0F766E'}};}
+    if(R===1){cell.s.font={name:'Trebuchet MS',bold:true,sz:11,color:{rgb:'0F766E'}};}
+    if(R===3){cell.s.fill={fgColor:{rgb:'0F766E'}};cell.s.font={name:'Trebuchet MS',bold:true,sz:8,color:{rgb:'FFFFFF'}};}
+    if(R>3&&C>=2){const v=cell.v;if(fills[v]){cell.s.fill={fgColor:{rgb:fills[v]}};cell.s.font={name:'Trebuchet MS',bold:true,sz:9,color:{rgb:(v==='N'||v==='DN'||v==='ABS')?'FFFFFF':'333333'}};}}
+    if(R>3&&C<2){cell.s.alignment={horizontal:'left'};cell.s.font={name:'Trebuchet MS',bold:C===0,sz:9};}
+  }
+  ws['!cols']=[{wch:24},{wch:18},...p.days.map(()=>({wch:5})),{wch:6},{wch:6},{wch:6}];
+  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:10}},{s:{r:1,c:0},e:{r:1,c:10}}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Working Plan '+m);
+  const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  saveBlob(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'Ruli_Lab_WorkingPlan_'+m+'.xlsx');
+}
+async function exportRosterPDF(){
+  if(!state.lastRoster)return toast('⚠ Generate the weekly roster first');
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const FONT=await ensurePdfFont(doc);doc.setFont(FONT,'normal');
+  const W=doc.internal.pageSize.getWidth();
+  doc.setFillColor(13,148,136);doc.rect(0,0,W,20,'F');
+  doc.setTextColor(255);doc.setFont(FONT,'bold');doc.setFontSize(13);
+  doc.text('RULI DISTRICT HOSPITAL — LABORATORY WEEKLY UNIT ROSTER',W/2,9,{align:'center'});
+  doc.setFontSize(9);doc.text('Week of '+state.lastRoster.week,W/2,15.5,{align:'center'});
+  const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const days=state.lastRoster.out.filter(d=>!d.missing);
+  const head=[['Unit',...days.map(d=>{const hn=(state.holidays.find(x=>x.date===d.ds)||{}).name;return DN[dow(d.ds)]+' '+d.ds.slice(8)+'/'+d.ds.slice(5,7)+(hn?'\n🎉 '+hn:'');})]];
+  const body=UNITS.map(u=>[u,...days.map(d=>d.assign[u].join(', ')||'—')]);
+  body.push(['NIGHT SHIFT',...days.map(d=>d.night.join(', ')||'—')]);
+  body.push(['Requisition (Mon)',...days.map(d=>d.req||'—')]);
+  doc.autoTable({head,body,startY:24,margin:{left:8,right:8},styles:{font:FONT,fontSize:6.5,cellPadding:1.2,lineColor:[233,236,241],lineWidth:.06,overflow:'linebreak'},
+    headStyles:{fillColor:[15,118,110],fontSize:6.5},columnStyles:{0:{fontStyle:'bold',fillColor:[240,253,250],cellWidth:28}},
+    didParseCell:d=>{if(d.section==='body'&&d.row.index===UNITS.length){d.cell.styles.fillColor=[67,56,202];d.cell.styles.textColor=[255,255,255];}
+      if(d.section==='body'&&d.row.index===UNITS.length+1){d.cell.styles.fillColor=[254,243,199];d.cell.styles.fontStyle='bold';}}});
+  let y=doc.lastAutoTable.finalY+10;
+  // Weekly roster: prepared by the Lab Manager only — no verification/approval needed
+  doc.setFont(FONT,'bold');doc.setFontSize(8);doc.setTextColor(15,118,110);doc.text('Prepared by:',14,y);
+  doc.setTextColor(30);doc.text('Kelvin SAMAHANI',14,y+5);
+  doc.setFont(FONT,'normal');doc.setFontSize(7);doc.setTextColor(90);doc.text('Laboratory Manager',14,y+9);
+  doc.setDrawColor(120);doc.line(14,y+16,90,y+16);doc.setFontSize(6.5);doc.text('Signature & date',14,y+19.5);
+  saveBlob(doc.output('blob'),'Ruli_Lab_WeeklyRoster_'+state.lastRoster.week+'.pdf');
+}
+function backupJSON(){
+  saveBlob(new Blob([JSON.stringify(state,null,1)],{type:'application/json'}),'RuliLab_backup_'+fmt(new Date())+'.json');
+}
+
+/* ---------- IMPORT EXCEL ---------- */
+document.getElementById('xlIn').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array'});
+      let staffFound=0,codesFound=0,monthsKeys=[];
+      wb.SheetNames.forEach(sn=>{
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1});
+        const rec={};
+        rows.forEach(row=>{
+          if(!row||!row.length)return;
+          const nameCell=String(row[0]||'').trim();
+          const match=state.staff.find(s=>nameCell&&(s.name.toLowerCase().includes(nameCell.toLowerCase())||nameCell.toLowerCase().includes(s.name.split(' ')[0].toLowerCase())&&nameCell.length>4));
+          if(!match)return;
+          staffFound++;
+          const cnt={D:0,N:0,DN:0,OFF:0,AL:0};
+          row.slice(1).forEach(c=>{const v=String(c||'').trim().toUpperCase();if(cnt[v]!==undefined){cnt[v]++;codesFound++;}});
+          rec[match.name]=cnt;
+        });
+        if(Object.keys(rec).length){const key=sn.replace(/\s+/g,'_');state.history[key]=rec;monthsKeys.push(sn);}
+      });
+      save();
+      document.getElementById('importOut').innerHTML=`<div class="glass" style="padding:12px"><p style="font-size:.8rem">✅ Imported <b>${f.name}</b> — matched <b>${staffFound}</b> staff rows, <b>${codesFound}</b> shift codes across sheets: <b>${monthsKeys.join(', ')||'—'}</b>.<br><span class="mini">History now feeds the fairness engine: staff with heavier past night loads get lighter upcoming nights.</span></p></div>`;
+      toast('📥 History imported — fairness engine updated');
+    }catch(err){document.getElementById('importOut').innerHTML='<p class="mini" style="color:#b91c1c">❌ Could not read that file: '+err.message+'</p>';}
+  };
+  r.readAsArrayBuffer(f);
+});
+document.getElementById('jsonIn').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=ev=>{try{state=JSON.parse(ev.target.result);save();renderAll();toast('📂 Backup restored');}catch(err){toast('❌ Invalid backup file');}};
+  r.readAsText(f);
+});
+
+/* ---------- VERSIONS ---------- */
+function renderVersions(){
+  document.getElementById('versionList').innerHTML=state.versions.length?state.versions.map((v,i)=>`
+    <div class="row" style="background:rgba(255,255,255,.6);border-radius:14px;padding:10px 14px;margin-bottom:8px;justify-content:space-between">
+      <div><b style="font-size:.8rem">${v.label}</b><br><span class="mini">${v.month} · ${new Date(v.ts).toLocaleString()}</span></div>
+      <div class="row" style="gap:6px">
+        <button class="btn sm sec" onclick="restoreVersion(${i})">↩ Restore</button>
+        <button class="btn sm warn" onclick="exportVersion(${i})">🧾 Re-export PDF</button>
+      </div></div>`).join(''):'<p class="mini">No versions yet — every generation and edit will be recorded here.</p>';
+}
+
+/* ---------- CHAT ASSISTANT ---------- */
+function chip(t){document.getElementById('chatIn').value=t;sendChat();}
+function pushMsg(txt,who){
+  const b=document.getElementById('chatBox');
+  const d=document.createElement('div');d.className='msg '+who;d.innerHTML=txt;b.appendChild(d);b.scrollTop=b.scrollHeight;
+}
+function sendChat(){
+  const inp=document.getElementById('chatIn');const q=inp.value.trim();if(!q)return;
+  pushMsg(q.replace(/</g,'&lt;'),'user');inp.value='';
+  setTimeout(()=>pushMsg(answer(q),'bot'),350);
+}
+function answer(q){
+  const L=q.toLowerCase();const m=state.currentMonth,p=state.plans[m];
+  const active=state.staff.filter(s=>s.active==1);
+  const today=fmt(new Date());
+  const nameHit=active.find(s=>L.includes(s.name.split(' ')[0].toLowerCase())||L.includes(s.name.split(' ')[1]?.toLowerCase()||'\u0000'));
+  if(/(tonight|night today|works tonight)/.test(L)){
+    if(!p)return 'No plan generated yet — generate one in the Working Plan tab first.';
+    const n=active.filter(s=>['N','DN'].includes(p.cells[s.id]?.[today]));
+    return n.length?('🌙 Tonight ('+today+'): <b>'+n.map(s=>s.name).join(', ')+'</b> on night duty (17:00–08:00).'):'⚠ No one is assigned to the night of '+today+' in the current plan.';
+  }
+  if(/on leave|who.*leave/.test(L)){
+    const cur=state.leaves.filter(l=>l.start<=today&&l.end>=today);
+    return cur.length?('🌴 Currently on leave:\n'+cur.map(l=>{const s=state.staff.find(x=>x.id===l.staffId);return '• '+(s?s.name:'?')+' — '+l.type+' until '+l.end+' (back '+fmt(addD(parseD(l.end),1))+')';}).join('\n')):'✅ Nobody is on leave today.';
+  }
+  if(/night count|nights this month|night.*count/.test(L)){
+    if(!p)return 'Generate a plan first.';
+    return '🌙 Nights in '+m+':\n'+active.filter(s=>p.cells[s.id]).map(s=>'• '+s.name+': '+p.days.filter(d=>['N','DN'].includes(p.cells[s.id][d])).length+' (cap '+s.maxN+')').join('\n');
+  }
+  if(/requisition/.test(L)){
+    if(state.lastRoster){const mon=state.lastRoster.out.find(d=>d.req);if(mon)return '📦 This week the reagents & consumables requisition (Monday) is done by <b>'+mon.req+'</b>, who is posted in Hematology.';}
+    return 'Generate the Weekly Roster first — the Monday Hematology staff automatically gets requisition duty.';
+  }
+  if(/balance|leave.*left|remaining/.test(L)&&nameHit){
+    const yr=new Date().getFullYear();const used=alUsed(nameHit,yr);const ent=nameHit.cat==='statute'?30:18;
+    return '🌴 '+nameHit.name+' ('+(nameHit.cat==='statute'?'statute, 30 days incl. weekends':'contractual, 18 working days')+'): used <b>'+used+'</b>, remaining <b>'+(ent-used)+'</b> days in '+yr+'.';
+  }
+  if(/fair/.test(L)){
+    if(!p)return 'Generate a plan first.';
+    const arr=active.filter(s=>s.pattern==='standard'&&p.cells[s.id]).map(s=>({n:s.name.split(' ')[0],c:p.days.filter(d=>['N','DN'].includes(p.cells[s.id][d])).length}));
+    const mx=Math.max(...arr.map(a=>a.c)),mn=Math.min(...arr.map(a=>a.c));
+    return '⚖️ Fairness check for '+m+':\n'+arr.map(a=>'• '+a.n+': '+a.c+' nights').join('\n')+'\nSpread = ±'+(mx-mn)+'. '+((mx-mn)<=2?'This is within a fair range (night-lovers intentionally carry more). ✅':'Consider regenerating or manually moving a night. ⚠');
+  }
+  if(nameHit&&p&&p.cells[nameHit.id]){
+    const next7=p.days.filter(d=>d>=today).slice(0,7).map(d=>d.slice(5)+': '+(p.cells[nameHit.id][d]||'—')).join('  |  ');
+    return '📅 '+nameHit.name+' next 7 planned days:\n'+next7;
+  }
+  if(/training/.test(L)){
+    const up=state.trainings.filter(t=>t.end>=today).sort((a,b)=>a.start.localeCompare(b.start));
+    if(up.length)return '📚 Upcoming trainings:\n'+up.slice(0,6).map(t=>{const who=t.staffIds.map(id=>{const s=state.staff.find(x=>x.id===id);return s?s.name.split(' ')[0]:'?';}).join(', ');return '• '+t.name+' ('+t.start+' → '+t.end+'): '+who;}).join('\n')+'\nAll attendees are already blocked as TR in the plan.';
+    return '📚 No upcoming trainings synced. Recording is exclusive to the Training Tracker — open it from the 📚 Trainings tab, then sync here (copy the Claude prompt, or attach the tracker export with 📎).';
+  }
+  if(/help|what can/.test(L))return 'I can answer: who works tonight, who is on leave, night counts, leave balances, requisition duty, fairness checks, and any staff\'s next 7 days (just type their name). For structural changes use the tabs — every change is versioned.';
+  return '🤔 I did not catch that. Try: "Who works tonight?", "Leave balance of Faustin", "Night counts this month", "trainings", a staff name for their week, or attach a file with 📎 and I will read it.';
+}
+
+
+/* ---------- LINKS HUB (#14) ---------- */
+function renderLinks(){
+  const mk=l=>`<a class="tag tg-blue" style="text-decoration:none" href="${l.url}" target="_blank">${l.name}</a>`+
+    (l.id!=='tt'?`<a class="tag tg-gray" style="cursor:pointer" onclick="delLink('${l.id}')">✕</a>`:'');
+  document.getElementById('linksBar').innerHTML=state.links.map(mk).join(' ');
+  document.getElementById('linksFooter').innerHTML=state.links.map(mk).join(' ');
+}
+function addLinkPrompt(){
+  const name=prompt('Link name (e.g. 📦 Stock Tracker):');if(!name)return;
+  const url=prompt('URL (https://…):');if(!url)return;
+  state.links.push({id:uid(),name,url});save();renderLinks();toast('🔗 Link added to hub');
+}
+function delLink(id){state.links=state.links.filter(l=>l.id!==id);save();renderLinks();}
+
+/* ---------- TRAININGS (#1 #2 #3) ---------- */
+function renderTrainings(){
+  const box=document.getElementById('trainList');if(!box)return;
+  box.innerHTML=state.trainings.length?'<table class="simple"><tr><th>Training</th><th>Dates</th><th>Attendees</th><th>Source</th><th></th></tr>'+
+    state.trainings.slice().sort((a,b)=>b.start.localeCompare(a.start)).map(t=>{
+      const who=t.staffIds.map(id=>{const s=state.staff.find(x=>x.id===id);return s?s.name.split(' ')[0]:'?';}).join(', ');
+      return `<tr><td><b>${t.name}</b></td><td>${t.start} → ${t.end}</td><td>${who}</td><td><span class="tag tg-purple">📚 Tracker</span></td>
+      <td><button class="btn sm sec" title="Remove locally if deleted in the tracker" onclick="delTraining('${t.id}')">🔄 Unsync</button></td></tr>`;}).join('')+'</table>'
+    :'<p class="mini">No trainings synced yet — record them in the Training Tracker, then sync here.</p>';
+}
+function applyTraining(t){
+  // one TR leave record per attendee → plan re-adapts + version stored
+  t.staffIds.forEach(sid=>{
+    if(!state.leaves.some(l=>l.staffId===sid&&l.type==='TR'&&l.start===t.start&&l.end===t.end))
+      state.leaves.push({id:uid(),staffId:sid,type:'TR',start:t.start,end:t.end,note:t.name,trainingId:t.id});
+  });
+}
+/* Recording trainings is exclusive to the Training Tracker — this app only mirrors them. */
+function delTraining(id){
+  state.trainings=state.trainings.filter(t=>t.id!==id);
+  state.leaves=state.leaves.filter(l=>l.trainingId!==id);
+  save();if(state.plans[state.currentMonth]){generatePlan(false);snapshot('Training removed');}
+  renderAll();toast('🗑 Training removed — plan re-adapted');
+}
+function matchStaff(name){
+  const n=String(name||'').toLowerCase().trim();if(!n)return null;
+  return state.staff.find(s=>{
+    const parts=s.name.toLowerCase().split(/\s+/);
+    return s.name.toLowerCase()===n||parts.some(p=>p===n)||n.split(/\s+/).every(w=>s.name.toLowerCase().includes(w));
+  })||null;
+}
+function ingestTrackerData(obj){
+  let nT=0,nS=0;
+  // staff status sync (active/exited + exit dates)  (#3)
+  const staffArr=obj.staff||obj.labStaff||obj.members||[];
+  staffArr.forEach(rec=>{
+    const s=matchStaff(rec.name||rec.fullName);
+    if(!s)return;
+    if(rec.status){const ex=/inactive|exited|left/i.test(String(rec.status));
+      if(ex&&s.active==1){s.active=0;s.exitDate=rec.exitDate||rec.dateOfExit||fmt(new Date());nS++;}
+      if(!ex&&s.active==0){s.active=1;s.exitDate=null;nS++;}}
+    else if(rec.exitDate){s.active=0;s.exitDate=rec.exitDate;nS++;}
+  });
+  // trainings
+  const trArr=obj.trainings||obj.upcomingTrainings||obj.sessions||[];
+  trArr.forEach(rec=>{
+    const name=rec.name||rec.title||rec.training||'Training';
+    const start=rec.start||rec.startDate||rec.date;if(!start)return;
+    const end=rec.end||rec.endDate||start;
+    const attendees=rec.attendees||rec.staff||rec.participants||[];
+    const ids=(Array.isArray(attendees)?attendees:String(attendees).split(/[,;]/)).map(a=>matchStaff(a.name||a)).filter(Boolean).map(s=>s.id);
+    if(!ids.length)return;
+    if(state.trainings.some(t=>t.name===name&&t.start===start))return; // dedupe
+    const t={id:uid(),name,start,end,staffIds:ids,source:'tracker'};
+    state.trainings.push(t);applyTraining(t);nT++;
+  });
+  return {nT,nS};
+}
+function parseTrainingPaste(){
+  const raw=document.getElementById('trPaste').value.trim();
+  if(!raw)return toast('⚠ Paste tracker data first');
+  let res={nT:0,nS:0};
+  try{res=ingestTrackerData(JSON.parse(raw));}
+  catch(e){
+    // line format: Name | start | end | attendee1, attendee2
+    raw.split(/\n+/).forEach(line=>{
+      const p=line.split('|').map(x=>x.trim());
+      if(p.length>=3){
+        const ids=(p[3]||p[2]).split(/[,;]/).map(matchStaff).filter(Boolean).map(s=>s.id);
+        const end=p.length>=4?p[2]:p[1];
+        if(ids.length&&/\d{4}-\d{2}-\d{2}/.test(p[1])){
+          const t={id:uid(),name:p[0],start:p[1],end,staffIds:ids,source:'tracker'};
+          if(!state.trainings.some(x=>x.name===t.name&&x.start===t.start)){state.trainings.push(t);applyTraining(t);res.nT++;}
+        }
+      }
+    });
+  }
+  save();
+  if(res.nT&&state.plans[state.currentMonth]){generatePlan(false);snapshot('Tracker sync: '+res.nT+' training(s)');}
+  renderAll();
+  toast(res.nT||res.nS?('📚 Synced: '+res.nT+' training(s), '+res.nS+' staff status change(s) — plan re-adapted'):'🤔 Nothing recognized — check the format');
+  if(res.nT||res.nS)document.getElementById('trPaste').value='';
+}
+document.getElementById('trFile').addEventListener('change',e=>{
+  const file=e.target.files[0];if(!file)return;
+  const done=res=>{save();if(res.nT&&state.plans[state.currentMonth]){generatePlan(false);snapshot('Tracker file sync');}renderAll();
+    toast('📥 '+file.name+': '+res.nT+' training(s), '+res.nS+' staff update(s)');};
+  if(/\.json$/i.test(file.name)){
+    const r=new FileReader();r.onload=ev=>{try{done(ingestTrackerData(JSON.parse(ev.target.result)));}catch(err){toast('❌ Invalid JSON');}};r.readAsText(file);
+  }else{
+    const r=new FileReader();
+    r.onload=ev=>{
+      try{
+        const wb=XLSX.read(ev.target.result,{type:'array'});
+        let res={nT:0,nS:0};
+        wb.SheetNames.forEach(sn=>{
+          const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn]);
+          const r2=ingestTrackerData({trainings:rows,staff:rows});
+          res.nT+=r2.nT;res.nS+=r2.nS;
+        });
+        done(res);
+      }catch(err){toast('❌ Could not read file: '+err.message);}
+    };
+    r.readAsArrayBuffer(file);
+  }
+  e.target.value='';
+});
+
+/* ---------- CLAUDE TRACKER SYNC ---------- */
+const SYNC_PROMPT=`You have access to my Lab Training Tracker artifact (the training tracker app in this conversation/project). Read ALL its current data and reply with ONLY a single JSON code block, no other text, in exactly this schema:
+{
+ "staff":[{"name":"<full name>","status":"Active|Exited","exitDate":"YYYY-MM-DD or null"}],
+ "trainings":[{"name":"<training title>","start":"YYYY-MM-DD","end":"YYYY-MM-DD","attendees":["<full name>","<full name>"]}]
+}
+Include every planned/upcoming training with all attendees (one or more staff can attend the same training). Use the exact staff full names as written in the tracker. If a field is unknown use null.`;
+function copySyncPrompt(){
+  const done=()=>toast('📋 Prompt copied — paste it to Claude next to your Training Tracker');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(SYNC_PROMPT).then(done).catch(()=>fallbackCopy());}
+  else fallbackCopy();
+  function fallbackCopy(){const ta=document.createElement('textarea');ta.value=SYNC_PROMPT;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){prompt('Copy this prompt:',SYNC_PROMPT);}ta.remove();}
+}
+async function aiSync(){
+  const raw=document.getElementById('trPaste').value.trim();
+  if(!raw)return toast('⚠ First paste the tracker text/data (any format) into the box, then press 🤖');
+  if(!window.claude||!window.claude.complete)return toast('⚠ One-click AI sync only works when this app runs as a Claude artifact');
+  toast('🤖 Asking Claude to structure the tracker data…');
+  try{
+    const staffNames=state.staff.map(s=>s.name).join('; ');
+    const resp=await window.claude.complete('Convert this lab training tracker data into ONLY a JSON object (no prose, no markdown fences) with schema {"staff":[{"name","status","exitDate"}],"trainings":[{"name","start","end","attendees":[]}]}. Dates as YYYY-MM-DD. Match attendee names to these exact staff names where possible: '+staffNames+'. DATA:\n'+raw);
+    const jsonStr=(resp.match(/\{[\s\S]*\}/)||[resp])[0];
+    const res=ingestTrackerData(JSON.parse(jsonStr));
+    save();
+    if(res.nT&&state.plans[state.currentMonth]){generatePlan(false);snapshot('Claude AI tracker sync: '+res.nT+' training(s)');}
+    renderAll();
+    document.getElementById('trPaste').value='';
+    toast('🤖 Claude synced: '+res.nT+' training(s), '+res.nS+' staff update(s)');
+  }catch(e){toast('❌ AI sync failed: '+e.message+' — use 📋 Copy prompt route instead');}
+}
+
+/* ---------- SEARCH ENGINE (#12) ---------- */
+function runSearch(){
+  const q=document.getElementById('searchIn').value.trim();
+  const out=document.getElementById('searchOut');
+  if(!q){out.innerHTML='';return;}
+  const L=q.toLowerCase();const hits=[];
+  const card=(icon,title,body,extra)=>hits.push(`<div style="background:rgba(255,255,255,.65);border-radius:12px;padding:10px 14px;margin-bottom:6px;border-left:3px solid var(--teal)"><b style="font-size:.8rem">${icon} ${title}</b><div style="font-size:.75rem;margin-top:3px">${body}</div>${extra||''}</div>`);
+  const p=state.plans[state.currentMonth];
+  // staff
+  state.staff.filter(s=>s.name.toLowerCase().includes(L)||s.role.toLowerCase().includes(L)).forEach(s=>{
+    let sched='';
+    if(p&&p.cells[s.id]){const today=fmt(new Date());
+      sched='<br>Next: '+p.days.filter(d=>d>=today).slice(0,5).map(d=>d.slice(5)+'→'+(p.cells[s.id][d]||'—')).join(' · ');}
+    card('👤',s.name+(s.active==0?' — EXITED '+(s.exitDate||''):''),s.role+' · '+(s.cat==='statute'?'Statute 30d AL':'Contractual 18d AL')+sched);
+  });
+  // date query e.g. 15/08 or 2026-08-15
+  const dm=q.match(/(\d{4}-\d{2}-\d{2})/)||q.match(/(\d{1,2})[\/.](\d{1,2})/);
+  if(dm&&p){
+    let ds=dm[0];
+    if(!/^\d{4}/.test(ds)){const [d,m]=dm[0].split(/[\/.]/);ds=state.currentMonth.slice(0,4)+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+    if(p.days.includes(ds)){
+      const rows=state.staff.filter(s=>p.cells[s.id]&&p.cells[s.id][ds]).map(s=>s.name.split(' ')[0]+': <b>'+p.cells[s.id][ds]+'</b>').join(' · ');
+      card('📅',ds+(isHol(ds)?' (Holiday)':isWE(ds)?' (Weekend)':''),rows);
+    }
+  }
+  // trainings
+  state.trainings.filter(t=>t.name.toLowerCase().includes(L)||'training'.includes(L)).forEach(t=>{
+    const who=t.staffIds.map(id=>{const s=state.staff.find(x=>x.id===id);return s?s.name.split(' ')[0]:'?';}).join(', ');
+    card('📚',t.name,t.start+' → '+t.end+' · Attendees: '+who);
+  });
+  // leaves
+  state.leaves.filter(l=>{const s=state.staff.find(x=>x.id===l.staffId);return (s&&s.name.toLowerCase().includes(L))||'leave'.includes(L)&&L.length>3;}).slice(0,6).forEach(l=>{
+    const s=state.staff.find(x=>x.id===l.staffId);
+    card('🌴',(s?s.name:'?')+' — '+l.type,l.start+' → '+l.end+' · back '+fmt(addD(parseD(l.end),1)));
+  });
+  // holidays
+  state.holidays.filter(hd=>hd.name.toLowerCase().includes(L)||'holiday'.includes(L)&&L.length>4).forEach(hd=>card('🎉',hd.name,hd.date));
+  // links
+  state.links.filter(l=>l.name.toLowerCase().includes(L)||'tracker'.includes(L)&&L.length>4).forEach(l=>card('🔗',l.name,`<a href="${l.url}" target="_blank">${l.url}</a>`));
+  // keyword passthrough to assistant brain
+  if(/tonight|requisition|fair|balance|night count/.test(L))card('💬','Assistant answer',answer(q));
+  out.innerHTML=hits.length?hits.join(''):'<p class="mini">No results for "'+q.replace(/</g,'&lt;')+'" — try a staff name, a date (15/08), "training", "holiday", or ask the Assistant tab.</p>';
+}
+
+/* ---------- CHAT FILE ATTACH (#4) ---------- */
+document.getElementById('chatFile').addEventListener('change',e=>{
+  const file=e.target.files[0];if(!file)return;
+  pushMsg('📎 Attached: '+file.name,'user');
+  const reply=t=>setTimeout(()=>pushMsg(t,'bot'),400);
+  if(/\.json$/i.test(file.name)){
+    const r=new FileReader();
+    r.onload=ev=>{try{
+      const obj=JSON.parse(ev.target.result);
+      const res=ingestTrackerData(obj);
+      if(res.nT||res.nS){save();if(state.plans[state.currentMonth]){generatePlan(false);snapshot('Chat attachment sync');}renderAll();
+        reply('✅ I read <b>'+file.name+'</b>: imported '+res.nT+' training(s) and '+res.nS+' staff update(s). The plan was regenerated and versioned. Check the Trainings tab.');}
+      else if(obj.staff&&obj.plans){reply('This looks like a full app backup — restore it from Import/Export → 📂 Restore backup.');}
+      else reply('I parsed the JSON but found no trainings/staff records I recognize. Expected keys: trainings[{name,start,end,attendees}], staff[{name,status,exitDate}].');
+    }catch(err){reply('❌ That JSON is invalid: '+err.message);}};
+    r.readAsText(file);
+  }else if(/\.(xlsx|xls|csv)$/i.test(file.name)){
+    const r=new FileReader();
+    r.onload=ev=>{try{
+      const wb=XLSX.read(ev.target.result,{type:'array'});
+      let res={nT:0,nS:0},histSheets=0;
+      wb.SheetNames.forEach(sn=>{
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn]);
+        const r2=ingestTrackerData({trainings:rows,staff:rows});res.nT+=r2.nT;res.nS+=r2.nS;
+        // also try history-learning (past plan sheets)
+        const aoa=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1});
+        const rec={};
+        aoa.forEach(row=>{if(!row||!row.length)return;
+          const m2=matchStaff(String(row[0]||''));if(!m2)return;
+          const cnt={D:0,N:0,DN:0,OFF:0,AL:0};
+          row.slice(1).forEach(c=>{const v=String(c||'').trim().toUpperCase();if(cnt[v]!==undefined)cnt[v]++;});
+          if(cnt.D+cnt.N+cnt.DN>0)rec[m2.name]=cnt;});
+        if(Object.keys(rec).length>=3){state.history[sn.replace(/\s+/g,'_')]=rec;histSheets++;}
+      });
+      save();
+      let msg='✅ I read <b>'+file.name+'</b>: ';const parts=[];
+      if(res.nT)parts.push(res.nT+' training(s) imported');
+      if(res.nS)parts.push(res.nS+' staff status update(s)');
+      if(histSheets)parts.push(histSheets+' past-plan sheet(s) learned for fairness');
+      if(!parts.length)msg='🤔 I read <b>'+file.name+'</b> but recognized no trainings, staff, or plan history. Tip: rows starting with a staff name and D/N/OFF codes = history; columns name/start/end/attendees = trainings.';
+      else{if(res.nT&&state.plans[state.currentMonth]){generatePlan(false);snapshot('Chat attachment sync');}renderAll();msg+=parts.join(', ')+'.';}
+      reply(msg);
+    }catch(err){reply('❌ Could not read that file: '+err.message);}};
+    r.readAsArrayBuffer(file);
+  }else{
+    const r=new FileReader();r.onload=ev=>{document.getElementById('trPaste').value=ev.target.result;reply('I loaded the text into the Trainings tab paste box — press ⚡ Parse & sync there, or tell me what to do with it.');};r.readAsText(file);
+  }
+  e.target.value='';
+});
+
+/* ---------- PRINT EXPORT (guaranteed in every environment) ---------- */
+const CELLBG={D:'#d1fae5',N:'#312e81',DN:'#6d28d9',OFF:'#f1f5f9',AL:'#fef3c7',ML:'#fce7f3',SL:'#fee2e2',CL:'#ffedd5',TR:'#dbeafe',W:'#a9c064',ABS:'#ef4444',H:'#fee2e2'};
+const CELLFG={N:'#fff',DN:'#fff',ABS:'#fff'};
+function sigHTML(rosterOnly){
+  const rows=rosterOnly?[['Prepared by','Kelvin SAMAHANI','Laboratory Manager']]:SIGN;
+  return '<table style="margin-top:14px;border:none"><tr>'+rows.map(s=>
+    `<td style="border:none;text-align:left;padding:6px 20px 6px 0;font-size:9px"><b style="color:#0f766e">${s[0]}:</b><br><b>${s[1]}</b><br>${s[2]}<br><br>Signature: ______________________ &nbsp; Date: ____________</td>`).join('')+'</tr></table>';
+}
+function printPlan(){
+  const m=state.currentMonth,p=state.plans[m];
+  if(!p)return toast('⚠ Generate a plan first');
+  const active=state.staff.filter(s=>p.cells[s.id]);
+  const DOWL=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let t='<table><tr><th class="pz-nm">Staff</th>'+p.days.map(ds=>{
+    const bg=isHol(ds)?'#be123c':(isWE(ds)?'#b45309':'#0f766e');
+    return `<th style="background:${bg};color:#fff">${DOWL[dow(ds)]}<br>${ds.slice(8)}/${ds.slice(5,7)}</th>`;}).join('')+'<th>D</th><th>N</th><th>Hrs</th></tr>';
+  for(const s of active){
+    let dC=0,nC=0,hrs=0;
+    t+='<tr><td class="pz-nm">'+s.name+(s.exitDate?' (Exited '+s.exitDate+')':'')+'<br><span style="font-weight:400;font-size:6px">'+s.role+'</span></td>';
+    t+=p.days.map(ds=>{const c=p.cells[s.id][ds]||'';
+      if(c==='D'){dC++;hrs+=9}if(c==='N'){nC++;hrs+=15}if(c==='DN'){dC++;nC++;hrs+=24}
+      const bg=CELLBG[c]||(isWE(ds)?'#fef3c7':'#fff');
+      return `<td style="background:${bg};color:${CELLFG[c]||'#111'};font-weight:700">${c}</td>`;}).join('');
+    t+=`<td><b>${dC}</b></td><td><b>${nC}</b></td><td><b>${hrs}</b></td></tr>`;
+  }
+  t+='</table>';
+  const hols=state.holidays.filter(x=>p.days.includes(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
+  const legend='<p style="font-size:8px;margin-top:6px">Legend: D = Day 08:00–17:00 · N = Night 17:00–08:00 · DN = Day+Night · OFF = Rest · AL = Annual leave · ML = Maternity (14 wks) · SL = Sick · CL = Authorized · TR = Training · W = Wedding day · ABS = Absent · H = Holiday</p>'+
+    (hols.length?'<p style="font-size:8px;color:#be123c"><b>Public holidays observed:</b> '+hols.map(x=>x.date.slice(8)+'/'+x.date.slice(5,7)+' — '+x.name).join(' · ')+'</p>':'');
+  doPrint('<h1>RULI DISTRICT HOSPITAL — LABORATORY SERVICE</h1><h2>MONTHLY WORKING PLAN — '+new Date(m+'-01').toLocaleString('en',{month:'long',year:'numeric'}).toUpperCase()+' (+ first week of next month)</h2>'+t+legend+sigHTML(false));
+}
+function printRoster(){
+  if(!state.lastRoster)return toast('⚠ Generate the weekly roster first');
+  const DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const days=state.lastRoster.out.filter(d=>!d.missing);
+  let t='<table><tr><th class="pz-nm">Unit</th>'+days.map(d=>{
+    const hn=(state.holidays.find(x=>x.date===d.ds)||{}).name;
+    return `<th style="background:#0f766e;color:#fff">${DN[dow(d.ds)]} ${d.ds.slice(8)}/${d.ds.slice(5,7)}${hn?'<br>🎉 '+hn:''}</th>`;}).join('')+'</tr>';
+  UNITS.forEach(u=>{t+='<tr><td class="pz-nm">'+u+'</td>'+days.map(d=>'<td>'+(d.assign[u].join(', ')||'—')+'</td>').join('')+'</tr>';});
+  t+='<tr><td class="pz-nm" style="background:#312e81;color:#fff">NIGHT SHIFT</td>'+days.map(d=>'<td style="background:#312e81;color:#fff;font-weight:700">'+(d.night.join(', ')||'—')+'</td>').join('')+'</tr>';
+  t+='<tr><td class="pz-nm" style="background:#fef3c7">Requisition (Mon)</td>'+days.map(d=>'<td style="background:#fef3c7;font-weight:700">'+(d.req||'—')+'</td>').join('')+'</tr></table>';
+  doPrint('<h1>RULI DISTRICT HOSPITAL — LABORATORY SERVICE</h1><h2>WEEKLY UNIT ROSTER — week of '+state.lastRoster.week+'</h2>'+t+sigHTML(true));
+}
+function doPrint(html){
+  const z=document.getElementById('printZone');
+  z.innerHTML=html;
+  toast('🖨️ In the print dialog choose “Save as PDF” as the destination');
+  setTimeout(()=>{window.print();},250);
+}
+
+
+/* ================= CLOUD LIVE SYNC (Firebase RTDB) =================
+   Roles enforced SERVER-SIDE by database rules:
+   - read: everyone with the link (live observers)
+   - write: only authenticated manager                                  */
+// OPTIONAL: hard-code your firebaseConfig here so staff never paste anything.
+// Example: window.RULI_FIREBASE_CONFIG = {apiKey:"...",authDomain:"...",databaseURL:"https://....firebasedatabase.app",projectId:"...",...};
+window.RULI_FIREBASE_CONFIG = window.RULI_FIREBASE_CONFIG || null;
+
+const CLOUD_KEY='ruliLabCloud_v1';
+const DEVICE_ID=(()=>{let d=localStorage.getItem('ruliDevId');if(!d){d=uid()+uid();localStorage.setItem('ruliDevId',d);}return d;})();
+let fb={app:null,db:null,auth:null,connected:false,isManager:false,applyingRemote:false,pushT:null,ready:null};
+
+function cloudCfg(){
+  if(window.RULI_FIREBASE_CONFIG && window.RULI_FIREBASE_CONFIG.apiKey) return window.RULI_FIREBASE_CONFIG;
+  try{return JSON.parse(localStorage.getItem(CLOUD_KEY));}catch(e){return null;}
+}
+function cloudViewerLocked(){return fb.connected&&!fb.isManager;}
+
+function loadFirebaseSDK(){
+  if(fb.ready)return fb.ready;
+  const urls=[
+    'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js',
+    'https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js'];
+  fb.ready=urls.reduce((p,u)=>p.then(()=>new Promise((res,rej)=>{
+    if(document.querySelector('script[src="'+u+'"]'))return res();
+    const s=document.createElement('script');s.src=u;s.onload=res;s.onerror=()=>rej(new Error('Could not load Firebase SDK — check internet'));
+    document.head.appendChild(s);
+  })),Promise.resolve());
+  return fb.ready;
+}
+function parseFbConfig(raw){
+  raw=raw.trim();
+  const m=raw.match(/\{[\s\S]*\}/); if(m)raw=m[0];
+  // tolerate JS-object style (unquoted keys, single quotes, trailing commas)
+  raw=raw.replace(/([,{]\s*)([A-Za-z_][A-Za-z0-9_]*)\s*:/g,'$1"$2":').replace(/'/g,'"').replace(/,\s*([}\]])/g,'$1');
+  return JSON.parse(raw);
+}
+async function cloudConnect(silent){
+  try{
+    let cfg;
+    const raw=document.getElementById('fbConfig').value.trim();
+    if(raw){cfg=parseFbConfig(raw);localStorage.setItem(CLOUD_KEY,JSON.stringify(cfg));}
+    else cfg=cloudCfg();
+    if(!cfg||!cfg.apiKey)return silent?null:toast('⚠ Paste the firebaseConfig first');
+    if(!cfg.databaseURL)return toast('⚠ Config is missing "databaseURL" — copy it from Realtime Database page (starts with https:// and ends .firebasedatabase.app)');
+    await loadFirebaseSDK();
+    if(!fb.app){fb.app=firebase.initializeApp(cfg);fb.auth=firebase.auth();fb.db=firebase.database();}
+    fb.connected=true;
+    // live subscription
+    fb.db.ref('labRoster').on('value',snap=>{
+      const v=snap.val();
+      if(!v||!v.state)return;
+      if(v.meta&&v.meta.by===DEVICE_ID)return;             // our own echo
+      fb.applyingRemote=true;
+      try{
+        state=v.state;migrate(state);
+        localStorage.setItem(LS_KEY,JSON.stringify(state));
+        renderAll();
+        const t=document.getElementById('cloudLastTag');
+        t.style.display='';t.textContent='🔄 Live · updated '+new Date(v.meta?v.meta.updatedAt:Date.now()).toLocaleTimeString();
+        if(!fb.isManager)toast('🔄 Plan updated by the Lab Manager');
+      }finally{fb.applyingRemote=false;}
+    },err=>{toast('☁️ Read error: '+err.message);});
+    fb.auth.onAuthStateChanged(u=>{fb.isManager=!!u;cloudUI();});
+    cloudUI();
+    if(!silent)toast('☁️ Connected — you are now receiving live updates');
+  }catch(e){toast('❌ Connect failed: '+e.message);}
+}
+async function cloudLogin(){
+  if(!fb.connected)await cloudConnect(true);
+  if(!fb.auth)return toast('⚠ Connect first (paste config above)');
+  const em=document.getElementById('fbEmail').value.trim(),pw=document.getElementById('fbPass').value;
+  if(!em||!pw)return toast('⚠ Email & password required');
+  try{
+    await fb.auth.signInWithEmailAndPassword(em,pw);
+    fb.isManager=true;cloudUI();
+    toast('🔓 Signed in — you are the live Manager. Pushing current data…');
+    cloudPushNow();
+  }catch(e){toast('❌ Sign-in failed: '+(e.code==='auth/invalid-credential'?'wrong email or password':e.message));}
+}
+async function cloudLogout(){if(fb.auth)await fb.auth.signOut();fb.isManager=false;cloudUI();toast('🔒 Signed out — this device is now a read-only observer');}
+function cloudDisconnect(){
+  localStorage.removeItem(CLOUD_KEY);
+  if(fb.db)try{fb.db.ref('labRoster').off();}catch(e){}
+  fb.connected=false;fb.isManager=false;cloudUI();
+  toast('⚪ Disconnected — back to offline single-device mode');
+}
+function cloudPush(){
+  if(!fb.connected||!fb.isManager||fb.applyingRemote)return;
+  clearTimeout(fb.pushT);
+  fb.pushT=setTimeout(()=>{
+    fb.db.ref('labRoster').set({state:JSON.parse(JSON.stringify(state)),meta:{updatedAt:Date.now(),by:DEVICE_ID}})
+      .then(()=>{const t=document.getElementById('cloudLastTag');t.style.display='';t.textContent='☁️ Synced '+new Date().toLocaleTimeString();})
+      .catch(e=>toast('☁️ Sync failed: '+e.message));
+  },800);
+}
+function cloudPushNow(){if(!fb.isManager)return toast('⚠ Sign in as Manager first');clearTimeout(fb.pushT);fb.pushT=null;
+  fb.db.ref('labRoster').set({state:JSON.parse(JSON.stringify(state)),meta:{updatedAt:Date.now(),by:DEVICE_ID}})
+    .then(()=>toast('⬆️ Pushed — all observer devices are updating now'))
+    .catch(e=>toast('❌ Push failed: '+e.message));}
+function cloudPullNow(){if(!fb.connected)return toast('⚠ Connect first');
+  fb.db.ref('labRoster').once('value').then(snap=>{const v=snap.val();
+    if(!v||!v.state)return toast('☁️ Cloud is empty — sign in and push first');
+    state=v.state;migrate(state);localStorage.setItem(LS_KEY,JSON.stringify(state));renderAll();toast('⬇️ Pulled latest cloud data');});}
+function cloudUI(){
+  const st=document.getElementById('cloudStateTag'),role=document.getElementById('cloudRoleTag');
+  if(!st)return;
+  if(!fb.connected){st.textContent='⚪ Offline mode — data stays on this device only';st.className='tag tg-gray';role.style.display='none';}
+  else{st.textContent='🟢 Connected to cloud';st.className='tag tg-teal';role.style.display='';
+    role.textContent=fb.isManager?'🔓 Role: MANAGER — edits sync live to everyone':'👁️ Role: OBSERVER — live view, read-only';
+    role.className='tag '+(fb.isManager?'tg-teal':'tg-blue');}
+  document.body.classList.toggle('viewer-mode',cloudViewerLocked());
+}
+/* guard every mutating action for observers (server rules are the real wall; this is polite UX) */
+(function guardMutations(){
+  const G=['generatePlan','setCell','saveStaff','exitStaff','reactivate','addLeave','delLeave','addHoliday','delHoliday','logUnforeseenHoliday','logAbsence','restoreVersion','parseTrainingPaste','delTraining','addLinkPrompt','delLink','generateRoster'];
+  G.forEach(fn=>{const orig=window[fn];
+    if(typeof orig!=='function')return;
+    window[fn]=function(...a){
+      if(cloudViewerLocked())return toast('👁️ Read-only observer — only the Lab Manager can change the plan');
+      return orig.apply(this,a);};});
+})();
+
+/* ---------- misc ---------- */
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+let toastT;function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('show'),3200);}
+document.getElementById('tabs').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+b.dataset.t));
+  if(b.dataset.t==='dash')renderDash();
+});
+function renderAll(){renderStaff();renderPlan();renderLeaves();renderAbs();renderVersions();renderRoster();renderDash();renderLinks();renderTrainings();}
+
+/* ---------- init ---------- */
+(function init(){
+  document.getElementById('planMonth').value=state.currentMonth;
+  // default roster week = next Monday
+  const now=new Date();const nm=addD(now,(8-now.getDay())%7||7);document.getElementById('rosterWeek').value=fmt(nm);
+  if(window.claude&&window.claude.complete){const b=document.getElementById('aiSyncBtn');if(b)b.style.display='inline-flex';}
+  if(cloudCfg())cloudConnect(true); // auto-reconnect on devices that were set up
+  if(!state.plans[state.currentMonth]){generatePlan(true);delete state.__regen;save();}
+  else if(state.__regen){delete state.__regen;generatePlan(false);snapshot('Leave records updated: Diane AL (13/07), Patrick AL 60d + wedding 29/08');}
+  else renderAll();
+  pushMsg('👋 Muraho Kelvin! I am your roster assistant for Ruli DH Laboratory. Ask me who works tonight, leave balances, fairness checks, requisition duty… or tap a quick chip below.','bot');
+})();
+</script>
+</body>
+</html>
