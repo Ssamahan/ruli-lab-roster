@@ -191,7 +191,13 @@ table.wp{border-collapse:separate; border-spacing:0; background:#fff; font-size:
 .mtl-legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:11px; color:var(--muted)}
 .mtl-legend i{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px}
 /* ============ charts ============ */
-.chart-box{width:100%; overflow-x:auto; min-height:240px; display:flex; align-items:center; justify-content:center; padding:8px 4px 12px; background:linear-gradient(180deg,#ffffff,#fbfdff); border-radius:10px}
+.chart-box{width:100%; overflow-x:auto; min-height:0; display:flex; align-items:center; justify-content:center; padding:6px 2px 10px; background:#fff; border-radius:10px; border:1px solid #eef1f6}
+.chart-box svg{width:100%; height:auto; display:block; max-width:100%; overflow:visible}
+@media(max-width:980px){ .chart-box{padding:4px 2px 8px} }
+@media(max-width:560px){ .chart-box{min-height:0} }
+/* Daily staffing trend - compact card */
+#mod-dash .card.span2 .chart-box{ min-height:0; max-height:220px }
+
 .chart-box svg{width:100%; height:auto; display:block; max-width:100%; overflow:visible}
 .chart-legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:11.5px; color:var(--muted)}
 .chart-legend i{display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:6px}
@@ -867,78 +873,100 @@ function expTotals(){ let expenses=0, reimbursed=0, count=0;
 // ============ CHARTS (reference-grade: flat, rounded, bold) ============
 const CHART_COLORS=['#2878f0','#f07850','#00a0a0','#9a6b10','#1f9d61','#8b2fb3','#dd4b4b','#5d6b82'];
 function chartFontScale(w){ return Math.max(12, Math.round(w/46)); }
-function svgBar(data,opts){ // vertical bars - readable, well spaced
-  opts=opts||{}; const w=opts.w||680, h=opts.h||260, pad={l:52,r:18,t:28,b:48};
-  const fs=chartFontScale(w);
+function chartFontScale(w){ const base = w>=700 ? 13 : w>=500 ? 12 : 11; return base; }
+function getScreenTier(){ const ww = window.innerWidth || 1200; if(ww<=560) return 'xs'; if(ww<=980) return 'sm'; return 'lg'; }
+
+
+function chartFontScale(w){ const base = w>=700 ? 13 : w>=500 ? 12 : 11; return base; }
+function getScreenTier(){ const ww = window.innerWidth || 1200; if(ww<=560) return 'xs'; if(ww<=980) return 'sm'; return 'lg'; }
+
+function svgBar(data,opts){ // responsive vertical bars - predefined spaces
+  opts=opts||{};
+  const tier=getScreenTier();
+  const w = tier==='xs' ? 360 : tier==='sm' ? 520 : (opts.w||680);
+  const h = tier==='xs' ? 200 : tier==='sm' ? 220 : (opts.h||240);
+  const pad = tier==='xs' ? {l:42,r:10,t:22,b:42} : tier==='sm' ? {l:48,r:12,t:24,b:44} : {l:52,r:18,t:28,b:48};
+  const fs = chartFontScale(w);
   const vals=data.map(d=>d.value).concat(0);
   const max=Math.max(...vals,1), min=Math.min(...vals,0); const range=(max-min)||1;
   const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
-  const n=data.length||1; const gap=14; const bw=Math.max(18, Math.min(64, (iw - gap*(n-1))/n));
+  const n=data.length||1;
+  // predefined spaces: gap between bars = 12px desktop, 8px mobile
+  const gap = tier==='xs' ? 8 : tier==='sm' ? 10 : 14;
+  const bw = Math.max(16, Math.min(tier==='xs'?28: tier==='sm'?44:52, (iw - gap*(n-1))/n));
   const y0v=pad.t+ (max/range)*ih;
   let bars='';
   data.forEach((d,i)=>{
     const x=pad.l + i*(bw+gap);
     const vh=Math.abs(d.value)/range*ih; const y=d.value>=0?y0v-vh:y0v;
     const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
-    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(vh,2).toFixed(1)}" rx="7" fill="${col}" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.08))"><title>${esc(d.label)}: ${d.value}</title></rect>`;
-    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(y-10).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs,12)}" font-weight="800" fill="#1b2434">${d.value}</text>`;
-    if(opts.labels!==false) bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,11)}" fill="#5d6b82" font-weight="600">${esc(String(d.label).slice(0,14))}</text>`;
+    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(vh,2).toFixed(1)}" rx="${tier==='xs'?5:7}" fill="${col}"><title>${esc(d.label)}: ${d.value}</title></rect>`;
+    // value label only if bar tall enough or always on top
+    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(y-8).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs, tier==='xs'?10:12)}" font-weight="800" fill="#1b2434">${d.value}</text>`;
+    if(opts.labels!==false){
+      const lab = String(d.label).slice(0, tier==='xs'?8:14);
+      bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-10).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1, tier==='xs'?9:11)}" fill="#5d6b82" font-weight="600">${esc(lab)}</text>`;
+    }
   });
   let gl='';
-  gl+=`<line x1="${pad.l}" y1="${y0v.toFixed(1)}" x2="${w-pad.r}" y2="${y0v.toFixed(1)}" stroke="#d7dfe8" stroke-width="1.4"/>`;
+  gl+=`<line x1="${pad.l}" y1="${y0v.toFixed(1)}" x2="${w-pad.r}" y2="${y0v.toFixed(1)}" stroke="#d7dfe8" stroke-width="1.2"/>`;
   for(let g=0;g<=4;g++){ const gy=pad.t+(ih*g)/4; const val=Math.round(max-(range*g)/4);
     gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/>`;
-    gl+=`<text x="${pad.l-10}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,11)}" fill="#9aa7ba" font-weight="600">${val}</text>`; }
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="bar chart" style="overflow:visible">${gl}${bars}</svg>`;
+    gl+=`<text x="${pad.l-8}" y="${gy+3}" text-anchor="end" font-size="${Math.max(fs-1,10)}" fill="#9aa7ba" font-weight="600">${val}</text>`; }
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px">${gl}${bars}</svg>`;
 }
-function svgHBar(data,opts){ // horizontal bars - spacious & readable
-  opts=opts||{}; const w=opts.w||680; const rowH=46; const h=opts.h||Math.max(220, data.length*rowH+40);
-  const fs=chartFontScale(w);
-  const max=Math.max(...data.map(d=>d.value),1); const labW=Math.min(200, w*0.38); const iw=w-labW-70;
+function svgHBar(data,opts){ // responsive horizontal bars - spacious
+  opts=opts||{};
+  const tier=getScreenTier();
+  const w = tier==='xs' ? 360 : tier==='sm' ? 520 : (opts.w||680);
+  const rowH = tier==='xs' ? 38 : tier==='sm' ? 42 : 46;
+  const h = opts.h||Math.max(tier==='xs'?180:200, data.length*rowH+32);
+  const fs = chartFontScale(w);
+  const max=Math.max(...data.map(d=>d.value),1);
+  const labW = tier==='xs' ? 110 : tier==='sm' ? 150 : Math.min(200, w*0.36);
+  const iw=w-labW-60;
   let rows='';
-  // subtle grid lines
   for(let g=0; g<=4; g++){
     const gx = labW + (iw*g)/4;
-    rows+=`<line x1="${gx}" y1="10" x2="${gx}" y2="${h-10}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/>`;
+    rows+=`<line x1="${gx}" y1="8" x2="${gx}" y2="${h-8}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/>`;
   }
   data.forEach((d,i)=>{
-    const y=14+i*rowH;
+    const y=10+i*rowH;
     const bw=(d.value/max)*iw;
     const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
-    // label background
-    rows+=`<rect x="0" y="${y}" width="${labW-8}" height="${rowH-8}" rx="8" fill="${i%2===0 ? '#f6f8fb' : '#ffffff'}" />`;
-    rows+=`<text x="${labW-12}" y="${(y+rowH/2+2).toFixed(1)}" text-anchor="end" font-size="${Math.max(fs,12.5)}" fill="#3d4c63" font-weight="700">${esc(String(d.label).slice(0,24))}</text>`;
-    rows+=`<rect x="${labW}" y="${(y+8).toFixed(1)}" width="${Math.max(bw,4).toFixed(1)}" height="18" rx="9" fill="${col}" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,0.08))"><title>${esc(d.label)}: ${d.value}</title></rect>`;
-    rows+=`<text x="${(labW+bw+14).toFixed(1)}" y="${(y+rowH/2+2).toFixed(1)}" font-size="${Math.max(fs,12.5)}" font-weight="800" fill="#1b2434">${d.value}</text>`;
+    rows+=`<rect x="0" y="${y}" width="${labW-6}" height="${rowH-8}" rx="7" fill="${i%2===0 ? '#f6f8fb' : '#ffffff'}" />`;
+    rows+=`<text x="${labW-10}" y="${(y+rowH/2+1).toFixed(1)}" text-anchor="end" font-size="${Math.max(fs, tier==='xs'?10:12)}" fill="#3d4c63" font-weight="700">${esc(String(d.label).slice(0, tier==='xs'?12:20))}</text>`;
+    rows+=`<rect x="${labW}" y="${(y+10).toFixed(1)}" width="${Math.max(bw,4).toFixed(1)}" height="16" rx="8" fill="${col}"><title>${esc(d.label)}: ${d.value}</title></rect>`;
+    rows+=`<text x="${(labW+bw+12).toFixed(1)}" y="${(y+rowH/2+1).toFixed(1)}" font-size="${Math.max(fs, tier==='xs'?10:12)}" font-weight="800" fill="#1b2434">${d.value}</text>`;
   });
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="horizontal bar chart" style="overflow:visible">${rows}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${Math.min(h, 600)}px">${rows}</svg>`;
 }
-function svgDonut(items,opts){ opts=opts||{}; const size=opts.size||150, cx=size/2, cy=size/2, r=size/2-10, ir=r*0.62;
-  const total=items.reduce((a,i)=>a+(i.value||0),0)||1; let acc=0; let segs='';
-  items.forEach((it,i)=>{ const frac=it.value/total; if(frac<=0) return;
-    const a0=acc*2*Math.PI-Math.PI/2, a1=(acc+frac)*2*Math.PI-Math.PI/2;
-    const large=(a1-a0)>Math.PI?1:0; const x0=cx+r*Math.cos(a0), y0=cy+r*Math.sin(a0), x1=cx+r*Math.cos(a1), y1=cy+r*Math.sin(a1);
-    const col=it.color||CHART_COLORS[i%CHART_COLORS.length];
-    segs+=`<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 ${large} 1 ${x1.toFixed(1)} ${y1.toFixed(1)} L${cx} ${cy} Z" fill="${col}"><title>${esc(it.label)}: ${it.value}</title></path>`;
-    acc+=frac; });
-  return `<svg viewBox="0 0 ${size} ${size}" width="${opts.width||130}" height="${opts.height||130}">${segs}<circle cx="${cx}" cy="${cy}" r="${ir}" fill="#fff"/><text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="16" font-weight="800" fill="#22304a">${opts.center||''}</text></svg>`;
-}
-function svgStackBar(layers,opts){ opts=opts||{}; const w=opts.w||700, h=opts.h||280;
+function svgStackBar(layers,opts){ // responsive stacked - Daily staffing trend fix
+  opts=opts||{}; const tier=getScreenTier();
   const n=layers[0]?layers[0].values.length:0; if(!n) return '';
+  // Daily staffing trend has only 5 weeks -> should be compact, not huge
+  const isCompact = n<=6;
+  const w = tier==='xs' ? 360 : tier==='sm' ? 520 : (opts.w|| (isCompact? 620 : 700));
+  const h = isCompact ? (tier==='xs'?160: tier==='sm'?180:190) : (opts.h|| (tier==='xs'?200: tier==='sm'?240:280));
   const fs=chartFontScale(w);
-  const pad={l:56,r:16,t:28,b:48}; const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  const pad={l: tier==='xs'?38:50, r: tier==='xs'?8:14, t: tier==='xs'?18:22, b: tier==='xs'?36:42};
+  const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
   const totals=[]; for(let i=0;i<n;i++){ totals.push(layers.reduce((a,l)=>a+(l.values[i]||0),0)); }
-  const max=Math.max(...totals,1); const gap=16; const bw=Math.max(22, Math.min(56, (iw - gap*(n-1))/n));
+  const max=Math.max(...totals,1);
+  const gap = isCompact ? (tier==='xs'?18:24) : (tier==='xs'?10: tier==='sm'?14:18);
+  const bw = Math.max(isCompact? 28:18, Math.min(isCompact? 64:48, (iw - gap*(n-1))/n));
   let bars='';
   for(let i=0;i<n;i++){ const x=pad.l + i*(bw+gap); let y=pad.t+ih;
     for(let l of layers){ const v=l.values[i]||0; const bh=(v/max)*ih; y-=bh;
-      bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(bh,2).toFixed(1)}" fill="${l.color||CHART_COLORS[layers.indexOf(l)%CHART_COLORS.length]}" rx="6" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,0.07))"><title>${esc(l.label)}: ${v}</title></rect>`; }
-    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-14).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,11)}" fill="#5d6b82" font-weight="600">${esc(opts.xLabels?opts.xLabels[i]:'')}</text>`;
+      if(v>0) bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(bh,2).toFixed(1)}" fill="${l.color||CHART_COLORS[layers.indexOf(l)%CHART_COLORS.length]}" rx="${isCompact?6:5}"><title>${esc(l.label)}: ${v}</title></rect>`; }
+    const xlab = opts.xLabels?opts.xLabels[i]:'W'+(i+1);
+    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-10).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1, tier==='xs'?9:11)}" fill="#5d6b82" font-weight="600">${esc(String(xlab).slice(0,12))}</text>`;
   }
   let gl=''; for(let g=0;g<=4;g++){ const gy=pad.t+(ih*g)/4;
-    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/><text x="${pad.l-12}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,11)}" fill="#9aa7ba" font-weight="600">${Math.round(max*(4-g)/4)}</text>`; }
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="stacked bar chart" style="overflow:visible">${gl}${bars}</svg>`;
+    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/><text x="${pad.l-10}" y="${gy+3}" text-anchor="end" font-size="${Math.max(fs-1,10)}" fill="#9aa7ba" font-weight="600">${Math.round(max*(4-g)/4)}</text>`; }
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px">${gl}${bars}</svg>`;
 }
+
 function svgSpark(values,color){ color=color||'#2878f0'; const w=120,h=30,max=Math.max(...values,1),n=values.length;
   if(n<2) return ''; const pts=values.map((v,i)=>`${(i/(n-1)*w).toFixed(1)},${(h-(v/max)*h).toFixed(1)}`).join(' ');
   return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/></svg>`; }
@@ -1689,7 +1717,7 @@ function renderDash(){
     ${kpiCard('On leave now', onLeaveNow.length, returningSoon.length?'back ≤7d: '+returningSoon.map(l=>(staffById(l.staffId)?staffById(l.staffId).name.split(' ')[0]:undefined)).join(', '):'no one away', {tone:'amber', ic:''})}
     ${nextHol?kpiCard('Next holiday', fmtDate(nextHol.date).split(' ')[0]+' '+fmtDate(nextHol.date).split(' ')[1], nextHol.name, {tone:'amber', ic:''}):''}
   </div>
-  <div class="grid g-2" style="margin-bottom:16px">
+  <div class="grid g-2" style="margin-bottom:16px; gap:16px">
     <div class="card"><h3> Trainings per staff member</h3><div class="chart-box">${svgHBar(perStaff)}</div></div>
     <div class="card"><h3> Most referred sample types</h3><div class="chart-box">${svgHBar(mostTests)}</div></div>
     <div class="card"><h3> Referral volume per hospital</h3><div class="chart-box">${svgHBar(hospArr)}</div></div>
@@ -1697,11 +1725,11 @@ function renderDash(){
     <div class="card"><h3>⏱ TAT per test — average vs expected (days)</h3><div class="chart-box">${renderTatChart(tats)}</div></div>
     <div class="card"><h3> Age distribution (active staff)</h3><div class="chart-box">${svgBar(ageArr)}</div></div>
   </div>
-  <div class="card span2" style="margin-bottom:16px"><h3> Daily staffing trend — ${monthLabel(nowKey)} <span class="sub">aggregated by week (Day · Night · Off · Leave/Absent)</span></h3>
+  <div class="card span2" style="margin-bottom:16px; padding:14px 16px"><h3 style="margin-bottom:8px"> Daily staffing trend — ${monthLabel(nowKey)} <span class="sub">aggregated by week (Day · Night · Off · Leave/Absent)</span></h3>
     <div class="chart-box">${stack}</div>
     <div class="mtl-legend"><span><i style="background:#dbe7fb"></i>Day</span><span><i style="background:#2d3a5c"></i>Night</span><span><i style="background:#f1f3f8"></i>Off</span><span><i style="background:#fdeccd"></i>Leave/Absent</span></div></div>
   <div class="card" style="margin-bottom:16px"><h3> Master Timeline — FY ${fyInfo(today).label} <span class="sub">holidays · leaves · trainings · weddings · absences</span></h3>${renderTimeline(fyInfo(today).start, fyInfo(today).end)}</div>
-  <div class="grid g-2" style="margin-bottom:16px">
+  <div class="grid g-2" style="margin-bottom:16px; gap:16px">
     <div class="card"><h3>⏳ Pending samples — aging list</h3>
       ${pend.length?`<div class="tbl-wrap"><table class="tbl"><tr><th>Patient</th><th>Test</th><th>Hospital</th><th>Sent</th><th>Elapsed</th><th>Status</th></tr>
       ${pend.map(s=>`<tr><td>${esc(maskName(s.patientName))}</td><td>${esc(s.test)}</td><td>${esc(s.hospital)}</td><td>${fmtDate(s.sentDate||s.collectionDate)}</td>
@@ -2291,7 +2319,7 @@ function renderTrDash(body){
     ${kpiCard('Active staff', act.length, 'avg age '+avgAge+'y', {tone:'blue'})}
     ${kpiCard('Avg experience', avgExp+'y', 'at Ruli DH lab', {tone:'teal'})}
   </div>
-  <div class="grid g-2" style="margin-bottom:16px">
+  <div class="grid g-2" style="margin-bottom:16px; gap:16px">
     <div class="card span2"><h3> Trainings attended per staff member</h3><div class="chart-box">${svgHBar(perStaff)}</div></div>
     <div class="card"><h3> Age distribution (active staff)</h3><div class="chart-box">${svgBar(ageArr)}</div></div>
   </div>`;
@@ -2431,7 +2459,7 @@ function renderRevenue(){ if(isViewer()){ const el=document.getElementById("mod-
     ${kpiCard('Paid off (reimbursed)', fmtRWF(t.reimbursed), 'recovered from organizers', {tone:'teal', ic:''})}
     ${kpiCard('Logged training sessions', t.count, 'with itemized expenses', {tone:'blue', ic:''})}
   </div>
-  <div class="grid g-2" style="margin-bottom:16px">
+  <div class="grid g-2" style="margin-bottom:16px; gap:16px">
     <div class="card span2"><h3> Net gain/loss per training session</h3><div class="chart-box">${svgBar(net.map(n=>({label:n.label,value:n.value,color:n.value>=0?'#1f9d61':'#dd4b4b'})))}</div></div>
     <div class="card"><h3> Expenses vs reimbursed (per session)</h3><div class="chart-box">${svgStackBar([
       {label:'Expenses',color:'#e8a33d',values:perSession.map(s=>s.exp)},
