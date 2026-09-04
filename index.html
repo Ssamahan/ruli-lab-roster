@@ -527,15 +527,15 @@ function buildSeed(){
       manifestPrefix:'BLC'
     },
     staff:[
-      {id:'s1', name:'Kelvin SAMAHANI', sex:'Male', dob:'1997-06-15', role:'Laboratory Manager', phone:'0787055121', email:'smhnkivn@gmail.com', contract:'statute', pattern:'manager', nightPref:'no', maxNights:0, maxConsecN:3, status:'active', joinDate:'2023-05-10', exitDate:null, note:''},
-      {id:'s2', name:'Diane UWASE', sex:'Female', dob:'1997-03-15', role:'Lab Quality Officer', phone:'0781732887', email:'umutoniwasedianetona@gmail.com', contract:'contractual', pattern:'normal', nightPref:'yes', maxNights:4, maxConsecN:2, status:'active', joinDate:'2023-03-08', exitDate:null, note:''},
-      {id:'s3', name:'Beatrice NGEZEKURE', sex:'Female', dob:'1969-01-15', role:'Laboratory Technologist', phone:'0788767548', email:'ngezebeatha@gmail.com', contract:'statute', pattern:'normal', nightPref:'no', maxNights:2, maxConsecN:3, status:'active', joinDate:'1998-01-01', exitDate:null, note:'Head of Reception and Phlebotomy'},
-      {id:'s4', name:'Aurelie YANSONEYE', sex:'Female', dob:'1987-04-15', role:'HIV Lab Quality Corp', phone:'0782129036', email:'aurelieyansoneye@gmail.com', contract:'statute', pattern:'normal', nightPref:'yes', maxNights:4, maxConsecN:2, weekendPattern:'DN', weekendOnly:true, status:'active', joinDate:'2016-10-31', exitDate:null, note:'Weekend-only: works Day+Night Sat & Sun, rests Mon-Fri'},
-      {id:'s5', name:'Patrick ISHIMWE', sex:'Male', dob:'1989-09-15', role:'Lab Technician', phone:'0784470716', email:'packerpazzon@gmail.com', contract:'contractual', pattern:'normal', nightPref:'yes', maxNights:4, maxConsecN:3, status:'active', joinDate:'2020-06-04', exitDate:null, note:''},
-      {id:'s6', name:'Jean Paul NSENGIYUMVA', sex:'Male', dob:'1997-02-15', role:'Laboratory Technician', phone:'0780119835', email:'nsengiyuma4@gmail.com', contract:'contractual', pattern:'normal', nightPref:'yes', maxNights:4, maxConsecN:3, status:'active', joinDate:'2025-01-22', exitDate:null, note:'Head of Hematology'},
-      {id:'s7', name:'Elie NIZEYIMANA', sex:'Male', dob:'1999-08-15', role:'Laboratory Technician', phone:'0780780438', email:'elienizeyimana47@gmail.com', contract:'contractual', pattern:'normal', nightPref:'yes', maxNights:4, maxConsecN:3, status:'exited', joinDate:'2023-05-10', exitDate:'2025-01-31', note:'Exited 31 Jan 2025'},
-      {id:'s8', name:'Faustin NTAMBARA', sex:'Male', dob:'1994-11-15', role:'Laboratory Safety Officer', phone:'0784653754', email:'faustinntambara08@gmail.com', contract:'contractual', pattern:'normal', nightPref:'yes', maxNights:4, maxConsecN:3, status:'exited', joinDate:'2023-06-01', exitDate:'2026-06-29', note:'Exited 29 Jun 2026'},
-      {id:'s9', name:'Dieudonne NIYIDUHABYOSE', sex:'Male', dob:'1989-06-15', role:'Laboratory Technician', phone:'0785312651', email:'niyiduhadidier2@gmail.com', contract:'contractual', pattern:'normal', nightPref:'yes', maxNights:4, maxConsecN:3, status:'active', joinDate:'2024-09-01', exitDate:null, note:'Head of Mycobacteriology and Molecular'}
+      {id:'s1', name:'Kelvin SAMAHANI', sex:'Male', dob:'1997-06-15', role:'Laboratory Manager', phone:'0787055121', email:'smhnkivn@gmail.com', contract:'statute', pattern:'manager', nightPref:'no', maxNights:0, maxConsecN:0, status:'active', joinDate:'2023-05-10', exitDate:null, note:'Lab Manager - no weekends/holidays/nights'},
+      {id:'s2', name:'Diane UWASE', sex:'Female', dob:'1997-03-15', role:'Lab Quality Officer', phone:'0781732887', email:'umutoniwasedianetona@gmail.com', contract:'statute', pattern:'normal', nightPref:'min', maxNights:2, maxConsecN:2, status:'active', joinDate:'2023-03-08', exitDate:null, note:'Quality Officer - minimal nights, exactly one 2-night block/month'},
+      {id:'s3', name:'Beatrice NGEZEKURE', sex:'Female', dob:'1969-01-15', role:'Laboratory Technologist', phone:'0788767548', email:'ngezebeatha@gmail.com', contract:'statute', pattern:'dayonly', nightPref:'no', maxNights:0, maxConsecN:0, status:'active', joinDate:'1998-01-01', exitDate:null, note:'Reception mostly, Parasitology when limited, never Phlebotomy/TB'},
+      {id:'s4', name:'Aurelie YANSONEYE', sex:'Female', dob:'1987-04-15', role:'HIV Lab Quality Corp', phone:'0782129036', email:'aurelieyansoneye@gmail.com', contract:'statute', pattern:'weekendonly', nightPref:'yes', maxNights:16, maxConsecN:2, weekendPattern:'DN', weekendOnly:true, status:'active', joinDate:'2016-10-31', exitDate:null, note:'Weekend-only: works Day+Night Sat & Sun, rests Mon-Fri'},
+      {id:'s5', name:'Patrick ISHIMWE', sex:'Male', dob:'1989-09-15', role:'Lab Technician', phone:'0784470716', email:'packerpazzon@gmail.com', contract:'statute', pattern:'normal', nightPref:'3', maxNights:12, maxConsecN:3, status:'active', joinDate:'2020-06-04', exitDate:null, note:'Night lover - only one who does 3 consecutive nights, >=3 sessions/month'},
+      {id:'s6', name:'Jean Paul NSENGIYUMVA', sex:'Male', dob:'1997-02-15', role:'Laboratory Technician', phone:'0780119835', email:'nsengiyuma4@gmail.com', contract:'statute', pattern:'normal', nightPref:'2', maxNights:6, maxConsecN:2, status:'active', joinDate:'2025-01-22', exitDate:null, note:'Head of Hematology - max 3x2 nights'},
+      {id:'s9', name:'Dieudonne NIYIDUHABYOSE', sex:'Male', dob:'1989-06-15', role:'Laboratory Technician', phone:'0785312651', email:'niyiduhadidier2@gmail.com', contract:'statute', pattern:'normal', nightPref:'2', maxNights:8, maxConsecN:2, status:'active', joinDate:'2024-09-01', exitDate:null, note:'Night lover 2-night multiple times'},
+      {id:'s8', name:'Faustin NTAMBARA', sex:'Male', dob:'1994-11-15', role:'Laboratory Safety Officer', phone:'0784653754', email:'faustinntambara08@gmail.com', contract:'contractual', pattern:'normal', nightPref:'2', maxNights:6, maxConsecN:2, status:'active', joinDate:'2023-06-01', exitDate:null, note:'Contractual - 18 working days AL, max 3x2 nights'},
+      {id:'s7', name:'Elie NIZEYIMANA', sex:'Male', dob:'1999-08-15', role:'Laboratory Technician', phone:'0780780438', email:'elienizeyimana47@gmail.com', contract:'contractual', pattern:'normal', nightPref:'yes', maxNights:0, maxConsecN:2, status:'exited', joinDate:'2023-05-10', exitDate:'2025-01-31', note:'Exited 31 Jan 2025 - kept for history'}
     ],
     catalog:{
       hospitals:[
@@ -2811,11 +2811,14 @@ function autoAssignUnits(wk,days,ro,body){
       : allActive.filter(s=>!onLeaveNames.includes(s.name));
     const beatrice=avail.find(s=>/Beatrice/i.test(s.name));
     const kelvin=avail.find(s=>/Kelvin/i.test(s.name));
-    // Kelvin appears only when <=3 staff work that day (he adds himself manually otherwise)
-    const kelvinIn = avail.length<=3 ? kelvin : null;
+    const kelvinIn = avail.length<=2 ? kelvin : null; // Kelvin only as 3rd person when <=2 staff
     const others=avail.filter(s=>s!==beatrice && s!==kelvin);
     const ass={};
-    if(beatrice) ass['Reception']=beatrice.name;
+    if(beatrice){
+      ass['Reception']=beatrice.name;
+      if(avail.length<=4){ ass['Parasitology']=beatrice.name; } // limited staff -> also Parasitology
+      // never Phlebotomy & TB - enforced by not adding her to pool
+    }
     const used={}; if(beatrice) used[beatrice.name]=true;
     // the staffing rule counts everyone working EXCEPT Kelvin when he is sitting out
     const effTotal = (kelvin && !kelvinIn) ? avail.length-1 : avail.length;
@@ -3002,6 +3005,10 @@ function planDatesForKey(key){
 function isWknd(iso){ const d=new Date(iso+'T12:00:00').getDay(); return d===0||d===6; }
 function computePlan(input){
   const {staff, leaves, absences, offWishes, holidays, key, history, nightPer} = input;
+  // Ruli-specific night counters for fairness
+  const nightBlockCount = {};
+  staff.forEach(s=>nightBlockCount[s.id]=0);
+
   const dates=planDatesForKey(key);
   const D=dates.length, N=staff.length;
   const codes=staff.map(()=>new Array(D).fill(''));
@@ -3068,20 +3075,37 @@ function computePlan(input){
     const canBlock=si=>{ for(let k=0;k<2;k++){ const d2=di+k; if(d2>=D) return false; if(assignedN[d2]) return false; if(!avail[si][d2]||codes[si][d2]) return false; } return true; };
     cands.sort((a,b)=>{
       const ba=canBlock(b)?0:1, bb=canBlock(a)?0:1; if(ba!==bb) return bb-ba;
-      const totA=nightBal[staff[a].id]+nightNow[staff[a].id], totB=nightBal[staff[b].id]+nightNow[staff[b].id];
-      if(totA!==totB) return totA-totB;
-      const mxA=staff[a].maxNights||99, mxB=staff[b].maxNights||99; if(mxA!==mxB) return mxA-mxB;
-      return lastNight[a]-lastNight[b]; });
+      // Ruli: Patrick gets priority for 3-night blocks, Diane minimal
+      const isPat = (id)=> /ISHIMWE/.test(staff[id].name);
+      const isDiane = (id)=> /UWASE/.test(staff[id].name);
+      const isDieu = (id)=> /NIYIDUHABYOSE/.test(staff[id].name);
+      const score = (idx)=>{
+        let sc = nightBal[staff[idx].id]*10 + nightNow[staff[idx].id]*10;
+        if(isPat(idx)){ sc -= 6; if(nightBlockCount[staff[idx].id]<3) sc -= 45; const wd=new Date(dates[di]+'T12:00:00').getDay(); if(wd===1||wd===3) sc -= 12; }
+        if(isDieu(idx)) sc -= 5;
+        if(staff[idx].nightPref==='min'){ sc += (nightBlockCount[staff[idx].id]===0 ? 14 : 100); }
+        if(isDiane(idx) && nightBlockCount[staff[idx].id]>=1) sc += 100;
+        return sc + Math.random()*2;
+      };
+      return score(a)-score(b);
+    });
     let s=cands[0];
-    // block length: prefer 3 consecutive nights (guide pattern NNN→OFFs); 2 is fine too; never 1 if avoidable
-    const maxC=Math.max(1, staff[s].maxConsecN||3);
+    // Ruli: 3-consecutive only Patrick, others max 2; singles last resort
+    const isPatrick = /ISHIMWE/.test(staff[s].name);
+    const isDiane = /UWASE/.test(staff[s].name);
+    const maxC = isPatrick ? 3 : Math.min(2, staff[s].maxConsecN||2);
     const canN=si=>{ for(let k=0;k<maxC;k++){ const d2=di+k; if(d2>=D) return false; if(assignedN[d2]) return false; if(!avail[si][d2]||codes[si][d2]) return false; } return true; };
-    let len=Math.min(maxC,3);
+    let len = maxC;
     const wish=offWishes&&offWishes.find(w=>w.staffId===staff[s].id);
-    if(wish){ const wdi=dates.indexOf(wish.date);
-      if(wdi>di&&wdi-di<=maxC&&wdi-di>=1){ len=wdi-di; } }
-    if(!wish){ len=canN(s)?Math.min(maxC,3):2; }
-    if(len<2||!canBlock(s)){ len=canBlock(s)?2:1; }
+    if(wish){ const wdi=dates.indexOf(wish.date); if(wdi>di&&wdi-di<=maxC&&wdi-di>=1){ len=wdi-di; } }
+    else{
+      // gap-aware: odd gap needs 3-block to avoid single
+      let gap=0; for(let k=di;k<D;k++){ if(assignedN[k]) break; const iso=dates[k]; if(isWknd(iso) && staff.some((st,si)=> /YANSONEYE/.test(st.name) && avail[si][k] && !codes[si][k])) break; gap++; }
+      if(gap%2===1 && gap>=3 && isPatrick && canN(s)) len=3;
+      else if(canBlock(s)) len=Math.min(maxC,2);
+      else len=1;
+    }
+    if(isDiane && len===1) len=0; // Diane never single
     if(len>maxC) len=maxC;
     // verify full block availability
     for(let k=0;k<len;k++){ const d2=di+k; if(d2>=D||assignedN[d2]||!avail[s][d2]||codes[s][d2]){ len=k; break; } }
@@ -3099,6 +3123,7 @@ function computePlan(input){
     }
     if(len===1){ alerts.push('Only 1 night possible for '+staff[s].name+' on '+date+' — single night (unavoidable)'); }
     for(let k=0;k<len;k++){ codes[s][di+k]='N'; assignedN[di+k]=true; }
+    nightBlockCount[staff[s].id]++;
     nightBal[staff[s].id]++; nightNow[staff[s].id]++; lastNight[staff[s].id]=di+len;
     // optional 2nd staff on the same night (larger team rule)
     if((nightPer||1)>=2){
