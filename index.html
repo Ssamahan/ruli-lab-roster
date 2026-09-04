@@ -191,8 +191,8 @@ table.wp{border-collapse:separate; border-spacing:0; background:#fff; font-size:
 .mtl-legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:11px; color:var(--muted)}
 .mtl-legend i{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px}
 /* ============ charts ============ */
-.chart-box{width:100%; overflow-x:auto; min-height:200px; display:flex; align-items:center; justify-content:center}
-.chart-box svg{width:100%; height:auto; display:block; max-width:100%}
+.chart-box{width:100%; overflow-x:auto; min-height:240px; display:flex; align-items:center; justify-content:center; padding:8px 4px 12px; background:linear-gradient(180deg,#ffffff,#fbfdff); border-radius:10px}
+.chart-box svg{width:100%; height:auto; display:block; max-width:100%; overflow:visible}
 .chart-legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:11.5px; color:var(--muted)}
 .chart-legend i{display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:6px}
 .chart-box svg{width:100%; height:auto; display:block}
@@ -418,7 +418,7 @@ body.viewer-mode [data-confidential]{display:none !important}
       <p class="hint" style="margin-top:8px">Demo mode: OTP is shown on screen and can be sent via mailto. In production, integrate EmailJS.</p>
     </div>
     <div id="authTab-reset" style="display:none">
-      <div class="auth-field"><label>Registered Admin Email</label><input id="resetEmail" placeholder="smhnkivn@gmail.com"></div>
+      <div class="auth-field"><label>Registered Admin Email</label><input id="resetEmail" placeholder="smhnklvn@gmail.com"></div>
       <div class="row" style="margin-bottom:10px"><button class="btn teal sm" id="sendResetOtpBtn">📧 Send Reset OTP</button><span class="hint" id="resetInfo"></span></div>
       <div class="auth-field"><label>Reset OTP</label><input id="resetOtp" maxlength="6" placeholder="6-digit code"></div>
       <div class="auth-field"><label>New Password</label><input id="newPass" type="password" placeholder="New strong password"></div>
@@ -527,7 +527,7 @@ function buildSeed(){
       manifestPrefix:'BLC'
     },
     staff:[
-      {id:'s1', name:'Kelvin SAMAHANI', sex:'Male', dob:'1997-06-15', role:'Laboratory Manager', phone:'0787055121', email:'smhnkivn@gmail.com', contract:'statute', pattern:'manager', nightPref:'no', maxNights:0, maxConsecN:0, status:'active', joinDate:'2023-05-10', exitDate:null, note:'Lab Manager - no weekends/holidays/nights'},
+      {id:'s1', name:'Kelvin SAMAHANI', sex:'Male', dob:'1997-06-15', role:'Laboratory Manager', phone:'0787055121', email:'smhnklvn@gmail.com', contract:'statute', pattern:'manager', nightPref:'no', maxNights:0, maxConsecN:0, status:'active', joinDate:'2023-05-10', exitDate:null, note:'Lab Manager - no weekends/holidays/nights'},
       {id:'s2', name:'Diane UWASE', sex:'Female', dob:'1997-03-15', role:'Lab Quality Officer', phone:'0781732887', email:'umutoniwasedianetona@gmail.com', contract:'statute', pattern:'normal', nightPref:'min', maxNights:2, maxConsecN:2, status:'active', joinDate:'2023-03-08', exitDate:null, note:'Quality Officer - minimal nights, exactly one 2-night block/month'},
       {id:'s3', name:'Beatrice NGEZEKURE', sex:'Female', dob:'1969-01-15', role:'Laboratory Technologist', phone:'0788767548', email:'ngezebeatha@gmail.com', contract:'statute', pattern:'dayonly', nightPref:'no', maxNights:0, maxConsecN:0, status:'active', joinDate:'1998-01-01', exitDate:null, note:'Reception mostly, Parasitology when limited, never Phlebotomy/TB'},
       {id:'s4', name:'Aurelie YANSONEYE', sex:'Female', dob:'1987-04-15', role:'HIV Lab Quality Corp', phone:'0782129036', email:'aurelieyansoneye@gmail.com', contract:'statute', pattern:'weekendonly', nightPref:'yes', maxNights:16, maxConsecN:2, weekendPattern:'DN', weekendOnly:true, status:'active', joinDate:'2016-10-31', exitDate:null, note:'Weekend-only: works Day+Night Sat & Sun, rests Mon-Fri'},
@@ -657,7 +657,9 @@ function buildSeed(){
       {id:'l6', staffId:'s3', type:'AL', from:'2026-12-14', to:'2027-01-13', backOn:'2027-01-14', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027'},
       {id:'l7', staffId:'s1', type:'AL', from:'2026-12-08', to:'2026-12-09', backOn:'2026-12-10', status:'Planned', fy:'2026/2027', note:'Carry-over from previous FY (30d) — not yet used'},
       {id:'l8', staffId:'s4', type:'AL', from:'2026-09-08', to:'2026-09-22', backOn:'2026-09-23', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — weekend shifts redistributed while away'},
-      {id:'l9', staffId:'s5', type:'AL', from:'2026-09-16', to:'2026-09-30', backOn:'2026-10-01', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — part 2 of 2 (15d)'},
+      {id:'l9', staffId:'s5', type:'AL', from:'2026-09-16', to:'2026-09-30', backOn:'2026-10-01', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — 60d carry-over: part 2 of 2 (15d) — Aug17-Oct15 total 60d'},
+      {id:'l9b', staffId:'s5', type:'AL', from:'2026-10-01', to:'2026-10-15', backOn:'2026-10-16', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — 60d carry-over: part 3 of 3 (15d) — completes Aug17-Oct15 60d'},
+      {id:'l9c', staffId:'s5', type:'AL', from:'2026-10-16', to:'2026-10-30', backOn:'2026-10-31', status:'Planned', fy:'2026/2027', note:'2026/27 FY — 1st installment of 30 days (15d) — after 60-day leave, per manager request'},
       {id:'l10', staffId:'s5', type:'W', from:'2026-08-29', to:'2026-08-29', backOn:'2026-08-30', status:'Planned', fy:'2026/2027', note:'Wedding day'},
       {id:'l11', staffId:'s5', type:'AL', from:'2026-08-17', to:'2026-09-15', backOn:'2026-09-16', status:'Planned', fy:'2026/2027', note:'Carry-over from previous FY (30d) — not yet used'},
       {id:'l12', staffId:'s4', type:'TR', from:'2026-07-24', to:'2026-07-25', backOn:'2026-07-25', status:'Planned', fy:'2026/2027', note:'Weekly Skills Training'},
@@ -865,43 +867,51 @@ function expTotals(){ let expenses=0, reimbursed=0, count=0;
 // ============ CHARTS (reference-grade: flat, rounded, bold) ============
 const CHART_COLORS=['#2878f0','#f07850','#00a0a0','#9a6b10','#1f9d61','#8b2fb3','#dd4b4b','#5d6b82'];
 function chartFontScale(w){ return Math.max(12, Math.round(w/46)); }
-function svgBar(data,opts){ // vertical bars, rounded, value labels, min:0 baseline
-  opts=opts||{}; const w=opts.w||640, h=opts.h||240, pad={l:46,r:14,t:20,b:38};
+function svgBar(data,opts){ // vertical bars - readable, well spaced
+  opts=opts||{}; const w=opts.w||680, h=opts.h||260, pad={l:52,r:18,t:28,b:48};
   const fs=chartFontScale(w);
   const vals=data.map(d=>d.value).concat(0);
   const max=Math.max(...vals,1), min=Math.min(...vals,0); const range=(max-min)||1;
   const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
-  const n=data.length||1; const bw=Math.min(86, (iw/n)*0.66);
+  const n=data.length||1; const gap=14; const bw=Math.max(18, Math.min(64, (iw - gap*(n-1))/n));
   const y0v=pad.t+ (max/range)*ih;
   let bars='';
   data.forEach((d,i)=>{
-    const x=pad.l+(iw/n)*i+(iw/n-bw)/2;
+    const x=pad.l + i*(bw+gap);
     const vh=Math.abs(d.value)/range*ih; const y=d.value>=0?y0v-vh:y0v;
     const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
-    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(vh,1).toFixed(1)}" rx="6" fill="${col}"><title>${esc(d.label)}: ${d.value}</title></rect>`;
-    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(y-6).toFixed(1)}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="#22304a">${d.value}</text>`;
-    if(opts.labels!==false) bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-10).toFixed(1)}" text-anchor="middle" font-size="${fs}" fill="#5d6b82" font-weight="600">${esc(String(d.label).slice(0,12))}</text>`;
+    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(vh,2).toFixed(1)}" rx="7" fill="${col}" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.08))"><title>${esc(d.label)}: ${d.value}</title></rect>`;
+    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(y-10).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs,12)}" font-weight="800" fill="#1b2434">${d.value}</text>`;
+    if(opts.labels!==false) bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,11)}" fill="#5d6b82" font-weight="600">${esc(String(d.label).slice(0,14))}</text>`;
   });
   let gl='';
-  gl+=`<line x1="${pad.l}" y1="${y0v.toFixed(1)}" x2="${w-pad.r}" y2="${y0v.toFixed(1)}" stroke="#d7dfe8" stroke-width="1.2"/>`;
-  for(let g=0;g<=3;g++){ const gy=pad.t+(ih*g)/3; const val=Math.round(max-(range*g)/3);
-    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1"/>`;
-    gl+=`<text x="${pad.l-8}" y="${gy+4}" text-anchor="end" font-size="${fs-1}" fill="#9aa7ba">${val}</text>`; }
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="bar chart">${gl}${bars}</svg>`;
+  gl+=`<line x1="${pad.l}" y1="${y0v.toFixed(1)}" x2="${w-pad.r}" y2="${y0v.toFixed(1)}" stroke="#d7dfe8" stroke-width="1.4"/>`;
+  for(let g=0;g<=4;g++){ const gy=pad.t+(ih*g)/4; const val=Math.round(max-(range*g)/4);
+    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/>`;
+    gl+=`<text x="${pad.l-10}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,11)}" fill="#9aa7ba" font-weight="600">${val}</text>`; }
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="bar chart" style="overflow:visible">${gl}${bars}</svg>`;
 }
-function svgHBar(data,opts){ // horizontal bars, bold, value at end
-  opts=opts||{}; const w=opts.w||640, h=opts.h||Math.max(210, data.length*36+30); const row=Math.min(36,(h-30)/Math.max(data.length,1));
+function svgHBar(data,opts){ // horizontal bars - spacious & readable
+  opts=opts||{}; const w=opts.w||680; const rowH=46; const h=opts.h||Math.max(220, data.length*rowH+40);
   const fs=chartFontScale(w);
-  const max=Math.max(...data.map(d=>d.value),1); const labW=Math.min(180, w*0.36); const iw=w-labW-56;
+  const max=Math.max(...data.map(d=>d.value),1); const labW=Math.min(200, w*0.38); const iw=w-labW-70;
   let rows='';
+  // subtle grid lines
+  for(let g=0; g<=4; g++){
+    const gx = labW + (iw*g)/4;
+    rows+=`<line x1="${gx}" y1="10" x2="${gx}" y2="${h-10}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/>`;
+  }
   data.forEach((d,i)=>{
-    const y=16+i*row+row*0.2; const bw=(d.value/max)*iw;
+    const y=14+i*rowH;
+    const bw=(d.value/max)*iw;
     const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
-    rows+=`<text x="${labW-10}" y="${(y+row/2+5).toFixed(1)}" text-anchor="end" font-size="${fs}" fill="#5d6b82" font-weight="600">${esc(String(d.label).slice(0,22))}</text>`;
-    rows+=`<rect x="${labW}" y="${(y+row*0.12).toFixed(1)}" width="${Math.max(bw,2).toFixed(1)}" height="${(row*0.68).toFixed(1)}" rx="6" fill="${col}"><title>${esc(d.label)}: ${d.value}</title></rect>`;
-    rows+=`<text x="${(labW+bw+10).toFixed(1)}" y="${(y+row/2+5).toFixed(1)}" font-size="${fs}" font-weight="700" fill="#22304a">${d.value}</text>`;
+    // label background
+    rows+=`<rect x="0" y="${y}" width="${labW-8}" height="${rowH-8}" rx="8" fill="${i%2===0 ? '#f6f8fb' : '#ffffff'}" />`;
+    rows+=`<text x="${labW-12}" y="${(y+rowH/2+2).toFixed(1)}" text-anchor="end" font-size="${Math.max(fs,12.5)}" fill="#3d4c63" font-weight="700">${esc(String(d.label).slice(0,24))}</text>`;
+    rows+=`<rect x="${labW}" y="${(y+8).toFixed(1)}" width="${Math.max(bw,4).toFixed(1)}" height="18" rx="9" fill="${col}" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,0.08))"><title>${esc(d.label)}: ${d.value}</title></rect>`;
+    rows+=`<text x="${(labW+bw+14).toFixed(1)}" y="${(y+rowH/2+2).toFixed(1)}" font-size="${Math.max(fs,12.5)}" font-weight="800" fill="#1b2434">${d.value}</text>`;
   });
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="horizontal bar chart">${rows}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="horizontal bar chart" style="overflow:visible">${rows}</svg>`;
 }
 function svgDonut(items,opts){ opts=opts||{}; const size=opts.size||150, cx=size/2, cy=size/2, r=size/2-10, ir=r*0.62;
   const total=items.reduce((a,i)=>a+(i.value||0),0)||1; let acc=0; let segs='';
@@ -913,20 +923,21 @@ function svgDonut(items,opts){ opts=opts||{}; const size=opts.size||150, cx=size
     acc+=frac; });
   return `<svg viewBox="0 0 ${size} ${size}" width="${opts.width||130}" height="${opts.height||130}">${segs}<circle cx="${cx}" cy="${cy}" r="${ir}" fill="#fff"/><text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="16" font-weight="800" fill="#22304a">${opts.center||''}</text></svg>`;
 }
-function svgStackBar(layers,opts){ opts=opts||{}; const w=opts.w||640, h=opts.h||230;
+function svgStackBar(layers,opts){ opts=opts||{}; const w=opts.w||700, h=opts.h||280;
   const n=layers[0]?layers[0].values.length:0; if(!n) return '';
   const fs=chartFontScale(w);
-  const pad={l:46,r:12,t:18,b:34}; const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  const pad={l:56,r:16,t:28,b:48}; const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
   const totals=[]; for(let i=0;i<n;i++){ totals.push(layers.reduce((a,l)=>a+(l.values[i]||0),0)); }
-  const max=Math.max(...totals,1); const bw=Math.min(64,(iw/n)*0.6);
+  const max=Math.max(...totals,1); const gap=16; const bw=Math.max(22, Math.min(56, (iw - gap*(n-1))/n));
   let bars='';
-  for(let i=0;i<n;i++){ const x=pad.l+(iw/n)*i+(iw/n-bw)/2; let y=pad.t+ih;
+  for(let i=0;i<n;i++){ const x=pad.l + i*(bw+gap); let y=pad.t+ih;
     for(let l of layers){ const v=l.values[i]||0; const bh=(v/max)*ih; y-=bh;
-      bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(bh,1).toFixed(1)}" fill="${l.color||CHART_COLORS[layers.indexOf(l)%CHART_COLORS.length]}" rx="2"><title>${esc(l.label)}: ${v}</title></rect>`; }
-    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-10).toFixed(1)}" text-anchor="middle" font-size="${fs}" fill="#5d6b82" font-weight="600">${esc(opts.xLabels?opts.xLabels[i]:'')}</text>`; }
-  let gl=''; for(let g=0;g<=3;g++){ const gy=pad.t+(ih*g)/3;
-    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1"/><text x="${pad.l-8}" y="${gy+4}" text-anchor="end" font-size="${fs-1}" fill="#9aa7ba">${Math.round(max*g/3)}</text>`; }
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="stacked bar chart">${gl}${bars}</svg>`;
+      bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(bh,2).toFixed(1)}" fill="${l.color||CHART_COLORS[layers.indexOf(l)%CHART_COLORS.length]}" rx="6" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,0.07))"><title>${esc(l.label)}: ${v}</title></rect>`; }
+    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-14).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,11)}" fill="#5d6b82" font-weight="600">${esc(opts.xLabels?opts.xLabels[i]:'')}</text>`;
+  }
+  let gl=''; for(let g=0;g<=4;g++){ const gy=pad.t+(ih*g)/4;
+    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/><text x="${pad.l-12}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,11)}" fill="#9aa7ba" font-weight="600">${Math.round(max*(4-g)/4)}</text>`; }
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="stacked bar chart" style="overflow:visible">${gl}${bars}</svg>`;
 }
 function svgSpark(values,color){ color=color||'#2878f0'; const w=120,h=30,max=Math.max(...values,1),n=values.length;
   if(n<2) return ''; const pts=values.map((v,i)=>`${(i/(n-1)*w).toFixed(1)},${(h-(v/max)*h).toFixed(1)}`).join(' ');
@@ -3719,7 +3730,7 @@ function finishSplash(){
 }
 
 /* ================= ADMIN AUTH SYSTEM =================
-   - Default: admin / RuliLab@2026 / smhnkivn@gmail.com
+   - Default: admin / RuliLab@2026 / smhnklvn@gmail.com
    - Staff = viewer: can view & download, cannot generate/edit
    - OTP + Email reset (client-side demo, mailto fallback)
 */
@@ -3731,11 +3742,11 @@ function getAuthRec(){
   try{
     let rec = JSON.parse(localStorage.getItem(AUTH_KEY));
     if(!rec){
-      rec = {username:'admin', password:'RuliLab@2026', email:'smhnkivn@gmail.com', created:new Date().toISOString()};
+      rec = {username:'admin', password:'RuliLab@2026', email:'smhnklvn@gmail.com', created:new Date().toISOString()};
       localStorage.setItem(AUTH_KEY, JSON.stringify(rec));
     }
     return rec;
-  }catch(e){ return {username:'admin', password:'RuliLab@2026', email:'smhnkivn@gmail.com'}; }
+  }catch(e){ return {username:'admin', password:'RuliLab@2026', email:'smhnklvn@gmail.com'}; }
 }
 function saveAuthRec(r){ localStorage.setItem(AUTH_KEY, JSON.stringify(r)); }
 
