@@ -302,6 +302,37 @@ body.viewer-mode td.cell{cursor:not-allowed !important}
 #authChip{background:#e8f0fb;border-color:#b8cce6;color:#21568f}
 #authChip.admin{background:#dcf3e8;border-color:#a8d9bd;color:#16603e}
 
+
+/* ===== FIXES: spacing consistency + hamburger menu ===== */
+#mainWrap{grid-column:2; min-width:0; display:flex; flex-direction:column; width:100%; transition:all .25s ease}
+body.nav-closed #mainWrap{grid-column:1 !important; width:100% !important; max-width:100% !important}
+body.nav-closed #app{grid-template-columns:1fr !important}
+body.nav-closed main{grid-column:1 !important; max-width:100% !important; width:100% !important}
+#app{width:100%}
+/* spacing consistency */
+.card + .card{margin-top:0 !important}
+.grid{gap:16px !important}
+.card{margin-bottom:0 !important}
+.module .card{margin-top:0}
+.module > .card, .module > .grid, .module > .toolbar{margin-bottom:16px}
+.toolbar{margin-bottom:16px !important; gap:10px !important}
+.tabs{margin-bottom:18px !important; gap:8px !important}
+.section-title{margin-bottom:18px !important}
+/* equal height */
+.g-2 > .card, .g-3 > .card, .g-4 > .card, .g-auto > .kpi{height:100%}
+/* viewer confidentiality */
+body.viewer-mode .confidential{filter:blur(8px); user-select:none; pointer-events:none; position:relative}
+body.viewer-mode .confidential::after{content:'Confidential Admin only'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.75); font-weight:800; font-size:12px; color:#5d6b82; backdrop-filter:blur(2px); border-radius:8px}
+body.viewer-mode [data-confidential]{display:none !important}
+
+
+/* Fix hamburger menu half-screen bug - ensure full width */
+@media(min-width:981px){
+  body.nav-closed #mainWrap{grid-column:1 !important; width:100% !important}
+  body.nav-closed #mainWrap main{max-width:100% !important; width:100% !important; padding-left:24px; padding-right:24px}
+  #mainWrap main{transition:max-width .25s ease, padding .25s ease}
+}
+
 </style>
 </head>
 <body>
@@ -326,7 +357,7 @@ body.viewer-mode td.cell{cursor:not-allowed !important}
       <button class="nav-item" data-tab="stock"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></span>Stock &amp; Supplies</button>
       <div class="nav-section">People</div>
       <button class="nav-item" data-tab="training"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>Training Roster</button>
-      <button class="nav-item" data-tab="revenue"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></svg></span>Training Revenue</button>
+      <button class="nav-item" data-tab="revenue" data-confidential="admin-only"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></svg></span>Training Revenue</button>
       <div class="nav-section">Scheduling</div>
       <button class="nav-item" data-tab="roster"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 4V2M16 4V2M8 14h4M8 17h4"/></svg></span>Working Plan</button>
       <button class="nav-item" data-tab="leave"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19l5-5 4 4 7-8"/><path d="M20 6v5h-5"/></svg></span>Leave &amp; Timeline</button>
@@ -336,7 +367,7 @@ body.viewer-mode td.cell{cursor:not-allowed !important}
     <div class="side-foot" id="sideFoot"><span id="loadedBadge" style="display:none;color:var(--green);font-weight:800;font-size:12px"> App loaded &amp; running</span><br>Lab Systems v4.0 · Local data · auto-saved<br><span id="saveState" style="color:var(--green)">● saved</span></div>
   </aside>
 
-  <div style="min-width:0; display:flex; flex-direction:column; grid-column:2">
+  <div id="mainWrap" style="min-width:0; display:flex; flex-direction:column; grid-column:2">
   <header id="topbar">
     <button class="hamburger" id="hamburger" aria-label="Menu" style="color:#33435f"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
     <div>
@@ -1338,7 +1369,7 @@ async function exportManifestPNG(man){
   heads.forEach((hd,i)=>{ g.fillStyle='#0e2e5c'; g.fillRect(x,y0,colW[i],46); g.fillStyle='#fff'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(hd,x+colW[i]/2,y0+23); x+=colW[i]; });
   ex.samples.forEach((s,ri)=>{
     const yy=y0+46+ri*46; let x2=30;
-    const vals=[ri+1, s.sampleId, (s.healthFacility||'Ruli DH')+', '+(s.district||'Gakenke'), s.patientName, s.patientId||'—', s.sex||'—', s.test, s.collectionDate||'—', s.barcode];
+    const vals=[ri+1, s.sampleId, (s.healthFacility||'Ruli DH')+', '+(s.district||'Gakenke'), maskName(s.patientName), maskPatientId(s.patientId)||'—', s.sex||'—', s.test, s.collectionDate||'—', s.barcode];
     g.font='10.5px Arial';
     vals.forEach((v,i)=>{ g.fillStyle=(ri%2)?'#f4f7fc':'#fff'; g.fillRect(x2,yy,colW[i],46);
       if(i===8){ // barcode cell: code label + barcode scaled to fit the column
@@ -1369,7 +1400,7 @@ function barcodeSVG(text){
 function previewManifestHTML(man){
   const ex=buildManifestExport(man);
   let rows='';
-  ex.samples.forEach((s,i)=>{ rows+=`<tr><td>${i+1}</td><td><b>${esc(s.sampleId)}</b></td><td>${esc((s.healthFacility||'Ruli DH')+', '+(s.district||''))}</td><td>${esc(s.patientName)}</td><td>${esc(s.patientId||'—')}</td><td>${esc(s.sex||'—')}</td><td>${esc(s.test)}</td><td>${esc(s.collectionDate||'—')}</td><td>${esc(s.sampleId)}<br>${barcodeSVG(s.barcode||s.sampleId)}</td></tr>`; });
+  ex.samples.forEach((s,i)=>{ rows+=`<tr><td>${i+1}</td><td><b>${esc(s.sampleId)}</b></td><td>${esc((s.healthFacility||'Ruli DH')+', '+(s.district||''))}</td><td>${esc(maskName(s.patientName))}</td><td>${esc(maskPatientId(s.patientId)||'—')}</td><td>${esc(s.sex||'—')}</td><td>${esc(s.test)}</td><td>${esc(s.collectionDate||'—')}</td><td>${esc(s.sampleId)}<br>${barcodeSVG(s.barcode||s.sampleId)}</td></tr>`; });
   openModal(`<h2>Preview — ${esc(ex.manifestId)}</h2>
   <div style="max-height:70vh;overflow:auto;border:1px solid var(--edge);border-radius:12px;padding:14px;background:#fff;font-family:'Trebuchet MS',sans-serif;font-size:11px">
     <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px">
@@ -1425,7 +1456,7 @@ function exportManifestPDF(man){
     const startR=pg*rowsPerPage; const endR=Math.min(ex.samples.length, startR+rowsPerPage);
     for(let ri=startR; ri<endR; ri++){
       const s=ex.samples[ri]; const yy=y0+rh+(ri-startR)*rh; let x2=40;
-      const vals=[ri+1, s.sampleId, (s.healthFacility||'Ruli DH')+', '+(s.district||'Gakenke'), s.patientName, s.patientId||'—', s.sex||'—', s.test, s.collectionDate||'—', s.barcode];
+      const vals=[ri+1, s.sampleId, (s.healthFacility||'Ruli DH')+', '+(s.district||'Gakenke'), maskName(s.patientName), maskPatientId(s.patientId)||'—', s.sex||'—', s.test, s.collectionDate||'—', s.barcode];
       vals.forEach((v,i)=>{ d.rect(x2,yy,colW[i],rh,{fill:(ri%2)?'#f0f0f0':'#ffffff'});
         if(i===8){ d.text(String(s.barcode||s.sampleId).slice(0,14),x2+colW[i]/2,yy+9,{size:6});
           const fitW=colW[i]-14; const bars=code39Bars(s.barcode||s.sampleId); let tot=0; bars.forEach(b=>tot+=b.w);
@@ -1452,7 +1483,7 @@ function exportManifestXLSX(man){
   rows.push(['REPUBLIC OF RWANDA']); rows.push(['MINISTRY OF HEALTH']); rows.push([]);
   rows.push([ex.title]); rows.push(['Testing Hospital: '+ex.testingHospital]); rows.push(['Manifest ID: '+ex.manifestId]); rows.push([]);
   rows.push(['S.No','Sample ID','Health facility, District','Patient Name','Patient ID','Date of Birth','Sex','Sample / Test','Collection Date','Sample Barcode']);
-  ex.samples.forEach((s,i)=>rows.push([i+1, s.sampleId, (s.healthFacility||'Ruli DH')+', '+(s.district||'Gakenke'), s.patientName, s.patientId||'—', s.dob||'—', s.sex||'—', s.test, s.collectionDate||'—', s.barcode||'—']));
+  ex.samples.forEach((s,i)=>rows.push([i+1, s.sampleId, (s.healthFacility||'Ruli DH')+', '+(s.district||'Gakenke'), maskName(s.patientName), maskPatientId(s.patientId)||'—', s.dob||'—', s.sex||'—', s.test, s.collectionDate||'—', s.barcode||'—']));
   rows.push([]); rows.push(['Generated By:', ex.generatedBy]); rows.push(['Verified By:']); rows.push(['Received By (at '+ex.testingHospital+'):']);
   const bytes=buildXLSX([{name:ex.manifestId.slice(0,26), rows}]);
   download(new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'Manifest-'+ex.manifestId+'.xlsx');
@@ -1629,7 +1660,7 @@ function renderDash(){
   el.innerHTML=`
   <div class="section-title"> Command Dashboard <small>${todayISO()} · live from your records</small></div>
   ${alerts.length?`<div class="card" style="padding:14px 16px"><h3> Alerts &amp; Insights <span class="sub">${alerts.length}</span></h3><div class="alerts-grid">${alerts.slice(0,12).map(a=>`<div class="alert ${a.t}">${a.m}</div>`).join('')}</div>${alerts.length>12?`<div class="hint" style="margin-top:8px">+${alerts.length-12} more in Stock &amp; Roster views</div>`:''}</div>`:''}
-  <div class="toolbar" style="margin-top:16px"><span class="chip">Overview KPIs</span><span class="spacer"></span>
+  <div class="toolbar" style="margin-bottom:16px"><span class="chip">Overview KPIs</span><span class="spacer"></span>
     <button class="btn sm" id="dashToggle" style="gap:6px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span id="dashToggleLbl">Hide KPIs</span></button></div>
   <div class="grid g-auto kpi-grid-collapsible" id="dashKpis">
     ${kpiCard(' Hemoculture bottles', stTotal.total, `Ped ${(stTotal.batches.find(b=>b.ageGroup==='Pediatric/Neonatal')?stTotal.batches.find(b=>b.ageGroup==='Pediatric/Neonatal').qty:undefined)||0} · Adult ${(stTotal.batches.find(b=>b.ageGroup==='Adult')?stTotal.batches.find(b=>b.ageGroup==='Adult').qty:undefined)||0}`, {tone:'blue', ic:''})}
@@ -1647,7 +1678,7 @@ function renderDash(){
     ${kpiCard('On leave now', onLeaveNow.length, returningSoon.length?'back ≤7d: '+returningSoon.map(l=>(staffById(l.staffId)?staffById(l.staffId).name.split(' ')[0]:undefined)).join(', '):'no one away', {tone:'amber', ic:''})}
     ${nextHol?kpiCard('Next holiday', fmtDate(nextHol.date).split(' ')[0]+' '+fmtDate(nextHol.date).split(' ')[1], nextHol.name, {tone:'amber', ic:''}):''}
   </div>
-  <div class="grid g-2" style="margin-top:16px">
+  <div class="grid g-2" style="margin-bottom:16px">
     <div class="card"><h3> Trainings per staff member</h3><div class="chart-box">${svgHBar(perStaff)}</div></div>
     <div class="card"><h3> Most referred sample types</h3><div class="chart-box">${svgHBar(mostTests)}</div></div>
     <div class="card"><h3> Referral volume per hospital</h3><div class="chart-box">${svgHBar(hospArr)}</div></div>
@@ -1655,14 +1686,14 @@ function renderDash(){
     <div class="card"><h3>⏱ TAT per test — average vs expected (days)</h3><div class="chart-box">${renderTatChart(tats)}</div></div>
     <div class="card"><h3> Age distribution (active staff)</h3><div class="chart-box">${svgBar(ageArr)}</div></div>
   </div>
-  <div class="card span2" style="margin-top:16px"><h3> Daily staffing trend — ${monthLabel(nowKey)} <span class="sub">aggregated by week (Day · Night · Off · Leave/Absent)</span></h3>
+  <div class="card span2" style="margin-bottom:16px"><h3> Daily staffing trend — ${monthLabel(nowKey)} <span class="sub">aggregated by week (Day · Night · Off · Leave/Absent)</span></h3>
     <div class="chart-box">${stack}</div>
     <div class="mtl-legend"><span><i style="background:#dbe7fb"></i>Day</span><span><i style="background:#2d3a5c"></i>Night</span><span><i style="background:#f1f3f8"></i>Off</span><span><i style="background:#fdeccd"></i>Leave/Absent</span></div></div>
-  <div class="card" style="margin-top:16px"><h3> Master Timeline — FY ${fyInfo(today).label} <span class="sub">holidays · leaves · trainings · weddings · absences</span></h3>${renderTimeline(fyInfo(today).start, fyInfo(today).end)}</div>
-  <div class="grid g-2" style="margin-top:16px">
+  <div class="card" style="margin-bottom:16px"><h3> Master Timeline — FY ${fyInfo(today).label} <span class="sub">holidays · leaves · trainings · weddings · absences</span></h3>${renderTimeline(fyInfo(today).start, fyInfo(today).end)}</div>
+  <div class="grid g-2" style="margin-bottom:16px">
     <div class="card"><h3>⏳ Pending samples — aging list</h3>
       ${pend.length?`<div class="tbl-wrap"><table class="tbl"><tr><th>Patient</th><th>Test</th><th>Hospital</th><th>Sent</th><th>Elapsed</th><th>Status</th></tr>
-      ${pend.map(s=>`<tr><td>${esc(s.patientName)}</td><td>${esc(s.test)}</td><td>${esc(s.hospital)}</td><td>${fmtDate(s.sentDate||s.collectionDate)}</td>
+      ${pend.map(s=>`<tr><td>${esc(maskName(s.patientName))}</td><td>${esc(s.test)}</td><td>${esc(s.hospital)}</td><td>${fmtDate(s.sentDate||s.collectionDate)}</td>
       <td class="num">${daysBetween(s.sentDate||s.collectionDate,todayISO())}d</td><td>${daysBetween(s.sentDate||s.collectionDate,todayISO())>7?'<span class="tag red">Overdue</span>':'<span class="tag amber">Pending</span>'}</td></tr>`).join('')}</table></div>`
       :'<div class="empty"><div class="big"></div>Nothing pending right now.</div>'}</div>
     <div class="card"><h3> Team profile &amp; records <span class="sub">${act.length} active</span></h3>
@@ -1827,7 +1858,7 @@ function sampleCard(s){
   const stTag={Pending:'amber',Positive:'green',Negative:'blue',Rejected:'red',Done:'gray'}[s.status]||'gray';
   return `<div class="card" style="margin:0">
     <div style="display:flex;gap:10px;align-items:flex-start"><div style="flex:1">
-      <div class="t" style="font-weight:800;font-size:14px">${esc(s.patientName)}</div>
+      <div class="t" style="font-weight:800;font-size:14px">${esc(maskName(s.patientName))}</div>
       <div class="hint">${esc(s.sampleId)} ${s.patientId?'· PID '+esc(s.patientId):''}</div></div>
       <span class="tag ${stTag}">${s.status}</span></div>
     <hr><div class="row" style="font-size:12.5px;color:var(--muted);gap:6px 14px;margin-top:2px">
@@ -1864,7 +1895,7 @@ function openSampleForm(id){
     <div style="grid-column:1/-1"><label>Notes</label><textarea id="f_note">${esc((s?s.notes:undefined)||'')}</textarea></div>
     ${!s?'<div style="grid-column:1/-1" class="alert info"> When test is <b>Blood Culture</b>: one Hemoculture bottle is auto-consumed (FIFO), and the sample is referred to <b>CHUK</b> per the new guideline.</div>':''}
   </div>
-  <div class="row" style="margin-top:16px"><button class="btn primary" type="submit"> Save sample</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
+  <div class="row" style="margin-bottom:16px"><button class="btn primary" type="submit"> Save sample</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
   $('#f_sex').value=(s?s.sex:undefined)||'Unknown';
   const fTest=$('#f_test'), fHosp=$('#f_hosp'), fSid=$('#f_sid'), fBar=$('#f_bar');
   const syncCHUK=()=>{ if(fTest.value==='Blood Culture'){ const ch=chukHospital(); if(ch) fHosp.value=ch.name; } };
@@ -1909,10 +1940,10 @@ function openManifestForm(){
   <div class="alert info" style="margin:10px 0">Select samples below to include. A manifest can hold <b>100+ samples</b>, and more than one manifest can be created the same day.</div>
   <div style="max-height:300px;overflow-y:auto;border:1px solid var(--edge);border-radius:12px;padding:8px" id="m_samples">
     ${ready.map(s=>`<label style="display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:9px;cursor:pointer;font-size:13px" class="m-srow">
-      <input type="checkbox" value="${s.id}"> <b>${esc(s.sampleId)}</b> <span style="color:var(--muted)">${esc(s.patientName)} · ${esc(s.test)}</span>
+      <input type="checkbox" value="${s.id}"> <b>${esc(s.sampleId)}</b> <span style="color:var(--muted)">${esc(maskName(s.patientName))} · ${esc(s.test)}</span>
       <span style="margin-left:auto" class="tag gray">${esc(s.hospital)}</span></label>`).join('')}
   </div>
-  <div class="row" style="margin-top:16px"><button class="btn primary" type="submit"> Generate manifest</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
+  <div class="row" style="margin-bottom:16px"><button class="btn primary" type="submit"> Generate manifest</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
   $('#m_regen').onclick=()=>{ const sel=Array.from(mSamples.querySelectorAll('input:checked')).map(i=>DB.samples.find(s=>s.id===i.value)).filter(Boolean); const t0=sel.length&&sel.every(s=>s.test===sel[0].test)?(DB.catalog.tests||[]).find(t=>t.name===sel[0].test):null; $('#m_id').value=newManifestId(t0?t0.prefix:null); };
   const mSamples=$('#m_samples'), mTest=$('#m_test'), mTitle=$('#m_title');
   const updateMf=()=>{
@@ -1995,7 +2026,7 @@ function viewManifest(manId){
   openModal(`<h2> ${esc(man.manifestId)} <span class="tag blue" style="margin-left:8px">${samples.length} samples</span></h2>
   <div class="hint" style="margin-bottom:10px">${esc(man.title)} · Testing: ${esc(man.testingHospital)} · Generated ${fmtDate(man.createdAt)}</div>
   <div class="tbl-wrap"><table class="tbl"><tr><th>#</th><th>Sample ID</th><th>Patient</th><th>Test</th><th>Origin</th><th>Status</th></tr>
-  ${samples.map((s,i)=>`<tr><td>${i+1}</td><td><b>${esc(s.sampleId)}</b></td><td>${esc(s.patientName)}</td><td>${esc(s.test)}</td><td>${esc(s.healthFacility||'Ruli DH')}</td><td><span class="tag ${s.status==='Pending'?'amber':'green'}">${s.status}</span></td></tr>`).join('')}</table></div>
+  ${samples.map((s,i)=>`<tr><td>${i+1}</td><td><b>${esc(s.sampleId)}</b></td><td>${esc(maskName(s.patientName))}</td><td>${esc(s.test)}</td><td>${esc(s.healthFacility||'Ruli DH')}</td><td><span class="tag ${s.status==='Pending'?'amber':'green'}">${s.status}</span></td></tr>`).join('')}</table></div>
   <div class="row" style="margin-top:14px"><button class="btn sm" id="vmPng"> PNG</button><button class="btn sm" id="vmPdf"> PDF</button><button class="btn sm" id="vmXlsx"> XLSX</button><span class="spacer"></span><button class="btn" onclick="closeModal()">Close</button></div>`);
   $('#vmPng').onclick=()=>exportManifestPNG(man); $('#vmPdf').onclick=()=>exportManifestPDF(man); $('#vmXlsx').onclick=()=>exportManifestXLSX(man);
 }
@@ -2080,7 +2111,7 @@ function openStockForm(cid){
     <div id="s_expWrap"><label>Expiry date (for received)</label><input type="date" id="s_exp"></div>
     <div id="s_hcWrap" style="display:none"><label>Health center</label><select id="s_hc">${(DB.catalog.healthCenters||[]).map(h=>`<option>${esc(h.name)}</option>`).join('')}</select></div>
     <div style="grid-column:1/-1"><label>Note (optional)</label><input id="s_note" placeholder="e.g. auto-logged from sample registration"></div>
-  </div><div class="row" style="margin-top:16px"><button class="btn primary" type="submit"> Save entry</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
+  </div><div class="row" style="margin-bottom:16px"><button class="btn primary" type="submit"> Save entry</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
   const consSel=$('#s_cons'); const typeSel=$('#s_type');
   function sync(){ const c=consById(consSel.value);
     $('#s_ageWrap').style.display=(c&&c.ageGroup)?'':'none';
@@ -2249,7 +2280,7 @@ function renderTrDash(body){
     ${kpiCard('Active staff', act.length, 'avg age '+avgAge+'y', {tone:'blue'})}
     ${kpiCard('Avg experience', avgExp+'y', 'at Ruli DH lab', {tone:'teal'})}
   </div>
-  <div class="grid g-2" style="margin-top:16px">
+  <div class="grid g-2" style="margin-bottom:16px">
     <div class="card span2"><h3> Trainings attended per staff member</h3><div class="chart-box">${svgHBar(perStaff)}</div></div>
     <div class="card"><h3> Age distribution (active staff)</h3><div class="chart-box">${svgBar(ageArr)}</div></div>
   </div>`;
@@ -2349,7 +2380,7 @@ function openTrainingForm(fifoDefault, isPast, editId){
       <b>${esc(s.name)}</b> <span class="hint">${esc(s.role)} · ${w==null?'never trained':'waiting '+w+'d'}</span>
       ${s.status==='exited'?'<span class="tag red">exited</span>':''}</label>`; }).join('')}
   </div>
-  <div class="row" style="margin-top:16px"><button class="btn primary" type="submit"> ${isPast?'Record training':'Save invitation'}</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
+  <div class="row" style="margin-bottom:16px"><button class="btn primary" type="submit"> ${isPast?'Record training':'Save invitation'}</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
   $('#trForm').addEventListener('submit',ev=>{ ev.preventDefault();
     const ids=Array.from(document.querySelectorAll('#attList input:checked')).map(i=>i.value);
     if(!ids.length) return toast('Select at least one attendee','warn');
@@ -2369,7 +2400,7 @@ function openTrainingForm(fifoDefault, isPast, editId){
 /* ================= PERSONAL TRAINING REVENUE TRACKER ================= */
 'use strict';
 const EXP_CATS=['Transport / Travel','Food','Lodging','Drinks','Other'];
-function renderRevenue(){
+function renderRevenue(){ if(isViewer()){ const el=document.getElementById("mod-revenue"); if(el){ el.innerHTML=`<div class="viewer-banner"><div class="ic">LOCK</div><div><b>Training Revenue - Confidential</b><br><span style="font-weight:500">This module contains personal financial data and is visible only to Admin. Please login.</span></div><button class="btn primary sm" onclick="openAuth('pass')" style="margin-left:auto">Admin Login</button></div>`; } return; }
   const el=$('#mod-revenue');
   const t=expTotals();
   const sessions=DB.trainingExpenses||[];
@@ -2444,7 +2475,7 @@ function openRevSessionForm(id){
       <div><label>Start date</label><input type="date" id="rv_start" value="${(s?s.start:undefined)||todayISO()}"></div>
       <div><label>End date</label><input type="date" id="rv_end" value="${(s?s.end:undefined)||todayISO()}"></div>
     </div>
-  </div><div class="row" style="margin-top:16px"><button class="btn primary" type="submit"> Save session</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
+  </div><div class="row" style="margin-bottom:16px"><button class="btn primary" type="submit"> Save session</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
   $('#rvSync').onclick=()=>{ const inp=$('#rv_title'); const opt=Array.from($('#rvList').options).find(o=>o.value===inp.value); if(!opt) return toast('Pick a training from the list first','warn');
     $('#rv_org').value=opt.dataset.o||''; $('#rv_loc').value=opt.dataset.l||''; $('#rv_start').value=opt.dataset.s||todayISO(); $('#rv_end').value=opt.dataset.e||todayISO(); toast('Synced from Training Roster'); };
   $('#rvForm').addEventListener('submit',ev=>{ ev.preventDefault();
@@ -2462,7 +2493,7 @@ function openRevExpensesForm(id){
     <div><label>Amount (RWF)</label><input type="number" id="e_amt" min="0" step="100" value="1000" required></div>
     <div><label>Date</label><input type="date" id="e_date" value="${todayISO()}"></div>
     <div><label>Description</label><input id="e_desc" placeholder="e.g. Kigali–Musanze bus ticket"></div>
-  </div><div class="row" style="margin-top:16px"><button class="btn primary" type="submit"> Add expense</button><button class="btn" type="button" onclick="closeModal()">Close</button></div></form>`);
+  </div><div class="row" style="margin-bottom:16px"><button class="btn primary" type="submit"> Add expense</button><button class="btn" type="button" onclick="closeModal()">Close</button></div></form>`);
   $('#expForm').addEventListener('submit',ev=>{ ev.preventDefault();
     s.expenses.push({id:uid('x'),cat:$('#e_cat').value,desc:$('#e_desc').value.trim()||$('#e_cat').value,amount:+$('#e_amt').value||0,date:$('#e_date').value});
     saveDB(); closeModal(); toast('Expense added'); renderRevenue(); });
@@ -2474,7 +2505,7 @@ function openRevReimbForm(id){
     <div><label>Amount received (RWF)</label><input type="number" id="r_amt" min="0" step="100" value="0" required></div>
     <div><label>Date received</label><input type="date" id="r_date" value="${todayISO()}"></div>
     <div style="grid-column:1/-1"><label>Source (organizer)</label><input id="r_src" value="${esc(s.organizer)}" list="orgList3"><datalist id="orgList3">${COMMON_ORG.map(o=>`<option>${esc(o)}</option>`).join('')}</datalist></div>
-  </div><div class="row" style="margin-top:16px"><button class="btn primary" type="submit"> Log reimbursement</button><button class="btn" type="button" onclick="closeModal()">Close</button></div></form>`);
+  </div><div class="row" style="margin-bottom:16px"><button class="btn primary" type="submit"> Log reimbursement</button><button class="btn" type="button" onclick="closeModal()">Close</button></div></form>`);
   $('#rmForm').addEventListener('submit',ev=>{ ev.preventDefault();
     s.reimbursements.push({id:uid('r'),amount:+$('#r_amt').value||0,date:$('#r_date').value,source:$('#r_src').value.trim(),note:''});
     saveDB(); closeModal(); toast('Reimbursement logged'); renderRevenue(); });
@@ -2521,7 +2552,7 @@ function renderPlanView(body){
   </div>
   <div id="wpAlerts"></div>
   <div id="wpGridWrap"></div>
-  <div class="card" style="margin-top:16px"><h3> Keys &amp; rules</h3>
+  <div class="card" style="margin-bottom:16px"><h3> Keys &amp; rules</h3>
     <div class="row" style="gap:6px 14px">${CODE_OPTIONS.slice(0,-1).map(c=>`<span class="tag ${c[0]===''?'gray':c[0]}">${esc(c[1])}</span>`).join('')}</div>
     <p class="hint" style="margin-top:10px"> Tap any cell to edit it. Every edit or regeneration is stored as a re-exportable version. Weekend columns are amber, public holidays red. OFF falling on weekends is left blank to keep weekends clean.</p>
   </div>`;
@@ -2591,7 +2622,7 @@ function openCellEditor(si,iso,key){
     <button class="btn" id="ce_DN">Day+Night</button>
   </div>
   <div class="grid g-4">${CODE_OPTIONS.map(c=>`<button class="btn ${cur===c[0]?'primary':''}" data-c="${c[0]===''?'__':c[0]}">${c[0]?esc(c[0]):'—'}<br><small style="font-weight:500;font-size:10px">${esc(c[1])}</small></button>`).join('')}</div>
-  <div class="row" style="margin-top:16px"><button class="btn" id="ceCancel">Cancel</button></div>`);
+  <div class="row" style="margin-bottom:16px"><button class="btn" id="ceCancel">Cancel</button></div>`);
   $('#ce_2N').onclick=()=>applyN(2,'N'); $('#ce_3N').onclick=()=>applyN(3,'N');
   $('#ce_2D').onclick=()=>applyN(2,'D'); $('#ce_3D').onclick=()=>applyN(3,'D');
   $('#ce_DN').onclick=()=>applyN(1,'DN');
@@ -2660,6 +2691,37 @@ body.viewer-mode .requires-admin::after{content:'🔒 Admin';position:absolute;t
 body.viewer-mode td.cell{cursor:not-allowed !important}
 #authChip{background:#e8f0fb;border-color:#b8cce6;color:#21568f}
 #authChip.admin{background:#dcf3e8;border-color:#a8d9bd;color:#16603e}
+
+
+/* ===== FIXES: spacing consistency + hamburger menu ===== */
+#mainWrap{grid-column:2; min-width:0; display:flex; flex-direction:column; width:100%; transition:all .25s ease}
+body.nav-closed #mainWrap{grid-column:1 !important; width:100% !important; max-width:100% !important}
+body.nav-closed #app{grid-template-columns:1fr !important}
+body.nav-closed main{grid-column:1 !important; max-width:100% !important; width:100% !important}
+#app{width:100%}
+/* spacing consistency */
+.card + .card{margin-top:0 !important}
+.grid{gap:16px !important}
+.card{margin-bottom:0 !important}
+.module .card{margin-top:0}
+.module > .card, .module > .grid, .module > .toolbar{margin-bottom:16px}
+.toolbar{margin-bottom:16px !important; gap:10px !important}
+.tabs{margin-bottom:18px !important; gap:8px !important}
+.section-title{margin-bottom:18px !important}
+/* equal height */
+.g-2 > .card, .g-3 > .card, .g-4 > .card, .g-auto > .kpi{height:100%}
+/* viewer confidentiality */
+body.viewer-mode .confidential{filter:blur(8px); user-select:none; pointer-events:none; position:relative}
+body.viewer-mode .confidential::after{content:'Confidential Admin only'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.75); font-weight:800; font-size:12px; color:#5d6b82; backdrop-filter:blur(2px); border-radius:8px}
+body.viewer-mode [data-confidential]{display:none !important}
+
+
+/* Fix hamburger menu half-screen bug - ensure full width */
+@media(min-width:981px){
+  body.nav-closed #mainWrap{grid-column:1 !important; width:100% !important}
+  body.nav-closed #mainWrap main{max-width:100% !important; width:100% !important; padding-left:24px; padding-right:24px}
+  #mainWrap main{transition:max-width .25s ease, padding .25s ease}
+}
 
 </style></head><body>
   <div class="head"><div style="font-size:10px">REPUBLIC OF RWANDA — MINISTRY OF HEALTH</div><h1>${ex.hospital} · ${ex.dept}</h1><div class="sub">${ex.email} · ${ex.phone}</div></div>
@@ -2838,7 +2900,7 @@ function renderWishes(body){
       <div><label>Note</label><input id="w_note" placeholder="e.g. wedding, family event"></div>
       <div style="grid-column:1/-1"><button class="btn primary" type="submit"> Record wish</button></div>
     </form></div>
-  <div class="card" style="margin-top:16px"><h3>Recorded wishes</h3>
+  <div class="card" style="margin-bottom:16px"><h3>Recorded wishes</h3>
     ${list.length?`<div class="tbl-wrap"><table class="tbl"><tr><th>Staff</th><th>Wished-off date</th><th>Block</th><th>Note</th><th></th></tr>
     ${list.map(w=>`<tr><td>${esc(staffName(w.staffId))}</td><td>${fmtDate(w.date)}</td><td>${w.blockLen} nights → ${w.blockLen} offs</td><td class="hint">${esc(w.note||'')}</td>
     <td><button class="btn xs danger" data-wdel="${w.id}"></button></td></tr>`).join('')}</table></div>`:'<div class="empty">No wishes recorded yet.</div>'}</div>`;
@@ -3163,7 +3225,7 @@ function renderLvPlan(body){
   const nowKey=monthKey(todayISO());
   body.innerHTML=`
   <div class="card"><h3> Master Timeline — FY ${fy} <span class="sub">horizontal · scrollable · space-efficient</span></h3>${renderTimeline(fyInfo(today).start, fyInfo(today).end)}</div>
-  <div class="card" style="margin-top:16px"><h3> Leave Planner <span class="sub">Statute staff 30 calendar days AL · Contractual 18 working days · ML certified</span></h3>
+  <div class="card" style="margin-bottom:16px"><h3> Leave Planner <span class="sub">Statute staff 30 calendar days AL · Contractual 18 working days · ML certified</span></h3>
     <form id="lvForm" class="form-grid fg-4">
       <div><label>Staff</label><select id="lv_staff">${DB.staff.filter(s=>s.status==='active').map(s=>`<option>${esc(s.name)}</option>`).join('')}</select></div>
       <div><label>Type</label><select id="lv_type"><option value="AL">Annual leave</option><option value="ML">Maternity leave</option><option value="SL">Sick / Medical leave</option><option value="CL">Other authorized leave</option><option value="TR">Training</option><option value="W">Wedding day</option></select></div>
@@ -3173,19 +3235,19 @@ function renderLvPlan(body){
       <div style="grid-column:1/-1" class="row"><button class="btn primary" type="submit"> Add &amp; re-plan</button>
         <span class="hint">The working plan instantly re-adapts on next Generate.</span></div>
     </form></div>
-  <div class="card" style="margin-top:16px"><h3> Returning Soon — who is out now and when they are back</h3>
+  <div class="card" style="margin-bottom:16px"><h3> Returning Soon — who is out now and when they are back</h3>
     ${returning.length?`<div class="grid g-2">${returning.map(l=>{ const st=staffById(l.staffId); const back=daysBetween(today,l.to);
       return `<div class="list-row" style="margin:0"><span class="avatar" style="background:${staffColor(l.staffId)}">${esc(((st?st.name:undefined)||'?').split(' ').map(w=>w[0]).slice(0,2).join(''))}</span>
       <div class="grow"><div class="t">${esc(st?st.name:'?')}</div><div class="s">${LEAVE_NAMES[l.type]} · since ${fmtDate(l.from)}</div></div>
       <span class="tag ${back<=3?'red':'amber'}">${back} days until back</span></div>`; }).join('')}</div>`
     :'<div class="empty">No one away right now.</div>'}</div>
-  <div class="card" style="margin-top:16px"><h3> This Year's Leave — ${fy} only</h3>
+  <div class="card" style="margin-bottom:16px"><h3> This Year's Leave — ${fy} only</h3>
     ${thisYear.length?`<div class="tbl-wrap"><table class="tbl"><tr><th>Staff</th><th>Type</th><th>From</th><th>To</th><th>Back on</th><th>Days</th><th>Status</th><th>Note</th></tr>
     ${thisYear.map(l=>`<tr><td>${esc(staffName(l.staffId))}</td><td><span class="tag ${l.type==='AL'?'amber':l.type==='W'?'teal':l.type==='ML'?'red':'blue'}">${esc(LEAVE_NAMES[l.type]||l.type)}</span></td>
     <td>${fmtDate(l.from)}</td><td>${fmtDate(l.to)}</td><td>${fmtDate(l.backOn)}</td><td class="num">${daysBetween(l.from,l.to)+1}</td>
     <td><span class="tag ${l.status==='Completed'?'green':'blue'}">${esc(l.status)}</span></td><td class="hint">${esc(l.note||'')}</td></tr>`).join('')}</table></div>`
     :'<div class="empty">No leave recorded for '+fy+' yet.</div>'}</div>
-  <div class="card" style="margin-top:16px"><h3> Past Leave Timeline — full history, completed marked </h3>
+  <div class="card" style="margin-bottom:16px"><h3> Past Leave Timeline — full history, completed marked </h3>
     <div class="tbl-wrap"><table class="tbl"><tr><th>Staff</th><th>Type</th><th>From</th><th>To</th><th>Back on</th><th>Note</th><th>Status</th></tr>
     ${DB.leaves.slice().sort((a,b)=>b.from.localeCompare(a.from)).map(l=>`<tr><td>${esc(staffName(l.staffId))}</td><td>${esc(LEAVE_NAMES[l.type]||l.type)}</td>
     <td>${fmtDate(l.from)}</td><td>${fmtDate(l.to)}</td><td>${fmtDate(l.backOn)}</td><td class="hint">${esc(l.note||'')}</td>
@@ -3272,11 +3334,11 @@ function renderHolidays(body){
       <div><label>Name</label><input id="h_name" placeholder="e.g. Umuganura Day"></div>
       <div style="display:flex;align-items:flex-end"><button class="btn primary" type="submit"> Add official holiday</button></div>
     </form></div>
-  <div class="card" style="margin-top:16px"><h3> Upcoming holidays</h3>
+  <div class="card" style="margin-bottom:16px"><h3> Upcoming holidays</h3>
     <div class="grid g-3">${DB.holidays.filter(h=>h.date>=todayISO()&&h.official).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,9).map(h=>`
       <div class="kpi" style="min-height:0;padding:12px"><div class="k-label">${fmtDate(h.date)}</div><div class="k-val" style="font-size:17px">${esc(h.name)}</div>
       <div class="k-foot">${isWeekend(h.date)?'Weekend — observed Monday':''}</div></div>`).join('')}</div></div>
-  <div class="card" style="margin-top:16px"><h3> Holiday list</h3>
+  <div class="card" style="margin-bottom:16px"><h3> Holiday list</h3>
     <div class="tbl-wrap"><table class="tbl"><tr><th>Date</th><th>Name</th><th></th></tr>
     ${list.map(h=>`<tr><td>${fmtDate(h.date)}</td><td>${esc(h.name)}${h.official?'':' <span class="tag gray">unforeseen</span>'}</td>
     <td><button class="btn xs danger" data-hdel="${h.id}"></button></td></tr>`).join('')}</table></div></div>`;
@@ -3298,11 +3360,11 @@ function renderAbsences(body){
       <div><label>Reason</label><input id="a_reason" placeholder="e.g. sick, family emergency"></div>
       <div style="grid-column:1/-1"><button class="btn danger" type="submit"> Log absence</button></div>
     </form></div>
-  <div class="card" style="margin-top:16px"><h3> Recorded absences</h3>
+  <div class="card" style="margin-bottom:16px"><h3> Recorded absences</h3>
     ${list.length?`<div class="tbl-wrap"><table class="tbl"><tr><th>Date</th><th>Staff</th><th>Reason</th><th></th></tr>
     ${list.map(a=>`<tr><td>${fmtDate(a.date)}</td><td>${esc(staffName(a.staffId))}</td><td>${esc(a.reason||'')}</td>
     <td><button class="btn xs danger" data-adel="${a.id}"></button></td></tr>`).join('')}</table></div>`:'<div class="empty">No absences logged.</div>'}</div>
-  <div class="card" style="margin-top:16px"><h3> Off-day Exceptions — informal requests (texted dates they can't work)</h3>
+  <div class="card" style="margin-bottom:16px"><h3> Off-day Exceptions — informal requests (texted dates they can't work)</h3>
     <form id="oeForm" class="form-grid fg-3">
       <div><label>Staff</label><select id="o_staff">${activeStaff().map(s=>`<option>${esc(s.name)}</option>`).join('')}</select></div>
       <div><label>Date they can't work</label><input type="date" id="o_date" value="${todayISO()}"></div>
@@ -3386,7 +3448,7 @@ function openStaffForm(id){
     <div><label>Status</label><select id="sf_status"><option value="active">Active</option><option value="exited">Exited</option></select></div>
     <div id="sf_exitWrap"><label>Exit date</label><input type="date" id="sf_exit" value="${(s?s.exitDate:undefined)||''}"></div>
     <div style="grid-column:1/-1"><label>Notes</label><input id="sf_note" value="${esc((s?s.note:undefined)||'')}"></div>
-  </div><div class="row" style="margin-top:16px"><button class="btn primary" type="submit"> Save staff</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
+  </div><div class="row" style="margin-bottom:16px"><button class="btn primary" type="submit"> Save staff</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
   $('#sf_sex').value=(s?s.sex:undefined)||'Male'; $('#sf_contract').value=(s?s.contract:undefined)||'statute';
   $('#sf_pattern').value=(s?s.pattern:undefined)||'normal'; $('#sf_np').value=(s?s.nightPref:undefined)||'yes'; $('#sf_status').value=(s?s.status:undefined)||'active';
   $('#sf_status').onchange=()=>{ $('#sf_exitWrap').style.display=$('#sf_status').value==='exited'?'':'none'; };
@@ -3510,6 +3572,11 @@ function setTab(tab,silent){
   try{ RENDER[tab](); updateAuthUI(); }catch(err){ console.error('Render error',tab,err); toast('Module error: '+err.message,'err'); }
 }
 function updateChips(){
+  try{
+    const mw=document.getElementById('mainWrap');
+    if(mw && document.body.classList.contains('nav-closed')){ mw.style.gridColumn='1'; mw.style.width='100%'; }
+  }catch(e){}
+
   const t=new Date(); $('#dateChip').textContent=t.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
   $('#fyChip').textContent='FY '+fyInfo(todayISO()).label;
   const st=activeStaff().length;
@@ -3519,9 +3586,20 @@ function wireNav(){
   const nav=$('#nav');
   nav.addEventListener('click',e=>{ const b=e.target.closest('.nav-item'); if(!b) return;
     setTab(b.dataset.tab); closeSidebar(); });
-  $('#hamburger').addEventListener('click',e=>{ e.stopPropagation(); // don't bubble to #topbar (its handler closes the sidebar)
-    if(window.innerWidth<=980){ $('#sidebar').classList.toggle('open'); }   // MOBILE FIX: slide-in nav
-    else{ document.body.classList.toggle('nav-closed'); $('#sidebar').classList.remove('open'); } });
+  $('#hamburger').addEventListener('click',e=>{ e.stopPropagation();
+    const isMobile = window.innerWidth<=980;
+    if(isMobile){ $('#sidebar').classList.toggle('open'); }
+    else{
+      document.body.classList.toggle('nav-closed');
+      $('#sidebar').classList.remove('open');
+      const mw = document.getElementById('mainWrap');
+      if(mw){
+        if(document.body.classList.contains('nav-closed')){ mw.style.gridColumn='1'; mw.style.width='100%'; }
+        else{ mw.style.gridColumn='2'; }
+      }
+    }
+    setTimeout(()=>window.dispatchEvent(new Event('resize')), 300);
+  });
   document.querySelector('main').addEventListener('click',()=>closeSidebar()); // tap content = close drawer
   window.addEventListener('resize',()=>{ if(window.innerWidth>980) $('#sidebar').classList.remove('open'); });
   $('#topbar').addEventListener('click',()=>closeSidebar());
@@ -3654,6 +3732,11 @@ function clearSession(){
 }
 function isAdmin(){ return !!getSession(); }
 
+function isViewer(){ return !isAdmin(); }
+function maskName(name){ return isViewer() ? '..... Confidential' : name; }
+function maskPatientId(id){ return isViewer() ? '...' : id; }
+
+
 function genOTP(){
   return String(Math.floor(100000 + Math.random()*900000));
 }
@@ -3691,6 +3774,22 @@ function updateAuthUI(){
     if(btnLogout) btnLogout.style.display='none';
     document.body.classList.add('viewer-mode');
   }
+
+  // Confidentiality: hide revenue nav for viewers
+  try{
+    const revNav = document.querySelector('[data-tab="revenue"]');
+    if(revNav){
+      if(isViewer()) revNav.style.display='none';
+      else revNav.style.display='';
+    }
+    // Hide patient name columns in viewer mode via CSS injection
+    if(isViewer()){
+      document.querySelectorAll('th').forEach(th=>{
+        if(/patient/i.test(th.textContent)) th.style.display='none';
+      });
+    }
+  }catch(e){}
+
   // inject viewer banner in each module if viewer
   document.querySelectorAll('.viewer-banner').forEach(b=>b.remove());
   if(!isAdmin()){
