@@ -594,8 +594,8 @@ function buildSeed(){
       {id:'s3', name:'Beatrice NGEZEKURE', sex:'Female', dob:'1969-01-15', role:'Laboratory Technologist', phone:'0788767548', email:'ngezebeatha@gmail.com', contract:'statute', pattern:'dayonly', nightPref:'no', maxNights:0, maxConsecN:0, status:'active', joinDate:'1998-01-01', exitDate:null, note:'Reception mostly, Parasitology when limited, never Phlebotomy/TB'},
       {id:'s4', name:'Aurelie YANSONEYE', sex:'Female', dob:'1987-04-15', role:'HIV Lab Quality Corp', phone:'0782129036', email:'aurelieyansoneye@gmail.com', contract:'statute', pattern:'weekendonly', nightPref:'yes', maxNights:16, maxConsecN:2, weekendPattern:'DN', weekendOnly:true, status:'active', joinDate:'2016-10-31', exitDate:null, note:'Weekend-only: works Day+Night Sat & Sun, rests Mon-Fri'},
       {id:'s5', name:'Patrick ISHIMWE', sex:'Male', dob:'1989-09-15', role:'Lab Technician', phone:'0784470716', email:'packerpazzon@gmail.com', contract:'statute', pattern:'normal', nightPref:'3', maxNights:12, maxConsecN:3, status:'active', joinDate:'2020-06-04', exitDate:null, note:'Night lover - only one who does 3 consecutive nights, >=3 sessions/month'},
-      {id:'s6', name:'Jean Paul NSENGIYUMVA', sex:'Male', dob:'1997-02-15', role:'Laboratory Technician', phone:'0780119835', email:'nsengiyuma4@gmail.com', contract:'statute', pattern:'normal', nightPref:'2', maxNights:6, maxConsecN:2, status:'active', joinDate:'2025-01-22', exitDate:null, note:'Head of Hematology - max 3x2 nights'},
-      {id:'s9', name:'Dieudonne NIYIDUHABYOSE', sex:'Male', dob:'1989-06-15', role:'Laboratory Technician', phone:'0785312651', email:'niyiduhadidier2@gmail.com', contract:'statute', pattern:'normal', nightPref:'2', maxNights:8, maxConsecN:2, status:'active', joinDate:'2024-09-01', exitDate:null, note:'Night lover 2-night multiple times'},
+      {id:'s6', name:'Jean Paul NSENGIYUMVA', sex:'Male', dob:'1997-02-15', role:'Laboratory Technician', phone:'0780119835', email:'nsengiyuma4@gmail.com', contract:'statute', pattern:'normal', nightPref:'3', maxNights:12, maxConsecN:3, status:'active', joinDate:'2025-01-22', exitDate:null, note:'Head of Hematology - 3 nights after shortage, alternates Mon-Wed/Thu-Fri with Dieudonne'},
+      {id:'s9', name:'Dieudonne NIYIDUHABYOSE', sex:'Male', dob:'1989-06-15', role:'Laboratory Technician', phone:'0785312651', email:'niyiduhadidier2@gmail.com', contract:'statute', pattern:'normal', nightPref:'3', maxNights:12, maxConsecN:3, status:'active', joinDate:'2024-09-01', exitDate:null, note:'Night lover - 3 nights after shortage, alternates Mon-Wed/Thu-Fri with Jean Paul'},
       {id:'s8', name:'Faustin NTAMBARA', sex:'Male', dob:'1994-11-15', role:'Laboratory Safety Officer', phone:'0784653754', email:'faustinntambara08@gmail.com', contract:'contractual', pattern:'normal', nightPref:'2', maxNights:6, maxConsecN:2, status:'exited', joinDate:'2023-06-01', exitDate:'2026-06-29', note:'Exited 29/06/2026 - kept for history'},
       {id:'s7', name:'Elie NIZEYIMANA', sex:'Male', dob:'1999-08-15', role:'Laboratory Technician', phone:'0780780438', email:'elienizeyimana47@gmail.com', contract:'contractual', pattern:'normal', nightPref:'yes', maxNights:0, maxConsecN:2, status:'exited', joinDate:'2023-05-10', exitDate:'2025-01-31', note:'Exited 31 Jan 2025 - kept for history'}
     ],
@@ -718,7 +718,7 @@ function buildSeed(){
       {id:'l5', staffId:'s9', type:'AL', from:'2027-01-18', to:'2027-02-02', backOn:'2027-02-03', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — Part 1 of 2'},
       {id:'l6', staffId:'s3', type:'AL', from:'2026-12-14', to:'2027-01-13', backOn:'2027-01-14', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027'},
       {id:'l7', staffId:'s1', type:'AL', from:'2026-12-08', to:'2026-12-09', backOn:'2026-12-10', status:'Planned', fy:'2026/2027', note:'Carry-over from previous FY (30d) — not yet used'},
-      {id:'l8', staffId:'s4', type:'AL', from:'2026-09-08', to:'2026-09-22', backOn:'2026-09-23', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — weekend shifts redistributed while away'},
+      {id:'l8', staffId:'s4', type:'AL', from:'2026-11-10', to:'2026-11-24', backOn:'2026-11-25', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — weekend shifts redistributed while away (moved to avoid 2 AL overlap with Patrick)'},
       {id:'l9', staffId:'s5', type:'AL', from:'2026-09-16', to:'2026-09-30', backOn:'2026-10-01', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — 60d carry-over: part 2 of 2 (15d) — Aug17-Oct15 total 60d'},
       {id:'l9b', staffId:'s5', type:'AL', from:'2026-10-01', to:'2026-10-15', backOn:'2026-10-16', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — 60d carry-over: part 3 of 3 (15d) — completes Aug17-Oct15 60d'},
       {id:'l9c', staffId:'s5', type:'AL', from:'2026-10-16', to:'2026-10-30', backOn:'2026-10-31', status:'Planned', fy:'2026/2027', note:'2026/27 FY — 1st installment of 30 days (15d) — after 60-day leave, per manager request'},
@@ -3300,27 +3300,47 @@ function computePlan(input){
     if(!cands.length){ alerts.push('No night cover on '+date); continue; }
     // can this candidate do a 2+ block?
     const canBlock=si=>{ for(let k=0;k<2;k++){ const d2=di+k; if(d2>=D) return false; if(assignedN[d2]) return false; if(!avail[si][d2]||codes[si][d2]) return false; } return true; };
+    // Track last triple assignee for alternation Mon-Wed / Thu-Fri
+    if(!window._lastTriple) window._lastTriple = null;
     cands.sort((a,b)=>{
       const ba=canBlock(b)?0:1, bb=canBlock(a)?0:1; if(ba!==bb) return bb-ba;
-      // Ruli: Patrick gets priority for 3-night blocks, Diane minimal
       const isPat = (id)=> /ISHIMWE/.test(staff[id].name);
-      const isDiane = (id)=> /UWASE/.test(staff[id].name);
+      const isJP = (id)=> /NSENGIYUMVA/.test(staff[id].name);
       const isDieu = (id)=> /NIYIDUHABYOSE/.test(staff[id].name);
+      const isDiane = (id)=> /UWASE/.test(staff[id].name);
+      const wd = new Date(dates[di]+'T12:00:00').getDay(); // 0 Sun ..6 Sat, Mon=1
       const score = (idx)=>{
-        let sc = nightBal[staff[idx].id]*10 + nightNow[staff[idx].id]*10;
-        if(isPat(idx)){ sc -= 6; if(nightBlockCount[staff[idx].id]<3) sc -= 45; const wd=new Date(dates[di]+'T12:00:00').getDay(); if(wd===1||wd===3) sc -= 12; }
-        if(isDieu(idx)) sc -= 5;
-        if(staff[idx].nightPref==='min'){ sc += (nightBlockCount[staff[idx].id]===0 ? 14 : 100); }
-        if(isDiane(idx) && nightBlockCount[staff[idx].id]>=1) sc += 100;
-        return sc + Math.random()*2;
+        let sc = nightBal[staff[idx].id]*10 + nightNow[staff[idx].id]*10 + nightBlockCount[staff[idx].id]*3;
+        // Patrick: triple lover, prefers Mon-Wed / Wed-Fri starts
+        if(isPat(idx)){ sc -= 8; if(nightBlockCount[staff[idx].id]<3) sc -= 40; if(wd===1||wd===3) sc -= 14; }
+        // Jean Paul & Dieudonne: alternate Mon-Wed vs Thu-Fri after shortage
+        if(isJP(idx) || isDieu(idx)){
+          sc -= 6;
+          // Alternate: if last triple was JP, prefer Dieu, and vice versa
+          if(window._lastTriple && /NSENGIYUMVA/.test(window._lastTriple) && isDieu(idx)) sc -= 20;
+          if(window._lastTriple && /NIYIDUHABYOSE/.test(window._lastTriple) && isJP(idx)) sc -= 20;
+          // Mon-Wed block (wd 1) vs Thu-Fri block (wd 4)
+          if(wd===1 && isJP(idx)) sc -= 8; // JP prefers Mon-Wed
+          if(wd===4 && isDieu(idx)) sc -= 8; // Dieu prefers Thu-Fri
+          if(wd===1 && isDieu(idx)) sc -= 2;
+          if(wd===4 && isJP(idx)) sc -= 2;
+        }
+        if(staff[idx].nightPref==='min'){ sc += (nightBlockCount[staff[idx].id]===0 ? 14 : 120); }
+        if(isDiane(idx) && nightBlockCount[staff[idx].id]>=1) sc += 150;
+        // Avoid consecutive same person
+        if(window._lastTriple === staff[idx].name) sc += 10;
+        return sc + Math.random()*1.5;
       };
       return score(a)-score(b);
     });
     let s=cands[0];
-    // Ruli: 3-consecutive only Patrick, others max 2; singles last resort
+    // Ruli shortage: Patrick + Jean Paul + Dieudonne do 3-night blocks, alternating Mon-Wed / Thu-Fri
     const isPatrick = /ISHIMWE/.test(staff[s].name);
+    const isJP = /NSENGIYUMVA/.test(staff[s].name);
+    const isDieu = /NIYIDUHABYOSE/.test(staff[s].name);
     const isDiane = /UWASE/.test(staff[s].name);
-    const maxC = isPatrick ? 3 : Math.min(2, staff[s].maxConsecN||2);
+    const canDoTriple = isPatrick || isJP || isDieu; // shortage after Faustin/Diane exit
+    const maxC = canDoTriple ? 3 : Math.min(2, staff[s].maxConsecN||2);
     const canN=si=>{ for(let k=0;k<maxC;k++){ const d2=di+k; if(d2>=D) return false; if(assignedN[d2]) return false; if(!avail[si][d2]||codes[si][d2]) return false; } return true; };
     let len = maxC;
     const wish=offWishes&&offWishes.find(w=>w.staffId===staff[s].id);
@@ -3351,6 +3371,7 @@ function computePlan(input){
     if(len===1){ alerts.push('Only 1 night possible for '+staff[s].name+' on '+date+' — single night (unavoidable)'); }
     for(let k=0;k<len;k++){ codes[s][di+k]='N'; assignedN[di+k]=true; }
     nightBlockCount[staff[s].id]++;
+    if(len===3) window._lastTriple = staff[s].name;
     nightBal[staff[s].id]++; nightNow[staff[s].id]++; lastNight[staff[s].id]=di+len;
     // optional 2nd staff on the same night (larger team rule)
     if((nightPer||1)>=2){
@@ -3511,8 +3532,22 @@ function renderLvPlan(body){
   $('#lvForm').addEventListener('submit',ev=>{ ev.preventDefault();
     const st=DB.staff.find(s=>s.name===$('#lv_staff').value); const from=$('#lv_from').value, to=$('#lv_to').value;
     if(to<from) return toast('End date before start','err');
-    DB.leaves.unshift({id:uid('l'),staffId:st.id,type:$('#lv_type').value,from,to,backOn:addDays(to,1),note:$('#lv_note').value.trim(),status:'Planned',fy:fyOf(from)});
-    saveDB(); closeModal(); toast('Leave recorded — plan re-adapts on next Generate'); renderLvBody(); });
+    const type=$('#lv_type').value;
+    // Rule: impossible to have two staff in annual leave at same time
+    if(type==='AL'){
+      const overlap = DB.leaves.some(l=>{
+        if(l.type!=='AL' || l.status==='Ended' || l.status==='Completed') return false;
+        if(l.staffId===st.id) return false;
+        return !(to < l.from || from > l.to);
+      });
+      if(overlap){
+        const ov = DB.leaves.find(l=>l.type==='AL' && l.from<=to && l.to>=from && l.staffId!==st.id);
+        const who = ov ? staffName(ov.staffId) : 'another staff';
+        return toast('⚠️ Impossible: '+who+' already in Annual Leave '+ov.from+'→'+ov.to+'. No 2 staff can be in AL at same time per Ruli policy. Choose different dates.','err');
+      }
+    }
+    DB.leaves.unshift({id:uid('l'),staffId:st.id,type:type,from,to,backOn:addDays(to,1),note:$('#lv_note').value.trim(),status:'Planned',fy:fyOf(from)});
+    saveDB(); toast('Leave recorded — plan re-adapts on next Generate'); renderLvBody(); });
 }
 function renderLvRecords(body){
   const today=todayISO();
@@ -3574,7 +3609,12 @@ function openQuickLeave(){
   $('#q_from').onchange=qAuto; $('#q_type').onchange=qAuto; $('#q_staff').onchange=qAuto;
   $('#ql').addEventListener('submit',ev=>{ ev.preventDefault();
     const st=DB.staff.find(s=>s.name===$('#q_staff').value); const from=$('#q_from').value, to=$('#q_to').value;
-    DB.leaves.unshift({id:uid('l'),staffId:st.id,type:$('#q_type').value,from,to,backOn:addDays(to,1),note:$('#q_note').value.trim(),status:'Planned',fy:fyOf(from)});
+    const type=$('#q_type').value;
+    if(type==='AL'){
+      const overlap = DB.leaves.some(l=> l.type==='AL' && l.status!=='Ended' && l.status!=='Completed' && l.staffId!==st.id && !(to < l.from || from > l.to));
+      if(overlap) return toast('⚠️ Two staff cannot be in Annual Leave simultaneously — choose different dates','err');
+    }
+    DB.leaves.unshift({id:uid('l'),staffId:st.id,type:type,from,to,backOn:addDays(to,1),note:$('#q_note').value.trim(),status:'Planned',fy:fyOf(from)});
     saveDB(); closeModal(); toast('Leave added'); renderLvBody(); });
 }
 function renderHolidays(body){
@@ -4114,6 +4154,26 @@ function setTheme(t){
 function toggleTheme(){ setTheme(getTheme()==='dark' ? 'light' : 'dark'); }
 
 /* ===== FIX EXITED MEMBERS SAVING ===== */
+
+function resolveOverlappingAL(){
+  try{
+    const als = DB.leaves.filter(l=>l.type==='AL' && l.status!=='Ended' && l.status!=='Completed').sort((a,b)=>a.from.localeCompare(b.from));
+    for(let i=0;i<als.length;i++){
+      for(let j=i+1;j<als.length;j++){
+        const a=als[i], b=als[j];
+        if(a.staffId===b.staffId) continue;
+        if(!(b.from <= a.to && b.to >= a.from)) continue; // no overlap
+        // Overlap found - push b after a
+        const dur = daysBetween(b.from, b.to);
+        b.from = addDays(a.to, 1);
+        b.to = addDays(b.from, dur);
+        b.backOn = addDays(b.to, 1);
+        b.note = (b.note||'') + ' (auto-shifted to avoid 2 AL overlap)';
+      }
+    }
+  }catch(e){ console.warn('resolveOverlappingAL', e.message); }
+}
+
 function fixExitedSaving(){
   // Ensure saveDB is robust and always persists - critical for exited status
   try{
@@ -4225,7 +4285,7 @@ function installAdminGuards(){
 function boot(){
   try{ DB=loadDB(); }catch(e){ console.error('loadDB:',e); showBootError('loadDB: '+(e&&e.message||e)); DB=buildSeed(); }
   try{ ensureCurrentPlan(); }catch(e){ console.error('ensureCurrentPlan:',e); showBootError('ensureCurrentPlan: '+(e&&e.message||e)); }
-  try{ mergeLeaveTrainings(DB); mergeRevenueTrainings(DB); }catch(e){}
+  try{ mergeLeaveTrainings(DB); mergeRevenueTrainings(DB); resolveOverlappingAL(); }catch(e){}
   try{ saveDB(); }catch(e){}
   try{ updateChips(); wireNav(); wireScrollHide(); wireGlobalClicks(); wireAuth(); installAdminGuards(); updateAuthUI(); }catch(e){ console.error('wire:',e); showBootError('setup: '+(e&&e.message||e)); }
   try{ var lb2=document.getElementById('loadedBadge'); if(lb2) lb2.style.display='inline'; }catch(e){}
