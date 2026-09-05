@@ -711,18 +711,21 @@ function buildSeed(){
       {id:'te9', title:'Mentorship on HIV Service Delivery', organizer:'RBC', location:'Gicumbi District', start:'2025-09-08', end:'2025-09-12', linkedTraining:null, expenses:[{id:'x9', cat:'Other', desc:'Expenses as recorded', amount:35500, date:'2025-09-12'}], reimbursements:[{id:'r9', amount:99000, date:'2025-09-26', source:'RBC', note:''}], note:''}
     ],
     leaves:[
+      // Patrick ISHIMWE - Annual Leave schedule per manager (NO work in Sep 2026)
+      {id:'l11', staffId:'s5', type:'AL', from:'2026-08-17', to:'2026-09-15', backOn:'2026-09-16', status:'Planned', fy:'2026/2027', note:'Carry-over 2025/26 + 2026/27 — 30d current leave (Aug17-Sep15) — Patrick in full AL, no roster'},
+      {id:'l9', staffId:'s5', type:'AL', from:'2026-09-16', to:'2026-09-30', backOn:'2026-10-01', status:'Planned', fy:'2026/2027', note:'2026/27 FY — 15d AFTER current 30d leave (Sep16-30) — 1st installment, per manager — Patrick still in AL, not in Sep roster'},
+      {id:'l9b', staffId:'s5', type:'AL', from:'2026-10-01', to:'2026-10-15', backOn:'2026-10-16', status:'Planned', fy:'2026/2027', note:'2026/27 FY — completes 60d total Aug17-Oct15 (carry-over 30d + 2026/27 30d)'},
+      {id:'l9c', staffId:'s5', type:'AL', from:'2026-10-16', to:'2026-10-30', backOn:'2026-10-31', status:'Planned', fy:'2026/2027', note:'2026/27 FY — extra 15d after 60d, 1st installment of next 30d (Oct16-30)'},
+      {id:'l10', staffId:'s5', type:'W', from:'2026-08-29', to:'2026-08-29', backOn:'2026-08-30', status:'Planned', fy:'2026/2027', note:'Wedding day — overlaps AL, W takes priority'},
+      // Other staff - NO overlapping AL with Patrick (per Ruli policy: no 2 AL same time)
       {id:'l1', staffId:'s9', type:'AL', from:'2027-06-01', to:'2027-06-15', backOn:'2027-06-16', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — Part 2 of 2'},
       {id:'l2', staffId:'s6', type:'AL', from:'2027-04-26', to:'2027-05-25', backOn:'2027-05-26', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027'},
       {id:'l3', staffId:'s1', type:'AL', from:'2027-03-01', to:'2027-03-15', backOn:'2027-03-16', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027'},
-      {id:'l4', staffId:'s5', type:'AL', from:'2027-03-01', to:'2027-03-15', backOn:'2027-03-16', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — part 2 of 2 (15d)'},
+      {id:'l4', staffId:'s5', type:'AL', from:'2027-03-01', to:'2027-03-15', backOn:'2027-03-16', status:'Planned', fy:'2026/2027', note:'2026/27 FY — 2nd installment of 30d (15d) — Mar 2027'},
       {id:'l5', staffId:'s9', type:'AL', from:'2027-01-18', to:'2027-02-02', backOn:'2027-02-03', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — Part 1 of 2'},
       {id:'l6', staffId:'s3', type:'AL', from:'2026-12-14', to:'2027-01-13', backOn:'2027-01-14', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027'},
       {id:'l7', staffId:'s1', type:'AL', from:'2026-12-08', to:'2026-12-09', backOn:'2026-12-10', status:'Planned', fy:'2026/2027', note:'Carry-over from previous FY (30d) — not yet used'},
       {id:'l8', staffId:'s4', type:'AL', from:'2026-11-10', to:'2026-11-24', backOn:'2026-11-25', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — weekend shifts redistributed while away (moved to avoid 2 AL overlap with Patrick)'},
-      {id:'l9', staffId:'s5', type:'AL', from:'2026-09-16', to:'2026-09-30', backOn:'2026-10-01', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — 60d carry-over: part 2 of 2 (15d) — Aug17-Oct15 total 60d'},
-      {id:'l9b', staffId:'s5', type:'AL', from:'2026-10-01', to:'2026-10-15', backOn:'2026-10-16', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — 60d carry-over: part 3 of 3 (15d) — completes Aug17-Oct15 60d'},
-      {id:'l9c', staffId:'s5', type:'AL', from:'2026-10-16', to:'2026-10-30', backOn:'2026-10-31', status:'Planned', fy:'2026/2027', note:'2026/27 FY — 1st installment of 30 days (15d) — after 60-day leave, per manager request'},
-      {id:'l10', staffId:'s5', type:'W', from:'2026-08-29', to:'2026-08-29', backOn:'2026-08-30', status:'Planned', fy:'2026/2027', note:'Wedding day'},
       {id:'l11', staffId:'s5', type:'AL', from:'2026-08-17', to:'2026-09-15', backOn:'2026-09-16', status:'Planned', fy:'2026/2027', note:'Carry-over from previous FY (30d) — not yet used'},
       {id:'l12', staffId:'s4', type:'TR', from:'2026-07-24', to:'2026-07-25', backOn:'2026-07-25', status:'Planned', fy:'2026/2027', note:'Weekly Skills Training'},
       {id:'l13', staffId:'s3', type:'TR', from:'2026-07-20', to:'2026-07-24', backOn:'2026-07-25', status:'Planned', fy:'2026/2027', note:'Weekly Skills Training'},
@@ -3978,7 +3981,44 @@ function showBootError(msg){
   }catch(x){}
 }
 function ensureCurrentPlan(){
-  // Generate the current month's fair plan on first open so the app & dashboard open fully populated
+  // Force clear any cached Sep 2026 plan where Patrick was incorrectly shown working while in AL
+  try{
+    const sepKey='2026-09';
+    if(DB.workingPlans[sepKey] && DB.workingPlans[sepKey].primary){
+      const p=DB.workingPlans[sepKey].primary;
+      const patIdx = p.staff.findIndex(r=>/ISHIMWE/.test(r.name));
+      if(patIdx>=0){
+        const sepDays = p.dates.filter(d=>d.slice(0,7)===sepKey);
+        const hasWorkInSep = sepDays.some((d,idx)=>{
+          const gi=p.dates.indexOf(d);
+          const code=p.staff[patIdx].codes[gi];
+          return code && code!=='AL' && code!=='W' && code!=='';
+        });
+        if(hasWorkInSep){
+          console.log('Clearing Sep 2026 cached plan - Patrick was working while in AL');
+          delete DB.workingPlans[sepKey];
+        }
+      }
+    }
+    // Also clear Aug and Oct 2026 if Patrick incorrectly working
+    ['2026-08','2026-10'].forEach(k=>{
+      if(DB.workingPlans[k] && DB.workingPlans[k].primary){
+        const p=DB.workingPlans[k].primary;
+        const patIdx = p.staff.findIndex(r=>/ISHIMWE/.test(r.name));
+        if(patIdx>=0){
+          const days = p.dates.filter(d=>d.slice(0,7)===k);
+          const hasWork = days.some(d=>{
+            const gi=p.dates.indexOf(d);
+            const code=p.staff[patIdx].codes[gi];
+            return code && code!=='AL' && code!=='W' && code!=='';
+          });
+          // If Patrick has AL covering whole month but shows work, clear
+          const patLeaves = DB.leaves.filter(l=>l.staffId==='s5' && l.type==='AL' && l.from<=k+'-15' && l.to>=k+'-15');
+          if(patLeaves.length && hasWork) delete DB.workingPlans[k];
+        }
+      }
+    });
+  }catch(e){ console.warn('ensureCurrentPlan cleanup', e.message); }
   const key=monthKey(todayISO());
   if(DB.workingPlans[key]&&DB.workingPlans[key].primary) return;
   const act=activeStaff().map(s=>({id:s.id,name:s.name,joinDate:s.joinDate,nightPref:s.nightPref||'yes',maxNights:s.maxNights==null?4:s.maxNights,maxConsecN:s.maxConsecN||3,pattern:s.pattern||'normal',weekendPattern:s.weekendPattern||'none',weekendOnly:!!s.weekendOnly}));
