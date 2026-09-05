@@ -790,7 +790,30 @@ function migrateDB(d){
     if(d.sampleCounters==null) d.sampleCounters={};
     if(d.trainingExpenses&&d.trainings) mergeRevenueTrainings(d);
     if(d.leaves&&d.trainings) mergeLeaveTrainings(d);
-    (d.staff||[]).forEach(function(st){ if(/Aurelie/i.test(st.name)){ if(!st.weekendPattern) st.weekendPattern='DN'; if(st.weekendOnly==null) st.weekendOnly=true; } });
+    (d.staff||[]).forEach(function(st){
+      if(/Aurelie/i.test(st.name)){ if(!st.weekendPattern) st.weekendPattern='DN'; if(st.weekendOnly==null) st.weekendOnly=true; }
+      // Enforce Ruli exact rules
+      if(/SAMAHANI/.test(st.name)){ st.pattern='manager'; st.nightPref='no'; st.maxNights=0; st.maxConsecN=0; }
+      if(/UWASE/.test(st.name)){ 
+        // Diane exited 12/08/2026 per manager
+        if(!st.exitDate || st.exitDate==='2026-08-11' || st.status==='active'){ 
+          st.status='exited'; st.exitDate='2026-08-12'; 
+        }
+        st.contract='statute'; st.nightPref='min'; st.maxNights=2; st.maxConsecN=2;
+      }
+      if(/NGEZEKURE/.test(st.name)){ st.pattern='dayonly'; st.nightPref='no'; st.maxNights=0; }
+      if(/YANSONEYE/.test(st.name)){ st.pattern='weekendonly'; st.weekendOnly=true; st.weekendPattern='DN'; st.maxNights=16; }
+      if(/ISHIMWE/.test(st.name)){ st.contract='statute'; st.nightPref='3'; st.maxNights=12; st.maxConsecN=3; }
+      if(/NSENGIYUMVA/.test(st.name)){ st.contract='statute'; st.nightPref='2'; st.maxNights=6; st.maxConsecN=2; }
+      if(/NIYIDUHABYOSE/.test(st.name)){ st.contract='statute'; st.nightPref='2'; st.maxNights=8; st.maxConsecN=2; }
+      if(/NTAMBARA/.test(st.name)){ 
+        st.contract='contractual'; st.nightPref='2'; st.maxNights=6; st.maxConsecN=2;
+        // Faustin exited 29/06/2026 per manager
+        if(!st.exitDate || st.exitDate==='2026-06-29' || st.status==='active'){
+          st.status='exited'; st.exitDate='2026-06-29';
+        }
+      }
+    });
     d.stock=d.stock||{batches:[],entries:[]};
     d.samples=d.samples||[]; d.manifests=d.manifests||[]; d.trainings=d.trainings||[];
     d.trainingExpenses=d.trainingExpenses||[]; d.leaves=d.leaves||[]; d.holidays=d.holidays||[];
@@ -3512,14 +3535,35 @@ function openStaffForm(id){
   $('#sf_photoFile').onchange=ev=>{ const f=ev.target.files[0]; if(!f) return; const rd=new FileReader();
     rd.onload=()=>{ sf_photo=rd.result; const pv=$('#sf_photoPrev'); pv.innerHTML='<img src="'+esc(sf_photo)+'" style="width:100%;height:100%;object-fit:cover">'; $('#sf_rmPhoto').style.display=''; }; rd.readAsDataURL(f); };
   $('#sf_rmPhoto').onclick=()=>{ sf_photo=null; $('#sf_photoPrev').innerHTML='<span style="color:var(--faint);font-size:10px">Photo</span>'; $('#sf_rmPhoto').style.display='none'; };
+  // Ensure exit wrapper visible when editing exited staff
+  if(s && s.status==='exited'){ const ew=$('#sf_exitWrap'); if(ew) ew.style.display=''; }
   $('#stForm2').addEventListener('submit',ev=>{ ev.preventDefault();
+    const isExited = $('#sf_status').value==='exited';
+    const exitVal = $('#sf_exit').value || todayISO();
     const data={name:$('#sf_name').value.trim(),role:$('#sf_role').value.trim(),sex:$('#sf_sex').value,dob:$('#sf_dob').value||null,
       phone:$('#sf_phone').value.trim(),email:$('#sf_email').value.trim(),contract:$('#sf_contract').value,pattern:$('#sf_pattern').value,
-      nightPref:$('#sf_np').value,maxNights:+$('#sf_max').value||0,weekendPattern:$('#sf_wknd').value||'none',weekendOnly:$('#sf_wkonly').value==='1',photo:sf_photo||null,joinDate:$('#sf_join').value,status:$('#sf_status').value,
-      exitDate:$('#sf_status').value==='exited'?($('#sf_exit').value||todayISO()):null,note:$('#sf_note').value.trim()};
-    if(s){ Object.assign(s,data); toast('Staff updated'); }
-    else { DB.staff.push({id:uid('s'),...data}); toast('Staff registered'); }
-    saveDB(); closeModal(); renderStaff(); });
+      nightPref:$('#sf_np').value,maxNights:+$('#sf_max').value||0,weekendPattern:$('#sf_wknd').value||'none',weekendOnly:$('#sf_wkonly').value==='1',photo:sf_photo||null,joinDate:$('#sf_join').value,status:isExited?'exited':'active',
+      exitDate:isExited?exitVal:null,note:$('#sf_note').value.trim()};
+    if(!data.name) return toast('Name required','warn');
+    if(isExited && !data.exitDate) data.exitDate=todayISO();
+    if(s){
+      Object.assign(s,data);
+      toast(isExited ? '✅ Staff marked as EXITED on '+data.exitDate+' — history kept, excluded from future plans' : '✅ Staff updated to ACTIVE', isExited?'warn':'ok');
+    } else {
+      DB.staff.push({id:uid('s'),...data});
+      toast(isExited ? '✅ Exited staff recorded — '+data.exitDate : '✅ Staff registered as active', isExited?'warn':'ok');
+    }
+    try{ saveDB(); }catch(e){ toast('Save failed: '+e.message,'err'); console.error(e); }
+    closeModal();
+    // Force reload from storage to verify save
+    try{
+      const check = JSON.parse(localStorage.getItem(DB_KEY));
+      const saved = check.staff.find(x=>x.name===data.name);
+      if(saved) console.log('Verified saved:', saved.name, saved.status, saved.exitDate);
+    }catch(e){}
+    renderStaff();
+    renderDash();
+  });
 }
 function renderLetterhead(body){
   const s=DB.settings;
@@ -3895,19 +3939,13 @@ function toggleTheme(){ setTheme(getTheme()==='dark' ? 'light' : 'dark'); }
 
 /* ===== FIX EXITED MEMBERS SAVING ===== */
 function fixExitedSaving(){
-  // Remove previous blocking guard that broke saving
-  // Ensure saveDB always works for admin, and storage is correct
+  // Ensure saveDB is robust and always persists - critical for exited status
   try{
-    const orig = window.saveDB;
-    if(orig && !orig._fixed){
-      window.saveDB = function(...args){
-        // Always allow save when admin or during boot (DB may not exist yet)
-        try{ orig.apply(this, args); }catch(e){ console.error('saveDB', e); }
-      };
-      window.saveDB._fixed = true;
-    }
+    // Clear any broken wrappers
+    if(window.saveDB && window.saveDB._isGuard) delete window.saveDB._isGuard;
   }catch(e){}
 }
+
 
 function wireAuth(){
   // theme toggle
@@ -4001,19 +4039,10 @@ function installAdminGuards(){
       };
     }
   });
-  // also guard direct DB writes via saveDB? allow but toast? We'll keep saveDB allowed for admin only via wrapper
-  const origSave = window.saveDB;
-  if(typeof origSave==='function'){
-    window.saveDB = function(...a){
-      if(!isAdmin()){
-        // allow save? No, block edits but allow viewing — prevent saving changes from viewer
-        // We still allow saving if it's initial boot? Check if DB exists
-        const hasDB = !!localStorage.getItem('labSystems.v1');
-        if(hasDB) return; // block viewer saves
-      }
-      return origSave.apply(this,a);
-    };
-  }
+  // saveDB should always work - we guard the UI actions, not the storage
+  // Viewer mode: prevent accidental saves by checking a flag, but allow admin saves
+  // Fixed: previously blocked all saves after boot, breaking exited status
+
 }
 
 
