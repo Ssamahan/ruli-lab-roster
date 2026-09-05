@@ -328,6 +328,72 @@ body.viewer-mode [data-confidential]{display:none !important}
 }
 @media(max-width:560px){ .fg-2,.fg-3,.fg-4{grid-template-columns:1fr} .kpi .k-val{font-size:28px} #topbar{padding:0 14px; gap:8px} #topbar .t-title{font-size:15px} }
 
+
+/* ===== PREMIUM 7-STEP TIMELINE - Training Flow ===== */
+.timeline-flow{position:relative; padding:24px 12px 40px; overflow-x:auto; -webkit-overflow-scrolling:touch; background:var(--surface); border:1px solid var(--edge); border-radius:16px; box-shadow:var(--shadow); margin-bottom:20px}
+.timeline-flow-track{position:relative; display:flex; align-items:center; min-width:max-content; gap:0; padding:40px 20px 60px; min-height:220px}
+.timeline-flow-line{position:absolute; left:20px; right:20px; top:50%; height:3px; background:linear-gradient(90deg,var(--primary),var(--gold),var(--teal)); border-radius:3px; z-index:1}
+.timeline-step{position:relative; flex:0 0 160px; display:flex; flex-direction:column; align-items:center; z-index:2}
+.timeline-step:nth-child(odd){transform:translateY(-42px)}
+.timeline-step:nth-child(even){transform:translateY(42px)}
+.timeline-year{font-size:12px; font-weight:800; color:var(--primary); background:var(--bg2); border:1px solid var(--edge); border-radius:99px; padding:3px 10px; margin-bottom:10px; letter-spacing:.4px}
+[data-theme="dark"] .timeline-year{background:#162543; color:var(--gold); border-color:#1e335a}
+.timeline-dot{width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,var(--surface),var(--bg2)); border:2px solid var(--edge); display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 16px rgba(11,28,61,0.12), 0 0 0 4px var(--surface); position:relative; transition:all 220ms ease}
+.timeline-dot:hover{transform:scale(1.08); border-color:var(--gold-strong); box-shadow:0 8px 28px rgba(11,28,61,0.18), 0 0 0 6px var(--gold-soft)}
+.timeline-dot.next{border-color:var(--gold); background:linear-gradient(135deg,var(--gold-soft),var(--surface)); box-shadow:0 0 0 4px var(--gold-soft), 0 8px 24px rgba(201,168,76,0.28)}
+.timeline-dot.next::before{content:''; position:absolute; inset:-10px; border-radius:50%; border:2px solid var(--gold); animation:blinkRing 1.8s ease-out infinite}
+.timeline-dot.next::after{content:''; position:absolute; inset:-18px; border-radius:50%; border:1px solid var(--gold-glow); animation:blinkRing 1.8s ease-out infinite 0.4s}
+@keyframes blinkRing{0%{transform:scale(0.72); opacity:0.9} 100%{transform:scale(1.35); opacity:0}}
+.timeline-content{margin-top:14px; text-align:center; max-width:150px}
+.timeline-content b{font-size:12px; font-weight:800; color:var(--text); display:block; line-height:1.25}
+.timeline-content small{font-size:10.5px; color:var(--muted); display:block; margin-top:3px; font-weight:500}
+.timeline-arc{position:absolute; top:50%; width:60px; height:84px; border:2px solid var(--edge); border-bottom:none; border-radius:50% 50% 0 0; z-index:1; pointer-events:none}
+.timeline-step:nth-child(odd) .timeline-arc{transform:translateY(-2px) rotate(180deg); top:auto; bottom:50%; border-top:none; border-bottom:2px solid var(--edge)}
+.timeline-step:nth-child(even) .timeline-arc{top:50%}
+.timeline-flow::-webkit-scrollbar{height:8px}
+.timeline-flow-track{scroll-snap-type:x proximity}
+
+/* FIFO queue rail - premium with blinking next */
+.queue-rail{position:relative; display:flex; gap:0; align-items:flex-start; overflow-x:auto; padding:16px 8px 20px; flex-wrap:nowrap; background:linear-gradient(180deg,var(--surface),var(--surface-2)); border-radius:14px; border:1px solid var(--edge)}
+.queue-node{position:relative; flex:0 0 92px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 6px 14px; border-radius:14px; border:1px solid transparent; transition:all 200ms ease; background:transparent}
+.queue-node:hover{background:var(--surface-hover); border-color:var(--edge); transform:translateY(-2px)}
+.queue-node-next{background:var(--gold-soft); border-color:var(--gold-strong); box-shadow:var(--shadow-gold)}
+.queue-node .avatar{position:relative; z-index:2; width:44px; height:44px; border-radius:50%; font-size:13px; font-weight:900; box-shadow:0 3px 10px rgba(11,28,61,0.18)}
+.queue-node-next .avatar{box-shadow:0 0 0 3px var(--gold-soft), 0 4px 16px rgba(201,168,76,0.32)}
+.queue-pulse{position:absolute; top:10px; left:50%; margin-left:-28px; width:56px; height:56px; border-radius:50%; border:2px solid var(--gold); z-index:1; pointer-events:none; animation:queuePulse 1.7s ease-out infinite}
+@keyframes queuePulse{0%{transform:scale(.72); opacity:.9}100%{transform:scale(1.55); opacity:0}}
+.queue-name{font-size:11px; font-weight:800; text-align:center; line-height:1.2; color:var(--text)}
+.queue-wait{font-size:10px; color:var(--muted); font-weight:700; background:var(--bg2); padding:2px 7px; border-radius:99px; border:1px solid var(--edge)}
+[data-theme="dark"] .queue-wait{background:#162543; border-color:#1e335a}
+.queue-connector{flex:0 0 16px; height:3px; background:linear-gradient(90deg,var(--edge),var(--gold-soft)); border-radius:3px; margin-top:28px}
+
+/* Spotlight - fix empty space */
+.glass-panel.spotlight{padding:20px 20px; display:grid; grid-template-columns:320px 1fr; gap:20px; align-items:center}
+@media(max-width:900px){ .glass-panel.spotlight{grid-template-columns:1fr; gap:16px} }
+.spotlight-left{flex:none; min-width:0}
+.spotlight-right{flex:1; min-width:0; overflow:hidden}
+.eyebrow{display:inline-flex; align-items:center; gap:8px; font-size:10.5px; font-weight:900; letter-spacing:.8px; text-transform:uppercase; color:var(--primary); background:var(--gold-soft); border:1px solid var(--gold-strong); padding:5px 14px; border-radius:99px}
+[data-theme="dark"] .eyebrow{color:var(--gold)}
+.eyebrow::before{content:''; width:8px; height:8px; border-radius:50%; background:var(--gold); animation:eyebrowBlink 1.4s ease-in-out infinite; box-shadow:0 0 8px var(--gold-glow)}
+@keyframes eyebrowBlink{0%,100%{opacity:1; transform:scale(1)}50%{opacity:.3; transform:scale(0.8)}}
+.spotlight-name{font-size:24px; font-weight:900; margin-top:12px; line-height:1.15; color:var(--text); letter-spacing:-.5px}
+.spotlight-meta{font-size:13px; color:var(--muted); margin-top:6px; font-weight:500; line-height:1.4}
+.spotlight-actions{margin-top:16px; display:flex; gap:10px; flex-wrap:wrap}
+
+/* Fix KPI empty icons */
+.kpi .k-ic:empty, .kpi .k-ic:has(> :empty){display:none !important}
+.kpi.no-icon .k-ic{display:none}
+.kpi .k-label{padding-right:0}
+
+/* Fix Stock & Supplies empty right side */
+.stock-grid{grid-template-columns:repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap:16px}
+.stock-card{display:flex; flex-direction:column; height:100%}
+.stock-card .stock-main{flex:1}
+
+/* Charts - eliminate blank right spaces */
+.chart-box{position:relative}
+.chart-box svg text{font-family:var(--font) !important}
+
 </style>
 </head>
 <body>
@@ -871,9 +937,19 @@ function daysSinceLastTraining(stId){ const st=staffById(stId)||{}; const jd=st.
   // staff stays last (induction first: s/he must first learn what we do & how we do it).
   const list=DB.trainings.filter(t=>t.status==='completed'&&t.attendees.includes(stId)&&String(t.end||'')>=jd)
   .sort((a,b)=>b.end.localeCompare(a.end)); if(!list.length) return null; return Math.max(0,daysBetween(list[0].end,todayISO())); }
-function fifoQueue(){ const act=activeStaff(); const trained=act.map(s=>({s,wait:daysSinceLastTraining(s.id)}))
-  .sort((a,b)=>{ if(a.wait===null&&b.wait===null) return a.s.joinDate.localeCompare(b.s.joinDate); if(a.wait===null) return 1; if(b.wait===null) return -1; return a.wait-b.wait; });
-  return trained; }
+function fifoQueue(){
+  const act=activeStaff();
+  const trained=act.map(s=>({s,wait:daysSinceLastTraining(s.id)}))
+  .sort((a,b)=>{
+    // null = never trained -> induction last (new staff at back)
+    if(a.wait===null && b.wait===null) return a.s.joinDate.localeCompare(b.s.joinDate);
+    if(a.wait===null) return 1; // a is new -> last
+    if(b.wait===null) return -1; // b is new -> last
+    // Longest wait first = who's next is most overdue
+    return b.wait - a.wait;
+  });
+  return trained;
+}
 
 /* ---------- expense helpers ---------- */
 function expTotals(){ let expenses=0, reimbursed=0, count=0;
@@ -1642,10 +1718,10 @@ function parseXLSX(fileBuf){
 
 /* ================= DASHBOARD (all KPIs except personal revenue tracker) ================= */
 'use strict';
-function kpiCard(label,val,foot,opts){ opts=opts||{}; const tone=opts.tone||'blue';
-  return `<div class="kpi tone-${tone}"><div class="k-label">${label}</div><div class="k-val">${val}</div>
-  ${foot?`<div class="k-foot">${foot}</div>`:''}<span class="k-ic">${opts.ic||''}</span>
-  ${opts.bar?`<div class="k-bar"><i style="width:${opts.bar}%;background:linear-gradient(90deg,var(--primary),var(--teal))"></i></div>`:''}</div>`; }
+function kpiCard(label,val,foot,opts){ opts=opts||{}; const tone=opts.tone||'blue'; const hasIc = opts.ic && String(opts.ic).trim()!=='';
+  return `<div class="kpi tone-${tone} ${hasIc?'':'no-icon'} ${opts.tone==='gold'?'gold':''}"><div class="k-label">${label}</div><div class="k-val">${val}</div>
+  ${foot?`<div class="k-foot">${foot}</div>`:''}${hasIc?`<span class="k-ic">${opts.ic}</span>`:''}
+  ${opts.bar?`<div class="k-bar"><i style="width:${opts.bar}%;background:linear-gradient(90deg,var(--primary),var(--gold))"></i></div>`:''}</div>`; }
 
 function dashAlerts(){
   const A=[];
@@ -2291,53 +2367,87 @@ function renderTrDash(body){
   const perStaff=act.map(s=>({label:s.name.split(' ').slice(-1)[0], value:DB.trainings.filter(t=>t.status==='completed'&&t.attendees.includes(s.id)).length})).sort((a,b)=>b.value-a.value);
   const ageBins={}; ages.forEach(a=>{ if(a==null||isNaN(a)) return; const bin=Math.floor(a/5)*5; ageBins[bin]=(ageBins[bin]||0)+1; });
   const ageArr=Object.entries(ageBins).sort((a,b)=>+a[0]-b[0]).map(([k,v])=>({label:k+'–'+(+k+4),value:v}));
-  // Glass spotlight panel + queue rail (matches the reference console structure)
+
+  // Correct FIFO: longest wait first, recent last
   const nextStaff=next?staffById(next.s.id):null;
   const shortName=s=>{ const p=(s.name||'').split(' '); return p[0]+' '+(p[1]?p[1][0]+'.':''); };
-  const avatarHtml=(s,nextFlag)=>{
+  const avatarHtml=(s,isNext)=>{
     const c=staffColor(s.id);
-    if(s.photo) return `<img alt="" class="avatar-img" src="${esc(s.photo)}">`;
-    return `<div class="avatar" style="background:${c};width:40px;height:40px;font-size:12.8px">${esc(s.name.split(' ').map(w=>w[0]).slice(0,2).join(''))}</div>`;
+    const base = s.photo ? `<img alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%" src="${esc(s.photo)}">` : esc(s.name.split(' ').map(w=>w[0]).slice(0,2).join(''));
+    return `<div class="avatar" style="background:${c};width:44px;height:44px;font-size:13px">${base}</div>`;
   };
   const queueNodes=fq.map((x,i)=>{
     const s=x.s; const isNext=(i===0);
+    const waitLabel = x.wait==null ? 'new' : x.wait>=365 ? Math.floor(x.wait/30)+'mo' : x.wait+'d';
+    const recentFlag = x.wait!==null && x.wait<60 ? '· recent' : '';
     return `<div class="queue-node ${isNext?'queue-node-next':''}">
-      ${avatarHtml(s,isNext)}
-      ${isNext?'<div class="queue-pulse"></div>':''}
+      <div style="position:relative">${avatarHtml(s,isNext)}${isNext?'<div class="queue-pulse"></div>':''}</div>
       <div class="queue-name">${esc(shortName(s))}</div>
-      <div class="queue-wait">${x.wait==null?'induction':x.wait+'d'}</div>
-      ${i<fq.length-1?'<div class="queue-connector"></div>':''}
+      <div class="queue-wait">${waitLabel}${recentFlag}</div>
+    </div>${i<fq.length-1?'<div class="queue-connector"></div>':''}`;
+  }).join('');
+
+  // Premium 7-step timeline for trainings (like your attached image)
+  const trainingsSorted = DB.trainings.slice().sort((a,b)=>a.start.localeCompare(b.start)).slice(-12); // last 12 trainings as flow
+  const icons = ['📊','🔬','🧬','⚗️','🩸','🦠','💉','🧫','📚','🎯','🔍','💡'];
+  const timelineSteps = trainingsSorted.map((t,i)=>{
+    const yr = t.start.slice(0,4);
+    const isNextTraining = false; // upcoming would be next
+    const att = t.attendees.map(id=>staffById(id)).filter(Boolean).map(s=>s.name.split(' ')[0]).slice(0,2).join(', ');
+    return `<div class="timeline-step">
+      <div class="timeline-year">${yr}</div>
+      <div class="timeline-dot ${isNextTraining?'next':''}">${icons[i%icons.length]}</div>
+      <div class="timeline-content"><b>${esc(t.title.slice(0,28))}</b><small>${fmtDate(t.start)}${att?' · '+esc(att):''}</small></div>
+      ${i<trainingsSorted.length-1?'<div class="timeline-arc"></div>':''}
     </div>`;
   }).join('');
+
+  const upcomingTimeline = upcoming.slice(0,7).map((t,i)=>{
+    const yr = t.start.slice(0,4);
+    return `<div class="timeline-step">
+      <div class="timeline-year" style="background:var(--gold-soft); border-color:var(--gold-strong); color:var(--gold)">${yr} · upcoming</div>
+      <div class="timeline-dot next">📅</div>
+      <div class="timeline-content"><b>${esc(t.title.slice(0,28))}</b><small>${fmtDate(t.start)}</small></div>
+      ${i<upcoming.length-1?'<div class="timeline-arc"></div>':''}
+    </div>`;
+  }).join('');
+
   body.innerHTML=`
-  <div class="glass-panel spotlight" style="margin-bottom:16px">
+  <div class="glass-panel spotlight gold-accent" style="margin-bottom:20px">
     <div class="spotlight-left">
-      <div class="eyebrow">Next in the FIFO queue</div>
+      <div class="eyebrow">Next in FIFO queue · longest wait first</div>
       <div class="spotlight-name">${esc(nextStaff?nextStaff.name:'—')}</div>
-      <div class="spotlight-meta">${nextStaff?esc(nextStaff.role):''}${next?(' · '+(next.wait==null?'New here — last in queue (induction first: learn what we do &amp; how we do it)':'Waiting '+next.wait+' days since last training')):''}</div>
+      <div class="spotlight-meta">${nextStaff?esc(nextStaff.role):''}${next?(' · '+(next.wait==null?'New here — induction last (learn what we do & how)':'Waiting <b>'+next.wait+' days</b> since last training — most overdue')):''}</div>
+      <div class="spotlight-meta" style="margin-top:6px; font-size:11.5px">Recent trainees (Beatrice & Aurelie Jun 2026) are now at the <b>end</b> of queue — fair FIFO.</div>
       <div class="spotlight-actions">
-        <span class="tag blue">Next attendee</span>
-        <button class="btn primary sm" id="fifoInvite">Invite to next training</button>
+        <span class="tag gold">🔥 ${next?next.wait+'d wait':'—'} · Next</span>
+        <button class="btn primary sm requires-admin" id="fifoInvite">Invite to next training</button>
+        ${!isAdmin()?'<span class="hint">Login as admin to invite</span>':''}
       </div>
     </div>
     <div class="spotlight-right">
       <div class="queue-rail">${queueNodes}</div>
     </div>
   </div>
-  <div class="grid g-auto" style="margin-bottom:16px">
+
+  ${trainingsSorted.length?`<div class="timeline-flow"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px"><h3 style="margin:0">📅 Training Journey — Timeline Flow</h3><span class="hint">Premium 7-step flow · blinking next · ${trainingsSorted.length} recent trainings</span></div><div class="timeline-flow-track"><div class="timeline-flow-line"></div>${timelineSteps}</div></div>`:''}
+
+  ${upcoming.length?`<div class="timeline-flow" style="border-left:3px solid var(--gold)"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px"><h3 style="margin:0">🚀 Upcoming Trainings — FIFO Scheduled</h3><span class="tag gold">Blinking = next to attend</span></div><div class="timeline-flow-track"><div class="timeline-flow-line"></div>${upcomingTimeline}</div></div>`:''}
+
+  <div class="grid g-auto" style="margin-bottom:20px; gap:16px">
     ${kpiCard('Training coverage', cov+'%', 'active staff trained at least once', {tone:'green', bar:cov})}
-    ${kpiCard('Avg wait since training', avgWait+'d', 'across active staff', {tone:'teal'})}
-    ${kpiCard('Upcoming / completed', upcoming.length+' / '+completed.length, 'trainings', {tone:'amber'})}
-    ${kpiCard('Active staff', act.length, 'avg age '+avgAge+'y', {tone:'blue'})}
-    ${kpiCard('Avg experience', avgExp+'y', 'at Ruli DH lab', {tone:'teal'})}
+    ${kpiCard('Avg wait since training', avgWait+'d', 'across active staff · longest '+Math.max(...waiting.map(x=>x.wait),0)+'d', {tone:'teal'})}
+    ${kpiCard('Upcoming / completed', upcoming.length+' / '+completed.length, 'trainings · FIFO longest wait first', {tone:'amber'})}
+    ${kpiCard('Active staff', act.length, 'avg age '+avgAge+'y · exp '+avgExp+'y', {tone:'blue'})}
+    ${kpiCard('Avg experience', avgExp+'y', 'at Ruli DH lab · total '+DB.staff.length+' records', {tone:'teal'})}
   </div>
-  <div class="grid g-2" style="margin-bottom:16px; gap:16px">
-    <div class="card span2"><h3> Trainings attended per staff member</h3><div class="chart-box">${svgHBar(perStaff)}</div></div>
-    <div class="card"><h3> Age distribution (active staff)</h3><div class="chart-box">${svgBar(ageArr)}</div></div>
+  <div class="grid g-2" style="gap:16px">
+    <div class="card"><h3>Trainings attended per staff</h3><div class="chart-box">${svgHBar(perStaff)}</div></div>
+    <div class="card"><h3>Age distribution (active)</h3><div class="chart-box">${svgBar(ageArr)}</div></div>
   </div>`;
-  $('#fifoInvite').onclick=()=>openTrainingForm(true);
-  
+  const btn=document.getElementById('fifoInvite'); if(btn) btn.onclick=()=>openTrainingForm(true);
 }
+
 function renderTrStaff(body){
   body.innerHTML=`<div class="toolbar"><span class="chip"><b>${DB.staff.length}</b> staff · ${activeStaff().length} active</span><span class="spacer"></span>
     <button class="btn primary" id="addStaffBtn"> Add staff</button></div>
@@ -2603,9 +2713,9 @@ function renderPlanView(body){
   </div>
   <div id="wpAlerts"></div>
   <div id="wpGridWrap"></div>
-  <div class="card" style="margin-bottom:16px"><h3> Keys &amp; rules</h3>
-    <div class="row" style="gap:6px 14px">${CODE_OPTIONS.slice(0,-1).map(c=>`<span class="tag ${c[0]===''?'gray':c[0]}">${esc(c[1])}</span>`).join('')}</div>
-    <p class="hint" style="margin-top:10px"> Tap any cell to edit it. Every edit or regeneration is stored as a re-exportable version. Weekend columns are amber, public holidays red. OFF falling on weekends is left blank to keep weekends clean.</p>
+  <div class="card" style="margin-bottom:16px"><h3> Keys &amp; rules ${!isAdmin()?'<span class="sub">viewer · read-only</span>':''}</h3>
+    <div class="row" style="gap:8px 12px">${CODE_OPTIONS.slice(0,-1).map(c=>`<span class="tag ${c[0]===''?'gray':c[0]}">${esc(c[1])}</span>`).join('')}</div>
+    ${isAdmin()?'<p class="hint" style="margin-top:10px">Tap any cell to edit it. Every edit or regeneration is stored as a re-exportable version. Weekend columns are amber, public holidays red.</p>':'<p class="hint" style="margin-top:10px">Viewer mode — you can view & download, but cannot edit. Login as admin to edit cells.</p>'}
   </div>`;
   $('#wpMonth').onchange=e=>{ UI.wpMonth=e.target.value; renderWpBody(); };
   $('#wpLoad').onclick=renderWpBody;
@@ -2773,6 +2883,72 @@ body.viewer-mode [data-confidential]{display:none !important}
   body.nav-closed #mainWrap main{max-width:100% !important; width:100% !important; padding-left:24px; padding-right:24px}
   #mainWrap main{transition:max-width .25s ease, padding .25s ease}
 }
+
+
+/* ===== PREMIUM 7-STEP TIMELINE - Training Flow ===== */
+.timeline-flow{position:relative; padding:24px 12px 40px; overflow-x:auto; -webkit-overflow-scrolling:touch; background:var(--surface); border:1px solid var(--edge); border-radius:16px; box-shadow:var(--shadow); margin-bottom:20px}
+.timeline-flow-track{position:relative; display:flex; align-items:center; min-width:max-content; gap:0; padding:40px 20px 60px; min-height:220px}
+.timeline-flow-line{position:absolute; left:20px; right:20px; top:50%; height:3px; background:linear-gradient(90deg,var(--primary),var(--gold),var(--teal)); border-radius:3px; z-index:1}
+.timeline-step{position:relative; flex:0 0 160px; display:flex; flex-direction:column; align-items:center; z-index:2}
+.timeline-step:nth-child(odd){transform:translateY(-42px)}
+.timeline-step:nth-child(even){transform:translateY(42px)}
+.timeline-year{font-size:12px; font-weight:800; color:var(--primary); background:var(--bg2); border:1px solid var(--edge); border-radius:99px; padding:3px 10px; margin-bottom:10px; letter-spacing:.4px}
+[data-theme="dark"] .timeline-year{background:#162543; color:var(--gold); border-color:#1e335a}
+.timeline-dot{width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,var(--surface),var(--bg2)); border:2px solid var(--edge); display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 4px 16px rgba(11,28,61,0.12), 0 0 0 4px var(--surface); position:relative; transition:all 220ms ease}
+.timeline-dot:hover{transform:scale(1.08); border-color:var(--gold-strong); box-shadow:0 8px 28px rgba(11,28,61,0.18), 0 0 0 6px var(--gold-soft)}
+.timeline-dot.next{border-color:var(--gold); background:linear-gradient(135deg,var(--gold-soft),var(--surface)); box-shadow:0 0 0 4px var(--gold-soft), 0 8px 24px rgba(201,168,76,0.28)}
+.timeline-dot.next::before{content:''; position:absolute; inset:-10px; border-radius:50%; border:2px solid var(--gold); animation:blinkRing 1.8s ease-out infinite}
+.timeline-dot.next::after{content:''; position:absolute; inset:-18px; border-radius:50%; border:1px solid var(--gold-glow); animation:blinkRing 1.8s ease-out infinite 0.4s}
+@keyframes blinkRing{0%{transform:scale(0.72); opacity:0.9} 100%{transform:scale(1.35); opacity:0}}
+.timeline-content{margin-top:14px; text-align:center; max-width:150px}
+.timeline-content b{font-size:12px; font-weight:800; color:var(--text); display:block; line-height:1.25}
+.timeline-content small{font-size:10.5px; color:var(--muted); display:block; margin-top:3px; font-weight:500}
+.timeline-arc{position:absolute; top:50%; width:60px; height:84px; border:2px solid var(--edge); border-bottom:none; border-radius:50% 50% 0 0; z-index:1; pointer-events:none}
+.timeline-step:nth-child(odd) .timeline-arc{transform:translateY(-2px) rotate(180deg); top:auto; bottom:50%; border-top:none; border-bottom:2px solid var(--edge)}
+.timeline-step:nth-child(even) .timeline-arc{top:50%}
+.timeline-flow::-webkit-scrollbar{height:8px}
+.timeline-flow-track{scroll-snap-type:x proximity}
+
+/* FIFO queue rail - premium with blinking next */
+.queue-rail{position:relative; display:flex; gap:0; align-items:flex-start; overflow-x:auto; padding:16px 8px 20px; flex-wrap:nowrap; background:linear-gradient(180deg,var(--surface),var(--surface-2)); border-radius:14px; border:1px solid var(--edge)}
+.queue-node{position:relative; flex:0 0 92px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 6px 14px; border-radius:14px; border:1px solid transparent; transition:all 200ms ease; background:transparent}
+.queue-node:hover{background:var(--surface-hover); border-color:var(--edge); transform:translateY(-2px)}
+.queue-node-next{background:var(--gold-soft); border-color:var(--gold-strong); box-shadow:var(--shadow-gold)}
+.queue-node .avatar{position:relative; z-index:2; width:44px; height:44px; border-radius:50%; font-size:13px; font-weight:900; box-shadow:0 3px 10px rgba(11,28,61,0.18)}
+.queue-node-next .avatar{box-shadow:0 0 0 3px var(--gold-soft), 0 4px 16px rgba(201,168,76,0.32)}
+.queue-pulse{position:absolute; top:10px; left:50%; margin-left:-28px; width:56px; height:56px; border-radius:50%; border:2px solid var(--gold); z-index:1; pointer-events:none; animation:queuePulse 1.7s ease-out infinite}
+@keyframes queuePulse{0%{transform:scale(.72); opacity:.9}100%{transform:scale(1.55); opacity:0}}
+.queue-name{font-size:11px; font-weight:800; text-align:center; line-height:1.2; color:var(--text)}
+.queue-wait{font-size:10px; color:var(--muted); font-weight:700; background:var(--bg2); padding:2px 7px; border-radius:99px; border:1px solid var(--edge)}
+[data-theme="dark"] .queue-wait{background:#162543; border-color:#1e335a}
+.queue-connector{flex:0 0 16px; height:3px; background:linear-gradient(90deg,var(--edge),var(--gold-soft)); border-radius:3px; margin-top:28px}
+
+/* Spotlight - fix empty space */
+.glass-panel.spotlight{padding:20px 20px; display:grid; grid-template-columns:320px 1fr; gap:20px; align-items:center}
+@media(max-width:900px){ .glass-panel.spotlight{grid-template-columns:1fr; gap:16px} }
+.spotlight-left{flex:none; min-width:0}
+.spotlight-right{flex:1; min-width:0; overflow:hidden}
+.eyebrow{display:inline-flex; align-items:center; gap:8px; font-size:10.5px; font-weight:900; letter-spacing:.8px; text-transform:uppercase; color:var(--primary); background:var(--gold-soft); border:1px solid var(--gold-strong); padding:5px 14px; border-radius:99px}
+[data-theme="dark"] .eyebrow{color:var(--gold)}
+.eyebrow::before{content:''; width:8px; height:8px; border-radius:50%; background:var(--gold); animation:eyebrowBlink 1.4s ease-in-out infinite; box-shadow:0 0 8px var(--gold-glow)}
+@keyframes eyebrowBlink{0%,100%{opacity:1; transform:scale(1)}50%{opacity:.3; transform:scale(0.8)}}
+.spotlight-name{font-size:24px; font-weight:900; margin-top:12px; line-height:1.15; color:var(--text); letter-spacing:-.5px}
+.spotlight-meta{font-size:13px; color:var(--muted); margin-top:6px; font-weight:500; line-height:1.4}
+.spotlight-actions{margin-top:16px; display:flex; gap:10px; flex-wrap:wrap}
+
+/* Fix KPI empty icons */
+.kpi .k-ic:empty, .kpi .k-ic:has(> :empty){display:none !important}
+.kpi.no-icon .k-ic{display:none}
+.kpi .k-label{padding-right:0}
+
+/* Fix Stock & Supplies empty right side */
+.stock-grid{grid-template-columns:repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap:16px}
+.stock-card{display:flex; flex-direction:column; height:100%}
+.stock-card .stock-main{flex:1}
+
+/* Charts - eliminate blank right spaces */
+.chart-box{position:relative}
+.chart-box svg text{font-family:var(--font) !important}
 
 </style></head><body>
   <div class="head"><div style="font-size:10px">REPUBLIC OF RWANDA — MINISTRY OF HEALTH</div><h1>${ex.hospital} · ${ex.dept}</h1><div class="sub">${ex.email} · ${ex.phone}</div></div>
