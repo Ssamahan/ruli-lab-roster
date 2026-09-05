@@ -3263,15 +3263,23 @@ function computePlan(input){
   const dayCovered=new Array(D).fill(false);
   const alerts=[];
 
-  /* Weekend-duty pre-pass: staff with weekendPattern (DN/D/N) cover weekends whenever available,
-     including holiday weekends (they are the dedicated weekend worker).
-     If they are on leave (avail=false) it is skipped, and it resumes automatically when they return. */
+  /* Weekend-duty pre-pass: Aurelie covers Sat/Sun DN when available.
+     If Aurelie on AL, weekend split: one staff Sat&Sun days, another Sat&Sun nights */
+  const aurelieIdx = staff.findIndex(s=>/YANSONEYE/.test(s.name));
+  const isAurelieOnAL = (di)=>{
+    if(aurelieIdx<0) return false;
+    return !avail[aurelieIdx][di] || codes[aurelieIdx][di]==='AL';
+  };
+
   for(let si=0; si<N; si++){
     const pat=staff[si].weekendPattern;
     if(!pat||pat==='none') continue;
-    for(let di=0; di<D; di++){ const iso=dates[di];
+    for(let di=0; di<D; di++){
+      const iso=dates[di];
       if(!isWknd(iso)) continue;
       if(!avail[si][di]||codes[si][di]||isManager(si)) continue;
+      // If Aurelie is the weekend worker but on AL, skip - handled in weekend split below
+      if(si===aurelieIdx && isAurelieOnAL(di)) continue;
       const want=pat==='D'?'D':pat==='N'?'N':'DN';
       if(want==='N'){ assignedN[di]=true; codes[si][di]='N'; }
       else if(want==='D'){ if(!dayCovered[di]){ codes[si][di]='D'; dayCovered[di]=true; } }
@@ -3279,12 +3287,20 @@ function computePlan(input){
     }
   }
 
-  /* Weekend-only staff rest Monday-Friday (e.g. Aurelie) — marked OFF on weekdays.
-     When on leave (avail=false) this is skipped so AL stays, and it resumes when they return. */
+  /* Weekend-only staff (Aurelie) rests Mon-Fri */
   for(let si=0; si<N; si++){
     if(!staff[si].weekendOnly) continue;
     for(let di=0; di<D; di++){
       if(isWknd(dates[di])) continue;
+      if(avail[si][di] && !codes[si][di]) codes[si][di]='OFF';
+    }
+  }
+
+  /* Beatrice never weekends - like manager */
+  for(let si=0; si<N; si++){
+    if(!/NGEZEKURE/.test(staff[si].name)) continue;
+    for(let di=0; di<D; di++){
+      if(!isWknd(dates[di])) continue;
       if(avail[si][di] && !codes[si][di]) codes[si][di]='OFF';
     }
   }
@@ -3390,26 +3406,106 @@ function computePlan(input){
       if(!avail[s][rdi]||codes[s][rdi]) continue;
       codes[s][rdi]= (isWknd(dates[rdi])||isHol(dates[rdi])) ? '' : 'OFF'; }
   }
-  /* ---------- DAY PASS ---------- */
+  /* ---------- DAY PASS - with Aurelie AL split & no 7-day rule ---------- */
+  // Helper: check if staff would work 7 consecutive days
+  const wouldWork7 = (si, di)=>{
+    let consec=0;
+    for(let k=di-6;k<=di;k++){
+      if(k<0) continue;
+      const c=codes[si][k];
+      if(c==='D' || c==='N' || c==='DN' || c==='H') consec++;
+      else consec=0;
+    }
+    return consec>=6; // if already 6 days, next would be 7th
+  };
+
   for(let di=0; di<D; di++){
     const date=dates[di]; const hol=isHol(date); const wknd=isWknd(date);
+
+    // Handle Aurelie AL weekend split BEFORE normal logic
+    if(wknd && aurelieIdx>=0 && isAurelieOnAL(di)){
+      // Find Saturday index
+      const dow = new Date(date+'T12:00:00').getDay(); // 0 Sun, 6 Sat
+      if(dow===6){ // Saturday - assign weekend split for Sat+Sun together
+        const sat=di, sun=di+1;
+        if(sun<D){
+          // Need two staff: one for days Sat+Sun, one for nights Sat+Sun
+          let dayCands=[], nightCands=[];
+          for(let si=0; si<N; si++){
+            if(si===aurelieIdx) continue;
+            if(isManager(si)) continue;
+            if(/NGEZEKURE/.test(staff[si].name)) continue; // Beatrice no weekends
+            if(!avail[si][sat] || codes[si][sat]) continue;
+            if(!avail[si][sun] || codes[si][sun]) continue;
+            if(wouldWork7(si, sat) || wouldWork7(si, sun)) continue;
+            if(staff[si].nightPref!=='no') nightCands.push(si);
+            dayCands.push(si);
+          }
+          // Sort by day balance for fairness
+          dayCands.sort((a,b)=>dayBal[staff[a].id]-dayBal[staff[b].id]);
+          nightCands.sort((a,b)=>nightBal[staff[a].id]-nightBal[staff[b].id]);
+
+          let dayStaff=null, nightStaff=null;
+          if(dayCands.length){
+            dayStaff=dayCands[0];
+            codes[dayStaff][sat]='D'; codes[dayStaff][sun]='D';
+            dayCovered[sat]=true; dayCovered[sun]=true;
+            dayBal[staff[dayStaff].id]+=2;
+          }
+          // Night staff must be different from day staff
+          const nightPool = nightCands.filter(si=>si!==dayStaff);
+          if(nightPool.length){
+            nightStaff=nightPool[0];
+            codes[nightStaff][sat]='N'; codes[nightStaff][sun]='N';
+            assignedN[sat]=true; assignedN[sun]=true;
+            nightBal[staff[nightStaff].id]+=2;
+            nightBlockCount[staff[nightStaff].id]++;
+            // Grant 2 OFFs after weekend nights (Thu/Fri)
+            for(let k=1;k<=4;k++){
+              const offIdx = sun+k;
+              if(offIdx>=D) break;
+              if(isWknd(dates[offIdx]) || isHol(dates[offIdx])) continue;
+              if(!avail[nightStaff][offIdx] || codes[nightStaff][offIdx]) continue;
+              if(codes[nightStaff][offIdx]==='D'){ codes[nightStaff][offIdx]='OFF'; break; }
+            }
+          }
+          if(!dayStaff) alerts.push('No day cover on weekend '+date+' (Aurelie in AL)');
+          if(!nightStaff) alerts.push('No night cover on weekend '+date+' (Aurelie in AL)');
+          continue; // Skip normal weekend logic for Sat
+        }
+      } else if(dow===0){ // Sunday already handled with Saturday
+        if(dayCovered[di] || assignedN[di]) continue;
+      }
+    }
+
     if(!wknd&&!hol){
-      // weekday: everyone available works D (unless already assigned / resting)
+      // weekday: everyone available works D, but enforce no 7-day work
       let any=false;
-      for(let si=0; si<N; si++){ if(!codes[si][di]&&avail[si][di]){ codes[si][di]='D'; any=true; } }
+      for(let si=0; si<N; si++){
+        if(!codes[si][di]&&avail[si][di]){
+          if(wouldWork7(si, di)) { codes[si][di]='OFF'; continue; }
+          codes[si][di]='D'; any=true;
+        }
+      }
       if(any) dayCovered[di]=true; else alerts.push('No day cover on '+date);
-      continue; }
-    // weekend / holiday: exactly 1 day worker (D or H) + keep night (managers don't cover weekends/holidays).
-    // If a weekend-duty worker (e.g. Aurelie DN) already covered the day, do NOT add a second day person.
+      continue;
+    }
+
+    // weekend / holiday: exactly 1 day worker + keep night
     if(dayCovered[di]) continue;
     let cands=[];
-    for(let si=0; si<N; si++){ if(!avail[si][di]||codes[si][di]) continue; if(isManager(si)) continue; cands.push(si); }
+    for(let si=0; si<N; si++){
+      if(!avail[si][di]||codes[si][di]) continue;
+      if(isManager(si)) continue;
+      if(/NGEZEKURE/.test(staff[si].name)) continue; // Beatrice no weekends
+      if(wouldWork7(si, di)) continue;
+      cands.push(si);
+    }
     if(!cands.length){ if(!assignedN[di]) alerts.push('No day cover on '+date); continue; }
     cands.sort((a,b)=> dayBal[staff[a].id]-dayBal[staff[b].id]);
     const s=cands[0];
     codes[s][di]=hol?'H':'D'; dayCovered[di]=true; dayBal[staff[s].id]++;
     if(wknd&&!hol){
-      // compensating OFF: 2 weekdays with enough staff (>=4 on duty after removal => avail >=5)
       const freeDays=[];
       for(let k2=1;k2<=7&&freeDays.length<2;k2++){ const d2=di+k2; if(d2>=D) break;
         if(isWknd(dates[d2])||isHol(dates[d2])) continue;
@@ -3417,9 +3513,61 @@ function computePlan(input){
         if(onDuty>=4){ freeDays.push(d2); } }
       freeDays.forEach(d2=>{ if(!codes[s][d2]) codes[s][d2]='OFF'; });
     }
-    // allow a 3rd person on weekends when staff is really short (<3 available)
-    if(cands.length<=2 && !assignedN[di]){ const extra=cands[1]; if(extra!=null&&!codes[extra][di]){ codes[extra][di]=hol?'H':'D'; } }
   }
+
+  /* ---------- POST-PROCESS: enforce no 7 consecutive work days ---------- */
+  for(let si=0; si<N; si++){
+    let consec=0;
+    for(let di=0; di<D; di++){
+      const c=codes[si][di];
+      const isWork = c==='D' || c==='N' || c==='DN' || c==='H';
+      if(isWork){
+        consec++;
+        if(consec>=7){
+          // Force OFF on this day if possible (avoid breaking night coverage if only one night staff)
+          if(!assignedN[di] || codes[si][di]!=='N'){
+            // Find alternative staff for this day if it was day cover
+            if(codes[si][di]==='D' || codes[si][di]==='H'){
+              let alt=null;
+              for(let sj=0; sj<N; sj++){
+                if(sj===si) continue;
+                if(isManager(sj)) continue;
+                if(/NGEZEKURE/.test(staff[sj].name) && isWknd(dates[di])) continue;
+                if(!avail[sj][di] || codes[sj][di]) continue;
+                alt=sj; break;
+              }
+              if(alt!==null){
+                codes[alt][di]=codes[si][di];
+                dayCovered[di]=true;
+              }
+            }
+            codes[si][di]='OFF';
+            consec=0;
+          }
+        }
+      } else {
+        consec=0;
+      }
+    }
+  }
+
+  /* ---------- IF AURELIE AL IN OCTOBER AND SHORTAGE, CANCEL HER AL ---------- */
+  try{
+    const activeCount = staff.filter(s=>{ const st=DB.staff.find(x=>x.id===s.id); return st && st.status==='active'; }).length;
+    const aurelieLeaveOct = DB.leaves.filter(l=>l.staffId==='s4' && l.type==='AL' && l.from<='2026-10-15' && l.to>='2026-10-01');
+    if(activeCount<=6 && aurelieLeaveOct.length){
+      // Shortage - if administration fails to give another staff, Aurelie will not go for AL in Oct
+      // We will keep her AL but add warning, and if weekend coverage fails, auto-cancel
+      const hasWeekendCoverageIssue = alerts.some(a=>/weekend.*Aurelie in AL/.test(a));
+      if(hasWeekendCoverageIssue){
+        // Cancel Aurelie Oct AL
+        DB.leaves = DB.leaves.filter(l=> !(l.staffId==='s4' && l.from<='2026-10-31' && l.to>='2026-10-01' && l.type==='AL'));
+        alerts.push('⚠️ Aurelie AL in Oct cancelled due to staff shortage (Faustin & Diane exited) - administration must provide replacement');
+        // Need to regenerate? For now just alert, user can regenerate
+      }
+    }
+  }catch(e){ console.warn('Aurelie Oct check', e.message); }
+
   /* ---------- FINAL COVERAGE CHECKS ---------- */
   for(let di=0; di<D; di++){
     if(!assignedN[di]) alerts.push('No night cover on '+dates[di]);
