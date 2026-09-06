@@ -711,12 +711,10 @@ function buildSeed(){
       {id:'te9', title:'Mentorship on HIV Service Delivery', organizer:'RBC', location:'Gicumbi District', start:'2025-09-08', end:'2025-09-12', linkedTraining:null, expenses:[{id:'x9', cat:'Other', desc:'Expenses as recorded', amount:35500, date:'2025-09-12'}], reimbursements:[{id:'r9', amount:99000, date:'2025-09-26', source:'RBC', note:''}], note:''}
     ],
     leaves:[
-      // Patrick ISHIMWE - Annual Leave schedule per manager (NO work in Sep 2026)
-      {id:'l11', staffId:'s5', type:'AL', from:'2026-08-17', to:'2026-09-15', backOn:'2026-09-16', status:'Planned', fy:'2026/2027', note:'Carry-over 2025/26 + 2026/27 — 30d current leave (Aug17-Sep15) — Patrick in full AL, no roster'},
-      {id:'l9', staffId:'s5', type:'AL', from:'2026-09-16', to:'2026-09-30', backOn:'2026-10-01', status:'Planned', fy:'2026/2027', note:'2026/27 FY — 15d AFTER current 30d leave (Sep16-30) — 1st installment, per manager — Patrick still in AL, not in Sep roster'},
-      {id:'l9b', staffId:'s5', type:'AL', from:'2026-10-01', to:'2026-10-15', backOn:'2026-10-16', status:'Planned', fy:'2026/2027', note:'2026/27 FY — completes 60d total Aug17-Oct15 (carry-over 30d + 2026/27 30d)'},
-      {id:'l9c', staffId:'s5', type:'AL', from:'2026-10-16', to:'2026-10-30', backOn:'2026-10-31', status:'Planned', fy:'2026/2027', note:'2026/27 FY — extra 15d after 60d, 1st installment of next 30d (Oct16-30)'},
-      {id:'l10', staffId:'s5', type:'W', from:'2026-08-29', to:'2026-08-29', backOn:'2026-08-30', status:'Planned', fy:'2026/2027', note:'Wedding day — overlaps AL, W takes priority'},
+      // Patrick ISHIMWE - EXACT per manager: 30d previous FY + 15d current FY = 45d total, then CLOSE (back Oct1)
+      {id:'l11', staffId:'s5', type:'AL', from:'2026-08-17', to:'2026-09-15', backOn:'2026-09-16', status:'Planned', fy:'2025/2026', note:'Previous FY 2025/26 — 30d carry-over (Aug17-Sep15) — Patrick in AL, not in roster'},
+      {id:'l9', staffId:'s5', type:'AL', from:'2026-09-16', to:'2026-09-30', backOn:'2026-10-01', status:'Planned', fy:'2026/2027', note:'Current FY 2026/27 — 15d after current 30d, 1st installment of 30d (Sep16-30) — closes Sep, back Oct1'},
+      {id:'l10', staffId:'s5', type:'W', from:'2026-08-29', to:'2026-08-29', backOn:'2026-08-30', status:'Planned', fy:'2026/2027', note:'Wedding day — overlaps AL, W priority, 💍'},
       // Other staff - NO overlapping AL with Patrick (per Ruli policy: no 2 AL same time)
       {id:'l1', staffId:'s9', type:'AL', from:'2027-06-01', to:'2027-06-15', backOn:'2027-06-16', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — Part 2 of 2'},
       {id:'l2', staffId:'s6', type:'AL', from:'2027-04-26', to:'2027-05-25', backOn:'2027-05-26', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027'},
@@ -1250,15 +1248,15 @@ function buildPlanExport(key, version){
     colInfo, staff, codes, legends, holidays:holidaysIn, phones,
     sig:[{l:'Prepared by:',n:s.prepared,r:s.preparedRole},{l:'Verified by:',n:s.verified,r:s.verifiedRole},{l:'Approved by:',n:s.approved,r:s.approvedRole}]};
 }
-const CODE_COLORS={D:'#dbe7fb',N:'#2d3a5c',DN:'#c9d7f2',OFF:'#f2f4f9',AL:'#fdeccd',ML:'#f7d7e6',SL:'#ffe0d9',CL:'#e8ecf6',TR:'#d5f3e8',W:'#f3e2fb',ABS:'#fbd7d7',H:'#ffdcdc',blank:'#ffffff'};
+const CODE_COLORS={D:'#eef2fb',N:'#0B1C3D',DN:'#d6e2f5',OFF:'#f7f8fc',AL:'#fdf3d7',ML:'#f9e0eb',SL:'#fde8e2',CL:'#eef1f6',TR:'#dcf3e8',W:'#f3e4f9',ABS:'#fbdcdc',H:'#fde2e2',blank:'#ffffff'};
 const CODE_TX={D:'#2a56c4',N:'#dfe8ff',DN:'#16233f',OFF:'#b9c2d4',AL:'#9a6b10',ML:'#a21d6d',SL:'#b3422f',CL:'#5a6a8c',TR:'#0e7a58',W:'#8b2fb3',ABS:'#c2272c',H:'#c2272c'};
 
 function previewPlanHTML(key){
   const ver=(DB.workingPlans[key]||{}).primary; if(!ver) return toast('Generate the plan first','warn');
   const ex=buildPlanExport(key,ver);
   let h=`<div class="wp-preview" style="font-family:'Trebuchet MS',sans-serif;font-size:11px;line-height:1.5">
-    <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:8px">
-      <div style="font-weight:800;font-size:15px">${ex.hospital} — ${ex.dept}</div>
+    <div style="text-align:center;border-bottom:2px solid #C9A84C;padding-bottom:10px;margin-bottom:10px">
+      <div style="font-weight:800;font-size:16px; color:#0B1C3D; font-family:Space Grotesk">${ex.hospital} — ${ex.dept}</div>
       <div style="font-size:11px">${ex.email} · ${ex.phone}</div>
       <div style="font-weight:800;font-size:13px;margin-top:4px">${ex.title}</div>
       <div style="font-size:10px">Date: ${ex.date} &nbsp; FY: ${ex.fy} &nbsp; Period: ${ex.period}</div></div>
@@ -1284,28 +1282,28 @@ async function exportPlanPNG(key){
   const ver=(DB.workingPlans[key]||{}).primary; if(!ver) return toast('No plan for this month','err');
   const ex=buildPlanExport(key,ver);
   const crest=await imgOr(DB.settings.crest||null,'moh'); const logo=await imgOr(DB.settings.logo||null,'hospital');
-  const W=1400; const scale=2;
+  const W=1400;
   const cols=ex.colInfo.length; const nRows=ex.staff.length;
-  const _tmpCv=document.createElement('canvas'); const _tg=_tmpCv.getContext('2d'); _tg.font='bold 12px Arial';
-  const maxName=Math.max(150, ...ex.staff.map(nm=>Math.round(_tg.measureText(nm).width+36)));
-  const nameW=Math.min(250, maxName);
-  const cellW=Math.max(24, Math.floor((W-40-nameW)/cols));
-  const top=180, hdrH=40;
-  const legH=Math.ceil(ex.legends.length/3)*17+ (ex.holidays.length?30:0);
-  const phoneH=Math.ceil(ex.phones.length/2)*18+20;
-  const sigH=58;
-  const rowH=24;
+  const _tmpCv=document.createElement('canvas'); const _tg=_tmpCv.getContext('2d'); _tg.font='bold 12px Space Grotesk';
+  const maxName=Math.max(160, ...ex.staff.map(nm=>Math.round(_tg.measureText(nm).width+40)));
+  const nameW=Math.min(260, maxName);
+  const cellW=Math.max(26, Math.floor((W-40-nameW)/cols));
+  const top=110, hdrH=42; // light premium - move up Ruli DH
+  const legH=Math.ceil(ex.legends.length/3)*18+ (ex.holidays.length?28:0);
+  const phoneH=Math.ceil(ex.phones.length/2)*18+18;
+  const sigH=62;
+  const rowH=26;
   const tableH=hdrH+nRows*rowH;
-  let H=top+tableH+legH+phoneH+sigH+30;
-  if(H<877) H=877; // landscape minimum (A4 landscape ratio ~ 1.414)
+  let H=top+tableH+legH+phoneH+sigH+24;
+  if(H<720) H=720; // compact premium, not too tall
   const cv=document.createElement('canvas'); cv.width=W*scale; cv.height=H*scale; const g=cv.getContext('2d'); g.scale(scale,scale);
   g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
   g.textBaseline='alphabetic';
   // header band
   g.fillStyle='#0e2e5c'; g.fillRect(0,0,W,96); g.fillStyle='#ffffff';
   g.font='bold 18px Georgia'; g.textAlign='center';
-  g.fillText('REPUBLIC OF RWANDA', W/2, 30);
-  g.font='bold 28px Georgia'; g.fillText('MINISTRY OF HEALTH', W/2, 66);
+  // Premium light header - Ruli DH only, no MOH deep blue
+  g.fillStyle='#0B1C3D'; g.font='bold 22px Space Grotesk'; g.fillText(ex.hospital+' · '+ex.dept, W/2, 36);
   g.fillStyle='rgba(255,255,255,0.85)'; g.font='12px Arial'; g.fillText('National Reference & Laboratory Services', W/2, 88);
   // crest left, logo right
   if(crest){ g.drawImage(crest, 26, 10, 74, 74); } else { g.fillStyle='#f8fafc'; g.beginPath(); g.moveTo(63,10); g.lineTo(100,16); g.lineTo(100,52); g.quadraticCurveTo(100,74,63,82); g.quadraticCurveTo(26,74,26,52); g.lineTo(26,16); g.closePath(); g.fill(); g.strokeStyle='#0e2e5c'; g.stroke(); g.fillStyle='#0e2e5c'; g.font='bold 13px Arial'; g.fillText('MOH',63,50); }
@@ -1384,8 +1382,8 @@ function exportPlanPDF(key){
   const cellW=Math.floor((W-40-nameW)/cols);
   const rowH=18, hdrH=34;
   // ---- header ----
-  d.text('REPUBLIC OF RWANDA', W/2, 24, {size:10, serif:true, bold:true});
-  d.text('MINISTRY OF HEALTH', W/2, 36, {size:13, serif:true, bold:true});
+  // Light premium header - only Ruli DH
+  d.text(ex.hospital+' · '+ex.dept, W/2, 28, {size:12, bold:true});
   d.text(ex.hospital+' — '+ex.dept, W/2, 52, {size:11, bold:true});
   d.text(ex.email+'  ·  '+ex.phone, W/2, 63, {size:8});
   d.text(ex.title, W/2, 82, {size:14, serif:true, bold:true});
@@ -1475,7 +1473,7 @@ async function exportManifestPNG(man){
   g.fillStyle='#fff'; g.fillRect(0,0,W,cvH);
   // header per spec: left = coat of arms + Ministry of Health · center = title + testing hospital · right = referring hospital logo + name
   if(crest){ g.drawImage(crest, 34, 26, 78, 78); } else { g.fillStyle='#0e2e5c'; g.textAlign='center'; g.font='bold 26px Arial'; g.fillText('MOH', 73, 70); }
-  g.fillStyle='#0e2e5c'; g.textAlign='left'; g.font='bold 14px Arial'; g.fillText('MINISTRY OF HEALTH', 34, 132);
+  g.fillStyle='#0B1C3D'; g.textAlign='left'; g.font='bold 14px Space Grotesk'; g.fillText(ex.hospital || 'Ruli District Hospital', 34, 132);
   if(logo){ g.drawImage(logo, W-112, 26, 78, 78); } else { g.fillStyle='#0e2e5c'; g.beginPath(); g.roundRect?g.roundRect(W-112,26,78,78,14):g.rect(W-112,26,78,78); g.fill(); g.fillStyle='#fff'; g.font='bold 15px Arial'; g.fillText('RDH', W-73, 70); }
   g.fillStyle='#16233f'; g.textAlign='right'; g.font='bold 16px Arial'; g.fillText(DB.settings.hospital, W-120, 60); g.font='11px Arial'; g.fillStyle='#5a6a8c'; g.fillText('Referring Hospital', W-120, 78);
   // center title
@@ -1610,7 +1608,7 @@ function exportManifestPDF(man){
 function exportManifestXLSX(man){
   const ex=buildManifestExport(man);
   const rows=[];
-  rows.push(['REPUBLIC OF RWANDA']); rows.push(['MINISTRY OF HEALTH']); rows.push([]);
+  rows.push([ex.hospital+' · '+ex.dept]); rows.push([ex.email+' · '+ex.phone]); rows.push([]);
   rows.push([ex.title]); rows.push(['Testing Hospital: '+ex.testingHospital]); rows.push(['Manifest ID: '+ex.manifestId]); rows.push([]);
   rows.push(['S.No','Sample ID','Health facility, District','Patient Name','Patient ID','Date of Birth','Sex','Sample / Test','Collection Date','Sample Barcode']);
   ex.samples.forEach((s,i)=>rows.push([i+1, s.sampleId, (s.healthFacility||'Ruli DH')+', '+(s.district||'Gakenke'), maskName(s.patientName), maskPatientId(s.patientId)||'—', s.dob||'—', s.sex||'—', s.test, s.collectionDate||'—', s.barcode||'—']));
@@ -2777,19 +2775,25 @@ function openCellEditor(si,iso,key){
     for(let k=di;k<=to;k++) stored.staff[si].codes[k]=code;
     saveDB(); closeModal(); renderWpBody(); toast(n+' consecutive '+code+' set'); };
   openModal(`<h2> ${esc(name)} — ${fmtDate(iso)}</h2>
-  <div class="alert info" style="margin-bottom:12px">Block shifts: pick consecutive nights or days, or a single shift below.</div>
-  <div class="row" style="gap:8px;margin-bottom:12px">
+  <div class="alert info" style="margin-bottom:12px">Block shifts: pick consecutive nights/days/OFFs, or single below. Goal: maximize weekday day shifts, only one weekend staff when Aurelie present.</div>
+  <div class="row" style="gap:8px;margin-bottom:10px">
     <button class="btn" id="ce_2N">2 nights</button>
     <button class="btn" id="ce_3N">3 nights</button>
     <button class="btn" id="ce_2D">2 days</button>
     <button class="btn" id="ce_3D">3 days</button>
     <button class="btn" id="ce_DN">Day+Night</button>
   </div>
+  <div class="row" style="gap:8px;margin-bottom:12px">
+    <button class="btn" style="background:var(--bg2)" id="ce_2OFF">2 OFFs</button>
+    <button class="btn" style="background:var(--bg2)" id="ce_3OFF">3 OFFs</button>
+    <button class="btn" style="background:var(--bg2)" id="ce_5OFF">5 OFFs</button>
+  </div>
   <div class="grid g-4">${CODE_OPTIONS.map(c=>`<button class="btn ${cur===c[0]?'primary':''}" data-c="${c[0]===''?'__':c[0]}">${c[0]?esc(c[0]):'—'}<br><small style="font-weight:500;font-size:10px">${esc(c[1])}</small></button>`).join('')}</div>
   <div class="row" style="margin-bottom:16px"><button class="btn" id="ceCancel">Cancel</button></div>`);
   $('#ce_2N').onclick=()=>applyN(2,'N'); $('#ce_3N').onclick=()=>applyN(3,'N');
   $('#ce_2D').onclick=()=>applyN(2,'D'); $('#ce_3D').onclick=()=>applyN(3,'D');
   $('#ce_DN').onclick=()=>applyN(1,'DN');
+  $('#ce_2OFF').onclick=()=>applyN(2,'OFF'); $('#ce_3OFF').onclick=()=>applyN(3,'OFF'); $('#ce_5OFF').onclick=()=>applyN(5,'OFF');
   document.querySelectorAll('#modal-root [data-c]').forEach(b=>{ b.onclick=()=>{
     const code=b.dataset.c==='__'?'':b.dataset.c;
     pushPlanVersion(key,'Manual edit '+name+' — '+fmtDate(iso));
@@ -2954,7 +2958,7 @@ body.viewer-mode [data-confidential]{display:none !important}
 .chart-box svg text{font-family:var(--font) !important}
 
 </style></head><body>
-  <div class="head"><div style="font-size:10px">REPUBLIC OF RWANDA — MINISTRY OF HEALTH</div><h1>${ex.hospital} · ${ex.dept}</h1><div class="sub">${ex.email} · ${ex.phone}</div></div>
+  <div class="head" style="text-align:center; padding:8px 0 10px; border-bottom:2px solid #C9A84C"><h1 style="margin:0; font-size:18px; color:#0B1C3D; font-family:'Space Grotesk',sans-serif">${ex.hospital} · ${ex.dept}</h1><div class="sub" style="font-size:11px; color:#5a6b8c; margin-top:4px">${ex.email} · ${ex.phone}</div></div>
   <h2 style="text-align:center;font-size:14px;margin:6px 0">${ex.title}</h2>
   <div class="meta"><span>Date: ${ex.date}</span><span>FY: ${ex.fy}</span><span>Period: ${ex.period}</span></div>
   ${h}
@@ -3296,12 +3300,12 @@ function computePlan(input){
     }
   }
 
-  /* Beatrice never weekends - like manager */
+  /* Beatrice never weekends - like manager, and no OFF in weekends to keep clean */
   for(let si=0; si<N; si++){
     if(!/NGEZEKURE/.test(staff[si].name)) continue;
     for(let di=0; di<D; di++){
       if(!isWknd(dates[di])) continue;
-      if(avail[si][di] && !codes[si][di]) codes[si][di]='OFF';
+      if(avail[si][di] && !codes[si][di]) codes[si][di]=''; // blank, not OFF, to keep weekends clean
     }
   }
 
