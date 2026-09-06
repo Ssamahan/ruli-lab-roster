@@ -1290,14 +1290,14 @@ function buildPlanExport(key, version){
   const staff=version.staff.map(r=>r.name);
   const dates=version.dates||[];
   const [y,m]=key.split('-');
-  const periodLabel=MONTHS3[+m-1]+'-'+y;
+  const periodLabel=MONTHS[+m-1]+' '+y; // Full month name per request
   const meta=version.meta||{};
   const colInfo=dates.map(iso=>({iso, dow:DOW1[dayOfWeek(iso)], dom:+iso.slice(8,10), weekend:isWeekend(iso), holiday:holidayName(iso), next:iso.slice(0,7)!==key}));
   const holidaysIn=colInfo.filter(c=>c.holiday).map(c=>c.holiday.name+' ('+fmtDate(c.iso)+')');
   const codes=version.staff.map(r=>r.codes);
   const legends=['D — Day 08:00–17:00','N — Night 17:00–08:00','DN — Day+Night','OFF — Rest day','AL — Annual leave','ML — Maternity leave','SL — Sick leave','CL — Authorized leave','TR — Training','W — Wedding day','ABS — Absent (unattended duty)','H — Public holiday'];
   const phones=(DB.staff||[]).filter(st=>staff.includes(st.name)&&st.phone).map(st=>({name:st.name, phone:st.phone}));
-  return {key, title:'Working Plan — '+periodLabel, hospital:s.hospital, dept:s.dept, email:s.email, phone:s.phone,
+  return {key, title:'Working Plan — '+periodLabel, // Full September 2026 hospital:s.hospital, dept:s.dept, email:s.email, phone:s.phone,
     date:(meta.date?String(meta.date):todayISO()), fy:(meta.fy||fyOf(key+'-15')), period:periodLabel,
     colInfo, staff, codes, legends, holidays:holidaysIn, phones,
     sig:[{l:'Prepared by:',n:s.prepared,r:s.preparedRole},{l:'Verified by:',n:s.verified,r:s.verifiedRole},{l:'Approved by:',n:s.approved,r:s.approvedRole}]};
@@ -1336,69 +1336,55 @@ async function exportPlanPNG(key){
   const ver=(DB.workingPlans[key]||{}).primary; if(!ver) return toast('No plan for this month','err');
   const ex=buildPlanExport(key,ver);
   if(!ex || !ex.staff || !ex.staff.length) return toast('No staff in plan','err');
-  const crest=await imgOr(DB.settings.crest||null,'moh'); const logo=await imgOr(DB.settings.logo||null,'hospital');
+  const logo=await imgOr(DB.settings.logo||null,'hospital');
   const W=1400; const scale=2;
   const cols=ex.colInfo.length; const nRows=ex.staff.length;
-  const _tmpCv=document.createElement('canvas'); const _tg=_tmpCv.getContext('2d'); _tg.font='bold 12px Space Grotesk';
+  const _tmpCv=document.createElement('canvas'); const _tg=_tmpCv.getContext('2d'); _tg.font='700 12px Space Grotesk';
   const maxName=Math.max(170, ...ex.staff.map(nm=>Math.round(_tg.measureText(nm).width+44)));
   const nameW=Math.min(280, maxName);
   const cellW=Math.max(28, Math.floor((W-48-nameW)/cols));
   const rowH=30, hdrH=46;
   const tableH=hdrH+nRows*rowH;
-  // Premium spacing - single header, keys spacious, contacts in blocks, signatures original
   const legH= 42 + Math.ceil(ex.legends.length/4)*30;
   const phoneH= 44 + Math.ceil(ex.phones.length/3)*38;
-  const sigH= 120;
+  const sigH= 100;
   let H= 20 + 90 + 50 + tableH + 28 + legH + 24 + phoneH + 30 + sigH + 30;
   if(H<820) H=820;
   const cv=document.createElement('canvas'); cv.width=W*scale; cv.height=H*scale; const g=cv.getContext('2d'); g.scale(scale,scale);
   g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
-  g.textBaseline='alphabetic';
-  // Single premium header - centered, light, no MOH deep blue, gold line only
+  // Single header - light premium, black texts, gold line
   let y=20;
-  // No MOH coat of arm for Working Plan - light premium only Ruli DH per user request
-  // Only draw hospital logo if uploaded, high-res crisp
-  if(logo){
-    try{
-      g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
-      // Draw at high-res 72px, keep aspect
-      g.drawImage(logo, W-96, 12, 72, 72);
-    }catch(e){}
-  }
-  // Crest (MOH) not shown for Working Plan to avoid depixelation and keep light premium
-  g.fillStyle='#0B1C3D'; g.font='900 26px Space Grotesk'; g.textAlign='center'; g.fillText(ex.hospital, W/2, y+22);
-  g.fillStyle='#0B1C3D'; g.font='700 13px Space Grotesk'; g.fillText(ex.dept, W/2, y+42);
-  g.fillStyle='#5a6b8c'; g.font='500 11px Space Grotesk'; g.fillText(ex.email+' · '+ex.phone, W/2, y+60);
+  if(logo){ try{ g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(logo, W-96, 12, 72, 72); }catch(e){} }
+  g.fillStyle='#000000'; g.font='900 26px Space Grotesk'; g.textAlign='center'; g.fillText(ex.hospital, W/2, y+22);
+  g.fillStyle='#000000'; g.font='700 13px Space Grotesk'; g.fillText(ex.dept, W/2, y+42);
+  g.fillStyle='#000000'; g.font='500 11px Space Grotesk'; g.fillText(ex.email+' · '+ex.phone, W/2, y+60);
   g.strokeStyle='#C9A84C'; g.lineWidth=3; g.beginPath(); g.moveTo(28,y+74); g.lineTo(W-28,y+74); g.stroke();
   y+=90;
-  // Title - single, centered
   g.fillStyle='#000000'; g.font='800 18px Space Grotesk'; g.textAlign='center'; g.fillText(ex.title, W/2, y+10);
-  g.fillStyle='#000000'; g.font='600 11px Space Grotesk'; g.fillText('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+28); // Period removed - already in title
+  g.fillStyle='#000000'; g.font='600 11px Space Grotesk'; g.fillText('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+28);
   y+=50;
-  // Table
-  let x0=24, y0=y; // x0=24 ensures no empty left side, uses full width
+  let x0=24, y0=y;
   const drawCell=(x,y,w,h,fill,text,tcolor)=>{
     g.fillStyle=fill; g.fillRect(x,y,w,h);
     if(text!=null && text!==''){
       g.fillStyle=tcolor||'#000'; g.textAlign='center'; g.textBaseline='middle'; g.font='700 11px Space Grotesk';
-      if(text==='N' || text==='DN'){ g.font='800 11px Space Grotesk'; }
       g.fillText(text,x+w/2,y+h/2+1);
     }
     g.strokeStyle='#e6e9f1'; g.lineWidth=0.6; g.strokeRect(x,y,w,h);
   };
-  // header
-  for(let i=0;i<cols;i++){
-    const c=ex.colInfo[i];
-    const fill=c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC');
-    drawCell(x0+nameW+i*cellW, y0, cellW, 20, fill, c.dow, c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#5a6b8c'));
-    drawCell(x0+nameW+i*cellW, y0+20, cellW, 26, c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6'), String(c.dom), '#000000');
-  }
-  // Single STAFF/Name column - left aligned consistent (fix double)
+  // Single Staff/Name column - left aligned, no duplicate
   drawCell(x0,y0,nameW,20,'#0B1C3D','','#ffffff');
   g.fillStyle='#ffffff'; g.textAlign='left'; g.textBaseline='middle'; g.font='800 11px Space Grotesk'; g.fillText('STAFF', x0+12, y0+10);
   drawCell(x0,y0+20,nameW,26,'#F7F8FC','','#000000');
-  g.fillStyle='#000000'; g.textAlign='left'; g.textBaseline='middle'; g.font='700 11px Space Grotesk'; g.fillText('Name', x0+12, y0+20+13);
-  // body
+  g.fillStyle='#000000'; g.textAlign='left'; g.textBaseline='middle'; g.font='700 11px Space Grotesk'; g.fillText('Name', x0+12, y0+33);
+  // Day headers
+  for(let i=0;i<cols;i++){
+    const c=ex.colInfo[i];
+    const fill=c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC');
+    drawCell(x0+nameW+i*cellW, y0, cellW, 20, fill, c.dow, '#000000');
+    drawCell(x0+nameW+i*cellW, y0+20, cellW, 26, c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6'), String(c.dom), '#000000');
+  }
+  // Body - single name column
   for(let r=0;r<nRows;r++){
     const yy=y0+hdrH+r*rowH;
     g.fillStyle=(r%2)?'#fbfcff':'#ffffff'; g.fillRect(x0,yy,nameW,rowH);
@@ -1408,7 +1394,7 @@ async function exportPlanPNG(key){
       let fill='#ffffff', tcol='#000000';
       if(code==='D'){ fill=CODE_COLORS.D; tcol=CODE_TX.D; }
       else if(code==='N'){ fill=CODE_COLORS.N; tcol=CODE_TX.N; }
-      else if(code==='DN'){ fill=CODE_COLORS.DN; tcol='#0B1C3D'; }
+      else if(code==='DN'){ fill=CODE_COLORS.DN; tcol='#000000'; }
       else if(code==='OFF'){ fill=CODE_COLORS.OFF; tcol=CODE_TX.OFF; }
       else if(code==='AL'){ fill=CODE_COLORS.AL; tcol=CODE_TX.AL; }
       else if(code){ fill=CODE_COLORS[code]||'#f7f8fc'; tcol=CODE_TX[code]||'#000'; }
@@ -1416,7 +1402,7 @@ async function exportPlanPNG(key){
       drawCell(x0+nameW+i*cellW, yy, cellW, rowH, fill, code, tcol);
     }
   }
-  // Keys - spacious, below table, not inside
+  // Keys
   let ly=y0+tableH+28;
   g.fillStyle='#000000'; g.font='800 12px Space Grotesk'; g.textAlign='left'; g.fillText('Keys:', x0, ly);
   ly+=20;
@@ -1437,7 +1423,6 @@ async function exportPlanPNG(key){
     g.fillStyle='#000000'; g.font='600 10px Space Grotesk'; g.textAlign='left'; g.fillText('Holidays: '+ex.holidays.join(' · '), x0, ly);
     ly+=18;
   }
-  // Staff contacts - premium rectangular blocks, black text
   g.fillStyle='#000000'; g.font='800 12px Space Grotesk'; g.fillText('Staff contacts:', x0, ly);
   ly+=20;
   let pcx=x0, pcy=ly;
@@ -1452,7 +1437,6 @@ async function exportPlanPNG(key){
     pcx+=cW;
   });
   ly=pcy+cH+32;
-  // Signatories - NO line below, signing next to names (per request)
   const sy=ly;
   g.strokeStyle='#C9A84C'; g.lineWidth=1.2; g.beginPath(); g.moveTo(24,sy-10); g.lineTo(W-24,sy-10); g.stroke();
   for(let i=0;i<3;i++){
@@ -1460,10 +1444,10 @@ async function exportPlanPNG(key){
     g.fillStyle='#000000'; g.font='700 10px Space Grotesk'; g.textAlign='left'; g.fillText(ex.sig[i].l, sx+10, sy+8);
     g.fillStyle='#000000'; g.font='800 11px Space Grotesk'; g.fillText(ex.sig[i].n, sx+10, sy+22);
     g.fillStyle='#000000'; g.font='500 10px Space Grotesk'; g.fillText(ex.sig[i].r, sx+10, sy+36);
-    // No line below - signing next to names
   }
   cv.toBlob(b=>{ if(b) download(b,'Working-Plan-'+ex.key+'.png'); else toast('PNG export failed','err'); });
 }
+
 
 
 function exportPlanPDF(key){
