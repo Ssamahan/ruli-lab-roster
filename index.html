@@ -1028,7 +1028,7 @@ function svgHBar(data,opts){ // responsive horizontal bars - spacious
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${Math.min(h, 600)}px">${rows}</svg>`;
 }
 
-function svgDonut(items,opts){ opts=opts||{}; const size=opts.size||160, cx=size/2, cy=size/2, r=size/2-12, ir=r*0.62;
+function svgDonut(items,opts){ if(!items||!items.length) return '<div class="empty">No data</div>'; opts=opts||{}; const size=opts.size||160, cx=size/2, cy=size/2, r=size/2-12, ir=r*0.62;
   const total=items.reduce((a,i)=>a+(i.value||0),0)||1; let acc=0; let segs='';
   const tier = typeof getScreenTier==='function' ? getScreenTier() : 'lg';
   items.forEach((it,i)=>{
@@ -1262,7 +1262,7 @@ function buildPlanExport(key, version){
     colInfo, staff, codes, legends, holidays:holidaysIn, phones,
     sig:[{l:'Prepared by:',n:s.prepared,r:s.preparedRole},{l:'Verified by:',n:s.verified,r:s.verifiedRole},{l:'Approved by:',n:s.approved,r:s.approvedRole}]};
 }
-const CODE_COLORS={D:'#eef2fb',N:'#0B1C3D',DN:'#d6e2f5',OFF:'#f7f8fc',AL:'#fdf3d7',ML:'#f9e0eb',SL:'#fde8e2',CL:'#eef1f6',TR:'#dcf3e8',W:'#f3e4f9',ABS:'#fbdcdc',H:'#fde2e2',blank:'#ffffff'};
+const CODE_COLORS={D:'#e8eefb',N:'#0B1C3D',DN:'#c2d4ef',OFF:'#f7f8fc',AL:'#fdf3d7',ML:'#f9e0eb',SL:'#fde8e2',CL:'#eef1f6',TR:'#dcf3e8',W:'#f3e4f9',ABS:'#fbdcdc',H:'#fde2e2',blank:'#ffffff'};
 const CODE_TX={D:'#2a56c4',N:'#dfe8ff',DN:'#16233f',OFF:'#b9c2d4',AL:'#9a6b10',ML:'#a21d6d',SL:'#b3422f',CL:'#5a6a8c',TR:'#0e7a58',W:'#8b2fb3',ABS:'#c2272c',H:'#c2272c'};
 
 function previewPlanHTML(key){
@@ -1483,7 +1483,7 @@ async function exportManifestPNG(man){
   const cv=document.createElement('canvas'); cv.width=W; cv.height=cvH; const g=cv.getContext('2d');
   g.fillStyle='#fff'; g.fillRect(0,0,W,cvH);
   // header per spec: left = coat of arms + Ministry of Health · center = title + testing hospital · right = referring hospital logo + name
-  if(crest){ g.drawImage(crest, 34, 26, 78, 78); } else { g.fillStyle='#0e2e5c'; g.textAlign='center'; g.font='bold 26px Arial'; g.fillText('MOH', 73, 70); }
+  if(crest){ g.drawImage(crest, 34, 26, 78, 78); } else { g.fillStyle='#0e2e5c'; g.textAlign='center'; g.font='bold 26px Arial'; g.fillText('', 73, 70); }
   g.fillStyle='#0B1C3D'; g.textAlign='left'; g.font='bold 14px Space Grotesk'; g.fillText(ex.hospital || 'Ruli District Hospital', 34, 132);
   if(logo){ g.drawImage(logo, W-112, 26, 78, 78); } else { g.fillStyle='#0e2e5c'; g.beginPath(); g.roundRect?g.roundRect(W-112,26,78,78,14):g.rect(W-112,26,78,78); g.fill(); g.fillStyle='#fff'; g.font='bold 15px Arial'; g.fillText('RDH', W-73, 70); }
   g.fillStyle='#16233f'; g.textAlign='right'; g.font='bold 16px Arial'; g.fillText(DB.settings.hospital, W-120, 60); g.font='11px Arial'; g.fillStyle='#5a6a8c'; g.fillText('Referring Hospital', W-120, 78);
@@ -1539,11 +1539,11 @@ function barcodeSVG(text){
 function previewManifestHTML(man){
   const ex=buildManifestExport(man);
   let rows='';
-  ex.samples.forEach((s,i)=>{ rows+=`<tr><td>${i+1}</td><td><b>${esc(s.sampleId)}</b></td><td>${esc((s.healthFacility||'Ruli DH')+', '+(s.district||''))}</td><td>${esc(maskName(s.patientName))}</td><td>${esc(maskPatientId(s.patientId)||'—')}</td><td>${esc(s.sex||'—')}</td><td>${esc(s.test)}</td><td>${esc(s.collectionDate||'—')}</td><td>${esc(s.sampleId)}<br>${barcodeSVG(s.barcode||s.sampleId)}</td></tr>`; });
+  ex.samples.forEach((s,i)=>{ rows+=`<tr><td>${i+1}</td><td><b>${esc(s.sampleId)}</b></td><td>${esc((s.healthFacility||'Ruli DH')+', '+(s.district||''))}</td><td>${esc(maskName(s.patientName||'—'))}</td><td>${esc(maskPatientId(s.patientId)||'—')}</td><td>${esc(s.sex||'—')}</td><td>${esc(s.test)}</td><td>${esc(s.collectionDate||'—')}</td><td>${esc(s.sampleId)}<br>${barcodeSVG(s.barcode||s.sampleId)}</td></tr>`; });
   openModal(`<h2>Preview — ${esc(ex.manifestId)}</h2>
   <div style="max-height:70vh;overflow:auto;border:1px solid var(--edge);border-radius:12px;padding:14px;background:#fff;font-family:'Trebuchet MS',sans-serif;font-size:11px">
     <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px">
-      <div style="font-weight:800">MINISTRY OF HEALTH</div>
+      <div style="font-weight:800; color:#0B1C3D">Ruli District Hospital</div>
       <div style="text-align:center;font-weight:800;font-size:14px">${esc(ex.title)}<br><span style="font-size:11px;font-weight:400">Testing Hospital: ${esc(ex.testingHospital)}</span></div>
       <div style="text-align:right">${esc(DB.settings.hospital)}<br><span style="font-size:9px">Referring Hospital</span></div>
     </div>
@@ -1579,7 +1579,7 @@ function exportManifestPDF(man){
   for(let pg=0; pg<pages; pg++){
     d.addPage(W,H);
     if(pg===0){
-      d.text('MINISTRY OF HEALTH', 40, 26, {size:10, bold:true});
+      d.text(ex.hospital || 'Ruli District Hospital', 40, 26, {size:11, bold:true});
       d.text(DB.settings.hospital, W-40, 22, {size:9, bold:true});
       d.text('Referring Hospital', W-40, 32, {size:7});
       d.text(ex.title, W/2, 30, {size:16, bold:true});
@@ -1832,7 +1832,7 @@ function renderDash(){
   <div class="grid g-2" style="margin-bottom:16px; gap:16px">
     <div class="card"><h3>⏳ Pending samples — aging list</h3>
       ${pend.length?`<div class="tbl-wrap"><table class="tbl"><tr><th>Patient</th><th>Test</th><th>Hospital</th><th>Sent</th><th>Elapsed</th><th>Status</th></tr>
-      ${pend.map(s=>`<tr><td>${esc(maskName(s.patientName))}</td><td>${esc(s.test)}</td><td>${esc(s.hospital)}</td><td>${fmtDate(s.sentDate||s.collectionDate)}</td>
+      ${pend.map(s=>`<tr><td>${esc(maskName(s.patientName||'—'))}</td><td>${esc(s.test)}</td><td>${esc(s.hospital)}</td><td>${fmtDate(s.sentDate||s.collectionDate)}</td>
       <td class="num">${daysBetween(s.sentDate||s.collectionDate,todayISO())}d</td><td>${daysBetween(s.sentDate||s.collectionDate,todayISO())>7?'<span class="tag red">Overdue</span>':'<span class="tag amber">Pending</span>'}</td></tr>`).join('')}</table></div>`
       :'<div class="empty"><div class="big"></div>Nothing pending right now.</div>'}</div>
     <div class="card"><h3> Team profile &amp; records <span class="sub">${act.length} active</span></h3>
@@ -1997,7 +1997,7 @@ function sampleCard(s){
   const stTag={Pending:'amber',Positive:'green',Negative:'blue',Rejected:'red',Done:'gray'}[s.status]||'gray';
   return `<div class="card" style="margin:0">
     <div style="display:flex;gap:10px;align-items:flex-start"><div style="flex:1">
-      <div class="t" style="font-weight:800;font-size:14px">${esc(maskName(s.patientName))}</div>
+      <div class="t" style="font-weight:800;font-size:14px">${esc(maskName(s.patientName||'—'))}</div>
       <div class="hint">${esc(s.sampleId)} ${s.patientId?'· PID '+esc(s.patientId):''}</div></div>
       <span class="tag ${stTag}">${s.status}</span></div>
     <hr><div class="row" style="font-size:12.5px;color:var(--muted);gap:6px 14px;margin-top:2px">
@@ -2079,7 +2079,7 @@ function openManifestForm(){
   <div class="alert info" style="margin:10px 0">Select samples below to include. A manifest can hold <b>100+ samples</b>, and more than one manifest can be created the same day.</div>
   <div style="max-height:300px;overflow-y:auto;border:1px solid var(--edge);border-radius:12px;padding:8px" id="m_samples">
     ${ready.map(s=>`<label style="display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:9px;cursor:pointer;font-size:13px" class="m-srow">
-      <input type="checkbox" value="${s.id}"> <b>${esc(s.sampleId)}</b> <span style="color:var(--muted)">${esc(maskName(s.patientName))} · ${esc(s.test)}</span>
+      <input type="checkbox" value="${s.id}"> <b>${esc(s.sampleId)}</b> <span style="color:var(--muted)">${esc(maskName(s.patientName||'—'))} · ${esc(s.test)}</span>
       <span style="margin-left:auto" class="tag gray">${esc(s.hospital)}</span></label>`).join('')}
   </div>
   <div class="row" style="margin-bottom:16px"><button class="btn primary" type="submit"> Generate manifest</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
@@ -2165,7 +2165,7 @@ function viewManifest(manId){
   openModal(`<h2> ${esc(man.manifestId)} <span class="tag blue" style="margin-left:8px">${samples.length} samples</span></h2>
   <div class="hint" style="margin-bottom:10px">${esc(man.title)} · Testing: ${esc(man.testingHospital)} · Generated ${fmtDate(man.createdAt)}</div>
   <div class="tbl-wrap"><table class="tbl"><tr><th>#</th><th>Sample ID</th><th>Patient</th><th>Test</th><th>Origin</th><th>Status</th></tr>
-  ${samples.map((s,i)=>`<tr><td>${i+1}</td><td><b>${esc(s.sampleId)}</b></td><td>${esc(maskName(s.patientName))}</td><td>${esc(s.test)}</td><td>${esc(s.healthFacility||'Ruli DH')}</td><td><span class="tag ${s.status==='Pending'?'amber':'green'}">${s.status}</span></td></tr>`).join('')}</table></div>
+  ${samples.map((s,i)=>`<tr><td>${i+1}</td><td><b>${esc(s.sampleId)}</b></td><td>${esc(maskName(s.patientName||'—'))}</td><td>${esc(s.test)}</td><td>${esc(s.healthFacility||'Ruli DH')}</td><td><span class="tag ${s.status==='Pending'?'amber':'green'}">${s.status}</span></td></tr>`).join('')}</table></div>
   <div class="row" style="margin-top:14px"><button class="btn sm" id="vmPng"> PNG</button><button class="btn sm" id="vmPdf"> PDF</button><button class="btn sm" id="vmXlsx"> XLSX</button><span class="spacer"></span><button class="btn" onclick="closeModal()">Close</button></div>`);
   $('#vmPng').onclick=()=>exportManifestPNG(man); $('#vmPdf').onclick=()=>exportManifestPDF(man); $('#vmXlsx').onclick=()=>exportManifestXLSX(man);
 }
@@ -2987,7 +2987,7 @@ body.viewer-mode [data-confidential]{display:none !important}
 .chart-box svg text{font-family:var(--font) !important}
 
 </style></head><body>
-  <div class="head" style="text-align:center; padding:8px 0 10px; border-bottom:2px solid #C9A84C"><h1 style="margin:0; font-size:18px; color:#0B1C3D; font-family:'Space Grotesk',sans-serif">${ex.hospital} · ${ex.dept}</h1><div class="sub" style="font-size:11px; color:#5a6b8c; margin-top:4px">${ex.email} · ${ex.phone}</div></div>
+  <div class="head" style="text-align:center; padding:12px 0 14px; background:#F7F8FC; border-radius:12px; border:1px solid #e6e9f1; border-left:4px solid #C9A84C; margin-bottom:12px"><h1 style="margin:0; font-size:20px; color:#0B1C3D; font-family:'Space Grotesk',sans-serif; font-weight:900">${ex.hospital}</h1><div style="font-size:13px; color:#0B1C3D; font-weight:700; margin-top:2px">${ex.dept}</div><div class="sub" style="font-size:11px; color:#5a6b8c; margin-top:6px">${ex.email} · ${ex.phone}</div><div style="font-size:14px; font-weight:800; color:#0B1C3D; margin-top:10px">${ex.title}</div><div style="font-size:10.5px; color:#5a6b8c; margin-top:4px">Date: ${ex.date} · FY: ${ex.fy} · Period: ${ex.period}</div></div>
   <h2 style="text-align:center;font-size:14px;margin:6px 0">${ex.title}</h2>
   <div class="meta"><span>Date: ${ex.date}</span><span>FY: ${ex.fy}</span><span>Period: ${ex.period}</span></div>
   ${h}
