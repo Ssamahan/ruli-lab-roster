@@ -1313,11 +1313,11 @@ async function exportPlanPNG(key){
   const cv=document.createElement('canvas'); cv.width=W*scale; cv.height=H*scale; const g=cv.getContext('2d'); g.scale(scale,scale);
   g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
   g.textBaseline='alphabetic';
-  // Premium light header - no deep blue, only Ruli DH
-  g.fillStyle='#F7F8FC'; g.fillRect(0,0,W,78);
-  g.fillStyle='#0B1C3D'; g.font='bold 22px Space Grotesk'; g.textAlign='center'; g.fillText(ex.hospital+' · '+ex.dept, W/2, 32);
-  g.fillStyle='#5a6b8c'; g.font='12px Space Grotesk'; g.fillText(ex.email+' · '+ex.phone, W/2, 52);
-  g.strokeStyle='#C9A84C'; g.lineWidth=3; g.beginPath(); g.moveTo(20,70); g.lineTo(W-20,70); g.stroke();
+  // Light premium header - only Ruli DH, gold accent line
+  g.fillStyle='#F7F8FC'; g.fillRect(0,0,W,84);
+  g.fillStyle='#0B1C3D'; g.font='900 24px Space Grotesk'; g.textAlign='center'; g.fillText(ex.hospital, W/2, 34);
+  g.fillStyle='#5a6b8c'; g.font='600 13px Space Grotesk'; g.fillText(ex.dept+' · '+ex.email+' · '+ex.phone, W/2, 56);
+  g.strokeStyle='#C9A84C'; g.lineWidth=3; g.beginPath(); g.moveTo(24,76); g.lineTo(W-24,76); g.stroke();
   // Optional logos - light premium, no MOH shield if not uploaded
   if(crest){ g.drawImage(crest, 24, 8, 60, 60); }
   if(logo){ g.drawImage(logo, W-84, 8, 60, 60); }
@@ -1338,12 +1338,12 @@ async function exportPlanPNG(key){
     g.strokeStyle='#d9e0ec'; g.lineWidth=0.6; g.strokeRect(x,y,w,h); };
   // header rows: day names + numbers (two rows as requested)
   for(let i=0;i<cols;i++){ const c=ex.colInfo[i];
-    const fill=c.holiday?'#ffdcdc':(c.weekend?'#fbf0dd':'#eaf0fa');
-    drawCell(x0+nameW+i*cellW, y0, cellW, 18, fill, c.dow, c.holiday?'#c2272c':(c.weekend?'#9a6b10':'#5a6a8c'));
-    drawCell(x0+nameW+i*cellW, y0+18, cellW, 22, c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef3fb'), c.dom, c.holiday?'#c2272c':(c.weekend?'#9a6b10':'#33435f'));
-    if(c.next){ g.fillStyle='rgba(150,165,195,0.35)'; g.fillRect(x0+nameW+i*cellW, y0, cellW, 40); } }
-  drawCell(x0,y0,nameW,18,'#0e2e5c','STAFF','#fff');
-  drawCell(x0,y0+18,nameW,22,'#eef3fb','Name','#33435f');
+    const fill=c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#f7f8fc');
+    drawCell(x0+nameW+i*cellW, y0, cellW, 18, fill, c.dow, c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#5a6b8c'));
+    drawCell(x0+nameW+i*cellW, y0+18, cellW, 22, c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6'), c.dom, c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#0B1C3D'));
+    if(c.next){ g.fillStyle='rgba(201,168,76,0.12)'; g.fillRect(x0+nameW+i*cellW, y0, cellW, 40); } }
+  drawCell(x0,y0,nameW,18,'#0B1C3D','STAFF','#fff');
+  drawCell(x0,y0+18,nameW,22,'#F7F8FC','Name','#0B1C3D');
   for(let r=0;r<nRows;r++){
     const yy=y0+40+r*rowH;
     const req=ex.staff[r].endsWith('*');
@@ -1391,27 +1391,25 @@ function exportPlanPDF(key){
   const d=new PDF.Doc(); const W=842, H=595; // A4 landscape
   d.addPage(W,H);
   const cols=ex.colInfo.length, nRows=ex.staff.length;
-  const nameW=148; // generous fixed name column
+  const nameW=156;
   const cellW=Math.floor((W-40-nameW)/cols);
-  const rowH=18, hdrH=34;
-  // ---- header ----
-  d.text(ex.hospital+' · '+ex.dept, W/2, 28, {size:12, bold:true});
-  d.text(ex.email+' · '+ex.phone, W/2, 40, {size:8});
-  d.text(ex.hospital+' — '+ex.dept, W/2, 52, {size:11, bold:true});
-  d.text(ex.email+'  ·  '+ex.phone, W/2, 63, {size:8});
-  d.text(ex.title, W/2, 82, {size:14, serif:true, bold:true});
-  d.text('Date: '+ex.date+'     FY: '+ex.fy+'     Period: '+ex.period, 40, 96, {size:8.5});
-  d.line(40,100,W-40,100,{width:1.6,color:'#000'});
+  const rowH=19, hdrH=36;
+  // ---- light premium header ----
+  d.text(ex.hospital, W/2, 26, {size:14, bold:true});
+  d.text(ex.dept+' · '+ex.email+' · '+ex.phone, W/2, 40, {size:9});
+  d.line(40,48,W-40,48,{width:2,color:'#C9A84C'});
+  d.text(ex.title, W/2, 68, {size:15, bold:true});
+  d.text('Date: '+ex.date+'     FY: '+ex.fy+'     Period: '+ex.period, 40, 84, {size:9});
   const y0=106;
   // ---- 2-row header ----
   for(let i=0;i<cols;i++){ const c=ex.colInfo[i];
     const x=40+nameW+i*cellW;
-    d.rect(x,y0,cellW,16,{fill:c.holiday?'#e0e0e0':(c.weekend?'#d0d0d0':'#eeeeee')});
-    d.text(c.dow,x+cellW/2,y0+4,{size:8,bold:true});
-    d.rect(x,y0+16,cellW,18,{fill:c.holiday?'#d6d6d6':(c.weekend?'#c4c4c4':'#e4e4e4')});
-    d.text(String(c.dom),x+cellW/2,y0+20,{size:8,bold:true});
-    d.rectBorder(x,y0,cellW,34,{width:0.3,color:'#666'}); }
-  d.rect(40,y0,nameW,34,{fill:'#000'}); d.text('STAFF',42,y0+12,{size:8.5,bold:true,color:'1 1 1 rg'});
+    d.rect(x,y0,cellW,16,{fill:c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC')});
+    d.text(c.dow,x+cellW/2,y0+4,{size:8,bold:true,color:c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#5a6b8c')});
+    d.rect(x,y0+16,cellW,20,{fill:c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6')});
+    d.text(String(c.dom),x+cellW/2,y0+21,{size:8.5,bold:true,color:c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#0B1C3D')});
+    d.rectBorder(x,y0,cellW,36,{width:0.4,color:'#d4d9e6'}); }
+  d.rect(40,y0,nameW,36,{fill:'#0B1C3D'}); d.text('STAFF',42,y0+13,{size:9,bold:true,color:'1 1 1 rg'});
   // ---- body ----
   for(let r=0;r<nRows;r++){
     const yy=y0+hdrH+r*rowH;
