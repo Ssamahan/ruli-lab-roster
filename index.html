@@ -1007,67 +1007,8 @@ const CHART_COLORS=['#C9A84C','#0B1C3D','#0e9f8a','#e8a33d','#c94c5a','#162a52',
 function getScreenTier(){ const ww = window.innerWidth || 1200; if(ww<=560) return 'xs'; if(ww<=980) return 'sm'; return 'lg'; }
 
 
-function svgBar(data,opts){ // responsive vertical bars - predefined spaces
-  opts=opts||{};
-  const tier=getScreenTier();
-  const w = tier==='xs' ? 360 : tier==='sm' ? 520 : (opts.w||680);
-  const h = tier==='xs' ? 200 : tier==='sm' ? 220 : (opts.h||240);
-  const pad = tier==='xs' ? {l:42,r:10,t:22,b:42} : tier==='sm' ? {l:48,r:12,t:24,b:44} : {l:52,r:18,t:28,b:48};
-  const fs = chartFontScale(w);
-  const vals=data.map(d=>d.value).concat(0);
-  const max=Math.max(...vals,1), min=Math.min(...vals,0); const range=(max-min)||1;
-  const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
-  const n=data.length||1;
-  // predefined spaces: gap between bars = 12px desktop, 8px mobile
-  const gap = tier==='xs' ? 8 : tier==='sm' ? 10 : 14;
-  const bw = Math.max(16, Math.min(tier==='xs'?28: tier==='sm'?44:52, (iw - gap*(n-1))/n));
-  const y0v=pad.t+ (max/range)*ih;
-  let bars='';
-  data.forEach((d,i)=>{
-    const x=pad.l + i*(bw+gap);
-    const vh=Math.abs(d.value)/range*ih; const y=d.value>=0?y0v-vh:y0v;
-    const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
-    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(vh,2).toFixed(1)}" rx="${tier==='xs'?5:7}" fill="${col}"><title>${esc(d.label)}: ${d.value}</title></rect>`;
-    // value label only if bar tall enough or always on top
-    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(y-8).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs, tier==='xs'?10:12)}" font-weight="800" fill="#1b2434">${d.value}</text>`;
-    if(opts.labels!==false){
-      const lab = String(d.label).slice(0, tier==='xs'?8:14);
-      bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-10).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1, tier==='xs'?9:11)}" fill="#5d6b82" font-weight="600">${esc(lab)}</text>`;
-    }
-  });
-  let gl='';
-  gl+=`<line x1="${pad.l}" y1="${y0v.toFixed(1)}" x2="${w-pad.r}" y2="${y0v.toFixed(1)}" stroke="#d7dfe8" stroke-width="1.2"/>`;
-  for(let g=0;g<=4;g++){ const gy=pad.t+(ih*g)/4; const val=Math.round(max-(range*g)/4);
-    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/>`;
-    gl+=`<text x="${pad.l-8}" y="${gy+3}" text-anchor="end" font-size="${Math.max(fs-1,10)}" fill="#9aa7ba" font-weight="600">${val}</text>`; }
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px">${gl}${bars}</svg>`;
-}
-function svgHBar(data,opts){ // responsive horizontal bars - spacious
-  opts=opts||{};
-  const tier=getScreenTier();
-  const w = tier==='xs' ? 360 : tier==='sm' ? 520 : (opts.w||680);
-  const rowH = tier==='xs' ? 38 : tier==='sm' ? 42 : 46;
-  const h = opts.h||Math.max(tier==='xs'?180:200, data.length*rowH+32);
-  const fs = chartFontScale(w);
-  const max=Math.max(...data.map(d=>d.value),1);
-  const labW = tier==='xs' ? 110 : tier==='sm' ? 150 : Math.min(200, w*0.36);
-  const iw=w-labW-60;
-  let rows='';
-  for(let g=0; g<=4; g++){
-    const gx = labW + (iw*g)/4;
-    rows+=`<line x1="${gx}" y1="8" x2="${gx}" y2="${h-8}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/>`;
-  }
-  data.forEach((d,i)=>{
-    const y=10+i*rowH;
-    const bw=(d.value/max)*iw;
-    const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
-    rows+=`<rect x="0" y="${y}" width="${labW-6}" height="${rowH-8}" rx="7" fill="${i%2===0 ? '#f6f8fb' : '#ffffff'}" />`;
-    rows+=`<text x="${labW-10}" y="${(y+rowH/2+1).toFixed(1)}" text-anchor="end" font-size="${Math.max(fs, tier==='xs'?10:12)}" fill="#3d4c63" font-weight="700">${esc(String(d.label).slice(0, tier==='xs'?12:20))}</text>`;
-    rows+=`<rect x="${labW}" y="${(y+10).toFixed(1)}" width="${Math.max(bw,4).toFixed(1)}" height="16" rx="8" fill="${col}"><title>${esc(d.label)}: ${d.value}</title></rect>`;
-    rows+=`<text x="${(labW+bw+12).toFixed(1)}" y="${(y+rowH/2+1).toFixed(1)}" font-size="${Math.max(fs, tier==='xs'?10:12)}" font-weight="800" fill="#1b2434">${d.value}</text>`;
-  });
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${Math.min(h, 600)}px">${rows}</svg>`;
-}
+
+
 
 function svgDonut(items,opts){ if(!items||!items.length) return '<div class="empty">No data</div>'; opts=opts||{}; const size=opts.size||160, cx=size/2, cy=size/2, r=size/2-12, ir=r*0.62;
   const total=items.reduce((a,i)=>a+(i.value||0),0)||1; let acc=0; let segs='';
@@ -1085,32 +1026,151 @@ function svgDonut(items,opts){ if(!items||!items.length) return '<div class="emp
   return `<svg viewBox="0 0 ${size} ${size}" width="${opts.width||140}" height="${opts.height||140}" role="img" style="overflow:visible"><g>${segs}</g><circle cx="${cx}" cy="${cy}" r="${ir}" fill="${centerColor}" stroke="var(--edge)" stroke-width="1"/><text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="${tier==='xs'?14:16}" font-weight="900" fill="var(--text)">${opts.center||''}</text></svg>`;
 }
 
-function svgStackBar(layers,opts){ // responsive stacked - Daily staffing trend fix
+
+
+
+
+function svgBar(data,opts){ // extra luxury vertical bars - rounded, gradient, glow
+  opts=opts||{};
+  const tier=getScreenTier();
+  const w = tier==='xs' ? 380 : tier==='sm' ? 540 : (opts.w||700);
+  const h = tier==='xs' ? 220 : tier==='sm' ? 240 : (opts.h||260);
+  const pad = tier==='xs' ? {l:44,r:14,t:30,b:48} : tier==='sm' ? {l:50,r:16,t:32,b:50} : {l:56,r:20,t:36,b:54};
+  const fs = chartFontScale(w);
+  const vals=data.map(d=>d.value).concat(0);
+  const max=Math.max(...vals,1), min=Math.min(...vals,0); const range=(max-min)||1;
+  const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+  const n=data.length||1;
+  const gap = tier==='xs' ? 10 : tier==='sm' ? 14 : 18;
+  const bw = Math.max(18, Math.min(tier==='xs'?32: tier==='sm'?48:58, (iw - gap*(n-1))/n));
+  const y0v=pad.t+ (max/range)*ih;
+  let defs='', bars='', labels='';
+  
+  // Define luxury gradients
+  data.forEach((d,i)=>{
+    const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
+    const gradId=`gradBar${i}_${Date.now()}`;
+    const isGold = col==='#C9A84C' || col.toLowerCase()==='#c9a84c';
+    const lightCol = isGold ? '#e8d5a3' : col+'CC';
+    defs+=`<linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lightCol}" stop-opacity="0.95"/><stop offset="100%" stop-color="${col}" stop-opacity="1"/></linearGradient>`;
+    d._grad=gradId;
+  });
+
+  data.forEach((d,i)=>{
+    const x=pad.l + i*(bw+gap);
+    const vh=Math.abs(d.value)/range*ih; const y=d.value>=0?y0v-vh:y0v;
+    const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
+    const grad=d._grad;
+    // Extra luxury: rounded top only, gradient, gold glow if gold
+    const isGold = col==='#C9A84C';
+    bars+=`<g style="transition:all 250ms ease">
+      <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(vh,3).toFixed(1)}" rx="12" ry="12" fill="url(#${grad})" style="filter:drop-shadow(0 4px 12px rgba(11,28,61,0.12))${isGold?'; filter:drop-shadow(0 0 0 1px rgba(201,168,76,0.22)) drop-shadow(0 6px 20px rgba(201,168,76,0.22))':''}"><title>${esc(d.label)}: ${d.value}</title></rect>
+      <!-- highlight line on top edge -->
+      <line x1="${(x+4).toFixed(1)}" y1="${(y+3).toFixed(1)}" x2="${(x+bw-4).toFixed(1)}" y2="${(y+3).toFixed(1)}" stroke="rgba(255,255,255,0.55)" stroke-width="1.5" stroke-linecap="round"/>
+    </g>`;
+    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(y-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs,12)}" font-weight="900" fill="#000000" style="paint-order:stroke; stroke:#fff; stroke-width:4px; stroke-linejoin:round; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.08))">${d.value}</text>`;
+    if(opts.labels!==false){
+      const lab = String(d.label).slice(0, tier==='xs'?9:15);
+      labels+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,11)}" fill="#000000" font-weight="700">${esc(lab)}</text>`;
+    }
+  });
+
+  let gl='';
+  gl+=`<line x1="${pad.l}" y1="${y0v.toFixed(1)}" x2="${w-pad.r}" y2="${y0v.toFixed(1)}" stroke="#d4d9e6" stroke-width="1.4"/>`;
+  for(let g=0;g<=4;g++){
+    const gy=pad.t+(ih*g)/4; const val=Math.round(max-(range*g)/4);
+    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="4 6"/>`;
+    gl+=`<text x="${pad.l-12}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,11)}" fill="#000000" font-weight="600">${val}</text>`;
+  }
+
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px; background:var(--surface); border-radius:14px"><defs>${defs}</defs><g>${gl}</g><g>${bars}</g><g>${labels}</g></svg>`;
+}
+
+function svgHBar(data,opts){ // extra luxury horizontal bars - gradient, pill shape
+  opts=opts||{};
+  const tier=getScreenTier();
+  const w = tier==='xs' ? 380 : tier==='sm' ? 540 : (opts.w||700);
+  const rowH = tier==='xs' ? 42 : tier==='sm' ? 46 : 50;
+  const h = opts.h||Math.max(tier==='xs'?200:220, data.length*rowH+36);
+  const fs = chartFontScale(w);
+  const max=Math.max(...data.map(d=>d.value),1);
+  const labW = tier==='xs' ? 120 : tier==='sm' ? 160 : Math.min(210, w*0.36);
+  const iw=w-labW-70;
+  let defs='', rows='';
+
+  data.forEach((d,i)=>{
+    const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
+    const gradId=`gradH${i}_${Date.now()}`;
+    defs+=`<linearGradient id="${gradId}" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="${col}CC"/><stop offset="100%" stop-color="${col}"/></linearGradient>`;
+    d._grad=gradId;
+  });
+
+  for(let g=0; g<=4; g++){
+    const gx = labW + (iw*g)/4;
+    rows+=`<line x1="${gx}" y1="12" x2="${gx}" y2="${h-12}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="4 6"/>`;
+  }
+
+  data.forEach((d,i)=>{
+    const y=14+i*rowH;
+    const bw=(d.value/max)*iw;
+    const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
+    const grad=d._grad;
+    const isGold = col==='#C9A84C';
+    rows+=`<g>
+      <rect x="0" y="${y}" width="${labW-10}" height="${rowH-10}" rx="10" fill="${i%2===0 ? '#F7F8FC' : '#ffffff'}" stroke="#e6e9f1" stroke-width="0.8"/>
+      <text x="${labW-14}" y="${(y+rowH/2).toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="${Math.max(fs,12)}" fill="#000000" font-weight="800">${esc(String(d.label).slice(0, tier==='xs'?14:22))}</text>
+      <rect x="${labW}" y="${(y+12).toFixed(1)}" width="${Math.max(bw,6).toFixed(1)}" height="20" rx="10" fill="url(#${grad})" style="filter:drop-shadow(0 3px 8px rgba(11,28,61,0.12))${isGold?'; filter:drop-shadow(0 0 0 1px rgba(201,168,76,0.22)) drop-shadow(0 4px 16px rgba(201,168,76,0.22))':''}"><title>${esc(d.label)}: ${d.value}</title></rect>
+      <circle cx="${(labW+bw).toFixed(1)}" cy="${(y+22).toFixed(1)}" r="5" fill="#fff" stroke="${col}" stroke-width="2.5" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.12))"/>
+      <text x="${(labW+bw+18).toFixed(1)}" y="${(y+rowH/2).toFixed(1)}" dominant-baseline="middle" font-size="${Math.max(fs,12)}" font-weight="900" fill="#000000">${d.value}</text>
+    </g>`;
+  });
+
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${Math.min(h, 700)}px; background:var(--surface); border-radius:14px"><defs>${defs}</defs><g>${rows}</g></svg>`;
+}
+
+function svgStackBar(layers,opts){ // extra luxury stacked bars - rounded, gradient, compact
   opts=opts||{}; const tier=getScreenTier();
   const n=layers[0]?layers[0].values.length:0; if(!n) return '';
-  // Daily staffing trend has only 5 weeks -> should be compact, not huge
   const isCompact = n<=6;
-  const w = tier==='xs' ? 360 : tier==='sm' ? 520 : (opts.w|| (isCompact? 620 : 700));
-  const h = isCompact ? (tier==='xs'?160: tier==='sm'?180:190) : (opts.h|| (tier==='xs'?200: tier==='sm'?240:280));
+  const w = tier==='xs' ? 380 : tier==='sm' ? 540 : (opts.w|| (isCompact? 640 : 720));
+  const h = isCompact ? (tier==='xs'?170: tier==='sm'?190:200) : (opts.h|| (tier==='xs'?220: tier==='sm'?260:300));
   const fs=chartFontScale(w);
-  const pad={l: tier==='xs'?38:50, r: tier==='xs'?8:14, t: tier==='xs'?18:22, b: tier==='xs'?36:42};
+  const pad={l: tier==='xs'?42:54, r: tier==='xs'?10:16, t: tier==='xs'?20:28, b: tier==='xs'?40:48};
   const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
   const totals=[]; for(let i=0;i<n;i++){ totals.push(layers.reduce((a,l)=>a+(l.values[i]||0),0)); }
   const max=Math.max(...totals,1);
-  const gap = isCompact ? (tier==='xs'?18:24) : (tier==='xs'?10: tier==='sm'?14:18);
-  const bw = Math.max(isCompact? 28:18, Math.min(isCompact? 64:48, (iw - gap*(n-1))/n));
-  let bars='';
-  for(let i=0;i<n;i++){ const x=pad.l + i*(bw+gap); let y=pad.t+ih;
-    for(let l of layers){ const v=l.values[i]||0; const bh=(v/max)*ih; y-=bh;
-      if(v>0) bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(bh,2).toFixed(1)}" fill="${l.color||CHART_COLORS[layers.indexOf(l)%CHART_COLORS.length]}" rx="${isCompact?6:5}"><title>${esc(l.label)}: ${v}</title></rect>`; }
-    const xlab = opts.xLabels?opts.xLabels[i]:'W'+(i+1);
-    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-10).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1, tier==='xs'?9:11)}" fill="#5d6b82" font-weight="600">${esc(String(xlab).slice(0,12))}</text>`;
-  }
-  let gl=''; for(let g=0;g<=4;g++){ const gy=pad.t+(ih*g)/4;
-    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/><text x="${pad.l-10}" y="${gy+3}" text-anchor="end" font-size="${Math.max(fs-1,10)}" fill="#9aa7ba" font-weight="600">${Math.round(max*(4-g)/4)}</text>`; }
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px">${gl}${bars}</svg>`;
-}
+  const gap = isCompact ? (tier==='xs'?20:26) : (tier==='xs'?12: tier==='sm'?16:20);
+  const bw = Math.max(isCompact?30:20, Math.min(isCompact?68:52, (iw - gap*(n-1))/n));
+  let defs='', bars='', xLabs='', grid='';
 
+  layers.forEach((l,li)=>{
+    const gradId=`gradStack${li}_${Date.now()}`;
+    defs+=`<linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${l.color}DD"/><stop offset="100%" stop-color="${l.color}"/></linearGradient>`;
+    l._grad=gradId;
+  });
+
+  for(let g=0;g<=4;g++){
+    const gy=pad.t+(ih*g)/4;
+    grid+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="4 6"/><text x="${pad.l-14}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,11)}" fill="#000000" font-weight="600">${Math.round(max*(4-g)/4)}</text>`;
+  }
+
+  for(let i=0;i<n;i++){
+    const x=pad.l + i*(bw+gap);
+    let y=pad.t+ih;
+    let stack=[];
+    for(let l of layers){ const v=l.values[i]||0; if(v<=0) continue; const bh=(v/max)*ih; y-=bh; stack.push({y,bh,color:l.color,grad:l._grad,label:l.label,value:v}); }
+    // Draw from bottom up with rounded corners - only top segment rounded
+    stack.forEach((seg, idx)=>{
+      const isTop = idx===stack.length-1;
+      const rx = isTop ? 10 : 2;
+      bars+=`<rect x="${x.toFixed(1)}" y="${seg.y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(seg.bh,2).toFixed(1)}" rx="${rx}" fill="url(#${seg.grad})" style="filter:drop-shadow(0 2px 6px rgba(11,28,61,0.10))"><title>${esc(seg.label)}: ${seg.value}</title></rect>`;
+    });
+    const xlab = opts.xLabels?opts.xLabels[i]:'W'+(i+1);
+    xLabs+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,11)}" fill="#000000" font-weight="700">${esc(String(xlab).slice(0,12))}</text>`;
+  }
+
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px; background:var(--surface); border-radius:14px"><defs>${defs}</defs><g>${grid}</g><g>${bars}</g><g>${xLabs}</g></svg>`;
+}
 
 function svgLineChart(series, opts){
   opts=opts||{};
