@@ -394,6 +394,20 @@ body.viewer-mode [data-confidential]{display:none !important}
 .chart-box{position:relative}
 .chart-box svg text{font-family:var(--font) !important}
 
+
+/* Timeline toggle vertical on phone - premium */
+@media(max-width:640px){
+  .timeline-flow-track{flex-direction:column; align-items:stretch; gap:0; padding:20px 16px 20px 48px; min-height:0}
+  .timeline-flow-line{left:28px; right:auto; top:20px; bottom:20px; width:3px; height:auto; background:linear-gradient(180deg,var(--primary),var(--gold))}
+  .timeline-step{flex:0 0 auto; flex-direction:row; gap:14px; transform:none !important; padding:12px 0; min-height:72px}
+  .timeline-step:nth-child(odd), .timeline-step:nth-child(even){transform:none !important}
+  .timeline-year{margin:0; min-width:72px; text-align:center}
+  .timeline-dot{width:48px; height:48px; font-size:18px; flex:none}
+  .timeline-content{margin:0; text-align:left; max-width:none; flex:1}
+  .timeline-arc{display:none}
+}
+.timeline-flow-track{transition:all 250ms ease}
+
 </style>
 </head>
 <body>
@@ -1325,7 +1339,7 @@ async function exportPlanPNG(key){
   y+=90;
   // Title - single, centered
   g.fillStyle='#000000'; g.font='800 18px Space Grotesk'; g.textAlign='center'; g.fillText(ex.title, W/2, y+10);
-  g.fillStyle='#000000'; g.font='600 11px Space Grotesk'; g.fillText('Date: '+ex.date+'   FY: '+ex.fy+'   Period: '+ex.period, W/2, y+28);
+  g.fillStyle='#000000'; g.font='600 11px Space Grotesk'; g.fillText('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+28); // Period removed - already in title
   y+=50;
   // Table
   let x0=24, y0=y;
@@ -1401,15 +1415,15 @@ async function exportPlanPNG(key){
     pcx+=cW;
   });
   ly=pcy+cH+32;
-  // Signatories - keep way it was (original 3 columns with line)
+  // Signatories - NO line below, signing next to names (per request)
   const sy=ly;
   g.strokeStyle='#C9A84C'; g.lineWidth=1.2; g.beginPath(); g.moveTo(24,sy-10); g.lineTo(W-24,sy-10); g.stroke();
   for(let i=0;i<3;i++){
-    const sx=24+i*(W-48)/3; const bx=Math.min(260,(W-48)/3-20);
-    g.strokeStyle='#8a9ab5'; g.lineWidth=1; g.beginPath(); g.moveTo(sx+10,sy+26); g.lineTo(sx+10+bx,sy+26); g.stroke();
+    const sx=24+i*(W-48)/3;
     g.fillStyle='#000000'; g.font='700 10px Space Grotesk'; g.textAlign='left'; g.fillText(ex.sig[i].l, sx+10, sy+8);
-    g.fillStyle='#000000'; g.font='800 11px Space Grotesk'; g.fillText(ex.sig[i].n, sx+10, sy+42);
-    g.fillStyle='#000000'; g.font='500 10px Space Grotesk'; g.fillText(ex.sig[i].r, sx+10, sy+56);
+    g.fillStyle='#000000'; g.font='800 11px Space Grotesk'; g.fillText(ex.sig[i].n, sx+10, sy+22);
+    g.fillStyle='#000000'; g.font='500 10px Space Grotesk'; g.fillText(ex.sig[i].r, sx+10, sy+36);
+    // No line below - signing next to names
   }
   cv.toBlob(b=>{ if(b) download(b,'Working-Plan-'+ex.key+'.png'); else toast('PNG export failed','err'); });
 }
@@ -1431,7 +1445,7 @@ function exportPlanPDF(key){
   d.line(24,y+28,W-24,y+28,{width:2,color:'#C9A84C'});
   y+=36;
   d.text(ex.title, W/2, y+6, {size:13, bold:true, color:'#000000'});
-  d.text('Date: '+ex.date+'   FY: '+ex.fy+'   Period: '+ex.period, W/2, y+20, {size:9, color:'#000000'});
+  d.text('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+20, {size:9, color:'#000000'}); // Period removed
   y+=36;
   const y0=y;
   // header
@@ -1491,11 +1505,11 @@ function exportPlanPDF(key){
   const sy=H-56;
   d.line(24,sy-10,W-24,sy-10,{width:1.2,color:'#C9A84C'});
   for(let i=0;i<3;i++){
-    const sx=24+i*(W-48)/3; const bw=Math.min(240,(W-48)/3-20);
-    d.line(sx+8,sy+18,sx+8+bw,sy+18,{width:0.8,color:'#8a9ab5'});
+    const sx=24+i*(W-48)/3;
     d.text(ex.sig[i].l, sx+8, sy+2, {size:8, bold:true, color:'#000000'});
-    d.text(ex.sig[i].n, sx+8, sy+30, {size:10, bold:true, color:'#000000'});
-    d.text(ex.sig[i].r, sx+8, sy+40, {size:8, color:'#000000'});
+    d.text(ex.sig[i].n, sx+8, sy+14, {size:10, bold:true, color:'#000000'});
+    d.text(ex.sig[i].r, sx+8, sy+24, {size:8, color:'#000000'});
+    // No line below - signing next to names per request
   }
   download(new Blob([d.save()],{type:'application/pdf'}),'Working-Plan-'+ex.key+'.pdf');
 }
@@ -3041,8 +3055,22 @@ body.viewer-mode [data-confidential]{display:none !important}
 .chart-box{position:relative}
 .chart-box svg text{font-family:var(--font) !important}
 
+
+/* Timeline toggle vertical on phone - premium */
+@media(max-width:640px){
+  .timeline-flow-track{flex-direction:column; align-items:stretch; gap:0; padding:20px 16px 20px 48px; min-height:0}
+  .timeline-flow-line{left:28px; right:auto; top:20px; bottom:20px; width:3px; height:auto; background:linear-gradient(180deg,var(--primary),var(--gold))}
+  .timeline-step{flex:0 0 auto; flex-direction:row; gap:14px; transform:none !important; padding:12px 0; min-height:72px}
+  .timeline-step:nth-child(odd), .timeline-step:nth-child(even){transform:none !important}
+  .timeline-year{margin:0; min-width:72px; text-align:center}
+  .timeline-dot{width:48px; height:48px; font-size:18px; flex:none}
+  .timeline-content{margin:0; text-align:left; max-width:none; flex:1}
+  .timeline-arc{display:none}
+}
+.timeline-flow-track{transition:all 250ms ease}
+
 </style></head><body>
-  <div class="head" style="text-align:center; padding:12px 0 14px; background:#F7F8FC; border-radius:12px; border:1px solid #e6e9f1; border-left:4px solid #C9A84C; margin-bottom:12px"><h1 style="margin:0; font-size:20px; color:#0B1C3D; font-family:'Space Grotesk',sans-serif; font-weight:900">${ex.hospital}</h1><div style="font-size:13px; color:#0B1C3D; font-weight:700; margin-top:2px">${ex.dept}</div><div class="sub" style="font-size:11px; color:#5a6b8c; margin-top:6px">${ex.email} · ${ex.phone}</div><div style="font-size:14px; font-weight:800; color:#0B1C3D; margin-top:10px">${ex.title}</div><div style="font-size:10.5px; color:#5a6b8c; margin-top:4px">Date: ${ex.date} · FY: ${ex.fy} · Period: ${ex.period}</div></div>
+  <div class="head" style="text-align:center; padding:12px 0 14px; background:#F7F8FC; border-radius:12px; border:1px solid #e6e9f1; border-left:4px solid #C9A84C; margin-bottom:12px"><h1 style="margin:0; font-size:20px; color:#0B1C3D; font-family:'Space Grotesk',sans-serif; font-weight:900">${ex.hospital}</h1><div style="font-size:13px; color:#0B1C3D; font-weight:700; margin-top:2px">${ex.dept}</div><div class="sub" style="font-size:11px; color:#5a6b8c; margin-top:6px">${ex.email} · ${ex.phone}</div><div style="font-size:14px; font-weight:800; color:#0B1C3D; margin-top:10px">${ex.title}</div><div style="font-size:10.5px; color:#5a6b8c; margin-top:4px">Date: ${ex.date} · FY: ${ex.fy}</div></div>
   <h2 style="text-align:center;font-size:14px;margin:6px 0">${ex.title}</h2>
   <div class="meta"><span>Date: ${ex.date}</span><span>FY: ${ex.fy}</span><span>Period: ${ex.period}</span></div>
   ${h}
