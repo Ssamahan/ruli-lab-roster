@@ -1376,7 +1376,7 @@ async function exportPlanPNG(key){
   g.fillStyle='#000000'; g.font='600 11px Space Grotesk'; g.fillText('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+28); // Period removed - already in title
   y+=50;
   // Table
-  let x0=24, y0=y;
+  let x0=24, y0=y; // x0=24 ensures no empty left side, uses full width
   const drawCell=(x,y,w,h,fill,text,tcolor)=>{
     g.fillStyle=fill; g.fillRect(x,y,w,h);
     if(text!=null && text!==''){
@@ -1393,13 +1393,11 @@ async function exportPlanPNG(key){
     drawCell(x0+nameW+i*cellW, y0, cellW, 20, fill, c.dow, c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#5a6b8c'));
     drawCell(x0+nameW+i*cellW, y0+20, cellW, 26, c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6'), String(c.dom), '#000000');
   }
-  // Staff and Name left aligned consistent
-  g.textAlign='left';
-  drawCell(x0,y0,nameW,20,'#0B1C3D','STAFF','#ffffff');
-  // Override to left align
-  g.fillStyle='#ffffff'; g.textAlign='left'; g.font='800 11px Space Grotesk'; g.fillText('STAFF', x0+12, y0+13);
-  drawCell(x0,y0+20,nameW,26,'#F7F8FC','Name','#000000');
-  g.fillStyle='#000000'; g.textAlign='left'; g.font='700 11px Space Grotesk'; g.fillText('Name', x0+12, y0+20+16);
+  // Single STAFF/Name column - left aligned consistent (fix double)
+  drawCell(x0,y0,nameW,20,'#0B1C3D','','#ffffff');
+  g.fillStyle='#ffffff'; g.textAlign='left'; g.textBaseline='middle'; g.font='800 11px Space Grotesk'; g.fillText('STAFF', x0+12, y0+10);
+  drawCell(x0,y0+20,nameW,26,'#F7F8FC','','#000000');
+  g.fillStyle='#000000'; g.textAlign='left'; g.textBaseline='middle'; g.font='700 11px Space Grotesk'; g.fillText('Name', x0+12, y0+20+13);
   // body
   for(let r=0;r<nRows;r++){
     const yy=y0+hdrH+r*rowH;
@@ -1496,7 +1494,7 @@ function exportPlanPDF(key){
     d.rect(x,y0+18,cellW,26,{fill:c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6')});
     d.text(String(c.dom),x+cellW/2,y0+22,{size:8,bold:true,color:'#000000'});
   }
-  // Staff and Name left aligned consistent
+  // Single STAFF/Name column - left aligned
   d.rect(24,y0,nameW,44,{fill:'#0B1C3D'});
   d.text('STAFF',28,y0+8,{size:8,bold:true,color:'1 1 1 rg'});
   d.text('Name',28,y0+24,{size:8,bold:true,color:'1 1 1 rg'});
