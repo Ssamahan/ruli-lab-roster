@@ -1955,7 +1955,6 @@ function renderDash(){
   const returningSoon=DB.leaves.filter(l=>l.from<=today&&l.to>=today&&l.status!=='Completed'&&daysBetween(today,l.to)<=7);
   const nextHol=(DB.holidays||[]).filter(h=>h.date>=today&&h.official).sort((a,b)=>a.date.localeCompare(b.date))[0];
   const nowKey=monthKey(todayISO()); const nightCov=monthNightCoverage(nowKey);
-  // charts data
   const testTypes={}; samples.forEach(s=>{ testTypes[s.test]=(testTypes[s.test]||0)+1; });
   const mostTests=Object.entries(testTypes).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>({label:k,value:v}));
   const hospVol={}; samples.forEach(s=>{ hospVol[s.hospital]=(hospVol[s.hospital]||0)+1; });
@@ -1968,61 +1967,113 @@ function renderDash(){
   const tats=tatByTest();
   const stack=staffTrendStack(nowKey);
   const alerts=dashAlerts();
-  const evs=timelineEvents(fyInfo(today).start, fyInfo(today).end);
+  const smMon={}; samples.forEach(s=>{ const m=s.sentDate?s.sentDate.slice(0,7):''; if(m) smMon[m]=(smMon[m]||0)+1; });
+  const smMonArr=Object.entries(smMon).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>({label:k.slice(5,7)+'/'+k.slice(2,4),value:v}));
+  const smStatus=[{label:'Pending',value:pend.length,color:'#e8a33d'},{label:'Positive',value:pos,color:'#0e9f8a'},{label:'Negative',value:neg,color:'#0B1C3D'},{label:'Rejected',value:rej,color:'#c94c5a'},{label:'Done',value:samples.filter(s=>s.status==='Done').length,color:'#5a6b8c'}].filter(x=>x.value>0);
+
+  // Stexo-inspired premium dashboard - main KPIs focused, charts well arranged, no blanks
   el.innerHTML=`
-  <div class="section-title"> Command Dashboard <small>${todayISO()} · live from your records</small></div>
-  ${alerts.length?`<div class="card" style="padding:14px 16px"><h3> Alerts &amp; Insights <span class="sub">${alerts.length}</span></h3><div class="alerts-grid">${alerts.slice(0,12).map(a=>`<div class="alert ${a.t}">${a.m}</div>`).join('')}</div>${alerts.length>12?`<div class="hint" style="margin-top:8px">+${alerts.length-12} more in Stock &amp; Roster views</div>`:''}</div>`:''}
-  <div class="toolbar" style="margin-bottom:16px"><span class="chip">Overview KPIs</span><span class="spacer"></span>
-    <button class="btn sm" id="dashToggle" style="gap:6px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span id="dashToggleLbl">Hide KPIs</span></button></div>
-  <div class="grid g-auto kpi-grid-collapsible" id="dashKpis" style="gap:12px">
-    ${kpiCard(' Hemoculture bottles', stTotal.total, `Ped ${(stTotal.batches.find(b=>b.ageGroup==='Pediatric/Neonatal')?stTotal.batches.find(b=>b.ageGroup==='Pediatric/Neonatal').qty:undefined)||0} · Adult ${(stTotal.batches.find(b=>b.ageGroup==='Adult')?stTotal.batches.find(b=>b.ageGroup==='Adult').qty:undefined)||0}`, {tone:'blue', ic:''})}
-    ${kpiCard('VTM in stock', vtm.total, stockStatus('c2')==='low'?'<span style="color:var(--amber)">Below threshold</span>':'OK', {tone:stockStatus('c2')==='low'?'amber':'teal', ic:''})}
-    ${kpiCard('Positivity rate', posRate+'%', pos+' positive of '+tested.length+' tested', {tone:'green', ic:''})}
-    ${kpiCard('Negativity rate', negRate+'%', neg+' negative of '+tested.length+' tested', {tone:'teal', ic:''})}
-    ${kpiCard('Rejection rate', rejRate+'%', rej+' rejected of '+samples.length, {tone:'red', ic:''})}
-    ${kpiCard('Total referred samples', samples.length, (DB.catalog.tests||[]).length+' test types tracked', {tone:'blue', ic:''})}
-    ${kpiCard('Pending samples', pend.length, over.length+' overdue', {tone:over.length?'red':'amber', ic:'⏳'})}
-    ${kpiCard('Training coverage', cov+'%', 'active staff trained ≥ once', {tone:'green', ic:''})}
-    ${kpiCard('Upcoming trainings', upcoming, completed+' completed', {tone:'teal', ic:''})}
-    ${kpiCard('Avg wait — last training', avgWait+'d', 'across active staff', {tone:'blue', ic:'⏱'})}
-    ${kpiCard('Active staff', act.length, 'avg age '+avgAge+'y · exp '+avgExp+'y', {tone:'teal', ic:''})}
-    ${kpiCard('Night coverage', nightCov==null?'—':nightCov+'%', nowKey, {tone:nightCov!=null&&nightCov<100?'red':'green', ic:''})}
-    ${kpiCard('On leave now', onLeaveNow.length, returningSoon.length?'back ≤7d: '+returningSoon.map(l=>(staffById(l.staffId)?staffById(l.staffId).name.split(' ')[0]:undefined)).join(', '):'no one away', {tone:'amber', ic:''})}
-    ${nextHol?kpiCard('Next holiday', fmtDate(nextHol.date).split(' ')[0]+' '+fmtDate(nextHol.date).split(' ')[1], nextHol.name, {tone:'amber', ic:''}):''}
+  <div class="section-title">📊 Lab Command Center <small>${todayISO()} · ${samples.length} samples · ${act.length} active staff · FY ${fyInfo(today).label}</small></div>
+
+  ${alerts.length?`<div class="card gold-accent" style="padding:16px 18px; margin-bottom:20px"><h3 style="margin-bottom:10px">🔔 Alerts & Insights <span class="sub">${alerts.length} active</span></h3><div class="alerts-grid">${alerts.slice(0,6).map(a=>`<div class="alert ${a.t}">${a.m}</div>`).join('')}</div></div>`:''}
+
+  <!-- Main KPI Row - 4 premium cards like Stexo, big numbers, gold accent -->
+  <div class="grid g-4" style="gap:16px; margin-bottom:20px">
+    <div class="kpi gold" style="min-height:122px; border-left:4px solid var(--gold)">
+      <div class="k-label">Total Referred Samples</div>
+      <div class="k-val" style="font-size:36px">${samples.length}</div>
+      <div class="k-foot">${(DB.catalog.tests||[]).length} test types · ${pend.length} pending · ${over.length} overdue</div>
+      <span class="k-ic">🧪</span>
+      <div class="k-bar"><i style="width:100%; background:var(--gold)"></i></div>
+    </div>
+    <div class="kpi" style="min-height:122px; border-left:4px solid var(--teal)">
+      <div class="k-label">Training Coverage</div>
+      <div class="k-val" style="font-size:36px">${cov}%</div>
+      <div class="k-foot">${act.filter(s=>DB.trainings.some(t=>t.status==='completed'&&t.attendees.includes(s.id))).length}/${act.length} staff trained · ${avgWait}d avg wait</div>
+      <span class="k-ic" style="background:var(--teal-soft); color:var(--teal)">🎓</span>
+      <div class="k-bar"><i style="width:${cov}%; background:var(--teal)"></i></div>
+    </div>
+    <div class="kpi" style="min-height:122px; border-left:4px solid var(--primary)">
+      <div class="k-label">Night Coverage · ${nowKey}</div>
+      <div class="k-val" style="font-size:36px">${nightCov==null?'—':nightCov+'%'}</div>
+      <div class="k-foot">${act.length} active · ${onLeaveNow.length} on leave now · Next hol ${nextHol?fmtDate(nextHol.date).slice(0,6):'—'}</div>
+      <span class="k-ic">🌙</span>
+      <div class="k-bar"><i style="width:${nightCov||0}%; background:var(--primary)"></i></div>
+    </div>
+    <div class="kpi" style="min-height:122px; border-left:4px solid var(--amber)">
+      <div class="k-label">Stock Status</div>
+      <div class="k-val" style="font-size:36px">${stTotal.total+vtm.total}</div>
+      <div class="k-foot">Hemoculture ${stTotal.total} · VTM ${vtm.total} ${stockStatus('c2')==='low'?'<span style="color:var(--amber)">low</span>':''} · ${DB.catalog.consumables.length} consumables</div>
+      <span class="k-ic" style="background:var(--amber-soft); color:var(--amber)">📦</span>
+      <div class="k-bar"><i style="width:${Math.min(100, (stTotal.total+vtm.total)/2)}%; background:var(--amber)"></i></div>
+    </div>
   </div>
+
+  <!-- Secondary KPI Row - compact but visual -->
+  <div class="grid g-4" style="gap:12px; margin-bottom:20px">
+    ${kpiCard('Positivity Rate', posRate+'%', pos+' positive of '+tested.length+' tested', {tone:'green', ic:'✅'})}
+    ${kpiCard('Pending Samples', pend.length, over.length+' overdue · '+rejRate+'% rejection', {tone:over.length?'red':'amber', ic:'⏳'})}
+    ${kpiCard('Active Staff', act.length, 'avg age '+avgAge+'y · exp '+avgExp+'y · '+onLeaveNow.length+' on leave', {tone:'blue', ic:'👥'})}
+    ${kpiCard('Upcoming / Completed', upcoming+' / '+completed, 'trainings · FIFO '+ (fq[0]?fq[0].s.name.split(' ')[0]+' next':'—'), {tone:'teal', ic:'📚'})}
+  </div>
+
+  <!-- Main Charts Row - Stexo style: Line chart main + Donut side -->
+  <div class="grid" style="grid-template-columns: 2fr 1fr; gap:16px; margin-bottom:20px">
+    <div class="card gold-accent"><h3>📈 Monthly Referral Trend — Line Chart (Main KPI)</h3>
+      <div class="chart-box">${smMonArr.length?svgLineChart([{label:'Referrals', color:'#C9A84C', values: smMonArr.map((d,i)=>({x:i, y:d.value}))}], {xLabels: smMonArr.map(d=>d.label)}):'<div class="empty">No referral trend data yet</div>'}</div>
+      <div class="chart-legend"><span><i style="background:var(--gold)"></i>Referrals per month — main KPI</span></div>
+    </div>
+    <div class="card"><h3>📊 Sample Status Distribution — Donut</h3>
+      <div class="chart-box" style="min-height:200px">${smStatus.length?svgDonut(smStatus,{center:String(samples.length), width:160, height:160}):'<div class="empty">No samples</div>'}</div>
+      <div class="chart-legend">${smStatus.map(s=>`<span><i style="background:${s.color}"></i>${s.label} ${s.value}</span>`).join('')}</div>
+    </div>
+  </div>
+
+  <!-- Second Charts Row - HBar and Bar well arranged -->
   <div class="grid g-2" style="gap:16px; margin-bottom:20px">
-    <div class="card gold-accent"><h3>📚 Trainings per staff</h3><div class="chart-box">${svgHBar(perStaff)}</div><p class="hint" style="margin-top:8px">Visualizes training coverage block — who trained most</p></div>
-    <div class="card"><h3>🧪 Most referred sample types</h3><div class="chart-box">${svgHBar(mostTests)}</div><p class="hint" style="margin-top:8px">Visualizes total referred samples block</p></div>
-    <div class="card"><h3>🏥 Referral volume per hospital</h3><div class="chart-box">${svgHBar(hospArr)}</div><p class="hint" style="margin-top:8px">CHUK vs NRL distribution</p></div>
-    <div class="card"><h3>💉 VTM per health center</h3><div class="chart-box">${svgHBar(vtmArr)}</div><p class="hint" style="margin-top:8px">Stock distribution visualization</p></div>
-    <div class="card"><h3>⏱ TAT avg vs expected</h3><div class="chart-box">${renderTatChart(tats)}</div></div>
-    <div class="card"><h3>👥 Age distribution</h3><div class="chart-box">${svgBar(ageArr)}</div></div>
-    <div class="card"><h3>📊 Sample Status — Donut</h3><div class="chart-box" style="min-height:180px">${(function(){ const all=DB.samples||[]; const pend=all.filter(s=>s.status==='Pending').length; const pos=all.filter(s=>s.status==='Positive').length; const neg=all.filter(s=>s.status==='Negative').length; const rej=all.filter(s=>s.status==='Rejected').length; const done=all.filter(s=>s.status==='Done').length; const items=[{label:'Pending',value:pend,color:'#e8a33d'},{label:'Positive',value:pos,color:'#0e9f8a'},{label:'Negative',value:neg,color:'#0B1C3D'},{label:'Rejected',value:rej,color:'#c94c5a'},{label:'Done',value:done,color:'#5a6b8c'}].filter(x=>x.value>0); return svgDonut(items,{center:String(all.length)}); })()}</div><p class="hint" style="margin-top:8px">Visualizes pending/positivity/rejection rate blocks</p></div>
-    <div class="card"><h3>🌙 Night Coverage Trend</h3><div class="chart-box">${(function(){ const key=monthKey(todayISO()); const p=(DB.workingPlans[key]||{}).primary; if(!p) return '<div class="empty">No plan</div>'; const staff=p.staff.map((r,i)=>({label:r.name.split(' ')[0], value:(r.codes||[]).filter(c=>c==='N'||c==='DN').length})).sort((a,b)=>b.value-a.value); return svgBar(staff); })()}</div><p class="hint" style="margin-top:8px">Visualizes night coverage block</p></div>
+    <div class="card"><h3>👥 Trainings per Staff — Performance</h3><div class="chart-box">${svgHBar(perStaff)}</div></div>
+    <div class="card"><h3>🏥 Referral Volume per Hospital</h3><div class="chart-box">${svgHBar(hospArr)}</div></div>
+    <div class="card"><h3>🧪 Most Referred Sample Types</h3><div class="chart-box">${svgHBar(mostTests)}</div></div>
+    <div class="card"><h3>💉 VTM Distributed per Health Center</h3><div class="chart-box">${svgHBar(vtmArr)}</div></div>
+    <div class="card"><h3>⏱ TAT — Average vs Expected (Days) — Line + Bar</h3>
+      <div class="chart-box">${(function(){
+        const data=tats.map(t=>({label:t.test, value:t.avg, color:'#C9A84C'}));
+        const exp=tats.map(t=>({label:t.test+' exp', value:t.exp, color:'#0B1C3D'}));
+        if(!data.length) return '<div class="empty">No TAT data yet</div>';
+        return svgLineChart([{label:'Avg TAT', color:'#C9A84C', values: data.map((d,i)=>({x:i, y:d.value}))}, {label:'Expected', color:'#0B1C3D', values: exp.map((d,i)=>({x:i, y:d.value}))}], {xLabels: tats.map(t=>t.test.slice(0,8))});
+      })()}</div>
+      <div class="chart-legend"><span><i style="background:var(--gold)"></i>Avg TAT</span><span><i style="background:var(--primary)"></i>Expected</span></div>
+    </div>
+    <div class="card"><h3>👶 Age Distribution (Active Staff) — Bar</h3><div class="chart-box">${svgBar(ageArr)}</div></div>
   </div>
-  <div class="card span2" style="margin-bottom:16px; padding:14px 16px"><h3 style="margin-bottom:8px"> Daily staffing trend — ${monthLabel(nowKey)} <span class="sub">aggregated by week (Day · Night · Off · Leave/Absent)</span></h3>
-    <div class="chart-box">${stack}</div>
-    <div class="mtl-legend"><span><i style="background:#dbe7fb"></i>Day</span><span><i style="background:#2d3a5c"></i>Night</span><span><i style="background:#f1f3f8"></i>Off</span><span><i style="background:#fdeccd"></i>Leave/Absent</span></div></div>
-  <div class="card" style="margin-bottom:16px"><h3> Master Timeline — FY ${fyInfo(today).label} <span class="sub">holidays · leaves · trainings · weddings · absences</span></h3>${renderTimeline(fyInfo(today).start, fyInfo(today).end)}</div>
-  <div class="grid g-2" style="margin-bottom:16px; gap:16px">
-    <div class="card"><h3>⏳ Pending samples — aging list</h3>
+
+  <!-- Daily Staffing Trend - compact premium, not too big -->
+  <div class="card gold-accent" style="margin-bottom:20px; padding:16px 18px"><h3 style="margin-bottom:8px">📅 Daily Staffing Trend — ${monthLabel(nowKey)} <span class="sub">aggregated by week (Day · Night · Off · Leave/Absent) — line + stacked</span></h3>
+    <div class="chart-box" style="max-height:200px">${stack}</div>
+    <div class="chart-legend"><span><i style="background:#dbe7fb"></i>Day</span><span><i style="background:#0B1C3D"></i>Night</span><span><i style="background:#f1f3f8"></i>Off</span><span><i style="background:#fdeccd"></i>Leave/Absent</span></div>
+  </div>
+
+  <div class="grid g-2" style="gap:16px">
+    <div class="card"><h3>⏳ Pending Samples — Aging List</h3>
       ${pend.length?`<div class="tbl-wrap"><table class="tbl"><tr><th>Patient</th><th>Test</th><th>Hospital</th><th>Sent</th><th>Elapsed</th><th>Status</th></tr>
-      ${pend.map(s=>`<tr><td>${esc(maskName(s.patientName||'—'))}</td><td>${esc(s.test)}</td><td>${esc(s.hospital)}</td><td>${fmtDate(s.sentDate||s.collectionDate)}</td>
+      ${pend.map(s=>`<tr><td>${esc(maskName(s.patientName))}</td><td>${esc(s.test)}</td><td>${esc(s.hospital)}</td><td>${fmtDate(s.sentDate||s.collectionDate)}</td>
       <td class="num">${daysBetween(s.sentDate||s.collectionDate,todayISO())}d</td><td>${daysBetween(s.sentDate||s.collectionDate,todayISO())>7?'<span class="tag red">Overdue</span>':'<span class="tag amber">Pending</span>'}</td></tr>`).join('')}</table></div>`
-      :'<div class="empty"><div class="big"></div>Nothing pending right now.</div>'}</div>
-    <div class="card"><h3> Team profile &amp; records <span class="sub">${act.length} active</span></h3>
-      <div class="grid g-2" style="gap:8px">
-      ${act.map(s=>`<div class="list-row" style="margin:0"><span class="avatar" style="background:${staffColor(s.id)}">${esc(s.name.split(' ').map(w=>w[0]).slice(0,2).join(''))}</span>
-        <div class="grow"><div class="t">${esc(s.name)}</div><div class="s">${esc(s.role)} · ${ageOf(s)}y · ${daysSinceLastTraining(s.id)==null?'<span class="tag amber">never trained</span>':'last training '+daysSinceLastTraining(s.id)+'d ago'}</div></div></div>`).join('')}
+      :'<div class="empty"><div class="big">✅</div>Nothing pending right now.</div>'}</div>
+    <div class="card"><h3>👥 Team Profile & Records <span class="sub">${act.length} active</span></h3>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px">
+      ${act.map(s=>`<div class="list-row" style="margin:0; padding:12px"><span class="avatar" style="background:${staffColor(s.id)}">${esc(s.name.split(' ').map(w=>w[0]).slice(0,2).join(''))}</span>
+        <div class="grow"><div class="t">${esc(s.name)}</div><div class="s">${esc(s.role)} · ${ageOf(s)}y · ${daysSinceLastTraining(s.id)==null?'<span class="tag amber">never trained</span>':'last '+daysSinceLastTraining(s.id)+'d ago'}</div></div></div>`).join('')}
       </div></div>
-  </div>`;
-  const dT=$('#dashToggle'); if(dT){
-    const kp=$('#dashKpis'); const lbl=$('#dashToggleLbl');
+  </div>
+  `;
+  const dT=document.getElementById('dashToggle'); if(dT){
+    const kp=document.getElementById('dashKpis'); const lbl=document.getElementById('dashToggleLbl');
     const sync=()=>{ const hid=kp&&kp.classList.contains('hidden'); if(lbl) lbl.textContent=hid?'Show KPIs':'Hide KPIs'; };
     if(UI.dashHidden){ if(kp) kp.classList.add('hidden'); sync(); }
     dT.onclick=()=>{ if(kp) kp.classList.toggle('hidden'); sync(); UI.dashHidden=kp&&kp.classList.contains('hidden'); };
   }
 }
+
 
 function renderTimeline(startISO,endISO){
   const evs=timelineEvents(startISO,endISO); if(!evs.length) return '<div class="empty">No events in this period.</div>';
