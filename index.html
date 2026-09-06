@@ -4236,7 +4236,20 @@ function renderSecurity(body){
       <p class="hint" style="margin-top:10px">Password is stored locally (localStorage) for this static site. Use strong password with numbers + symbols. No credential shown publicly.</p>
     </div>
 
-    <div class="card gold-accent"><h3>🛡️ Two-Factor Authentication (2-FA)</h3>
+    <div class="card gold-accent"><h3>📱 Authenticator App 2-FA (Google Authenticator / Authy) — Compatible</h3>
+      <div class="alert ${auth.totpEnabled?'ok':'info'}" style="margin-bottom:12px">
+        ${auth.totpEnabled?'<b>✅ Authenticator App Enabled</b> — Login requires code from Google Authenticator/Authy. Most secure, works offline.' : '<b>📱 Authenticator App Disabled</b> — Enable to use Google Authenticator, Authy, 1Password etc. (TOTP, 30s).'}
+      </div>
+      <div class="form-grid fg-2">
+        <div><label>Authenticator 2-FA</label><select id="totp_toggle"><option value="0">Disabled</option><option value="1">Enabled — Require Authenticator code</option></select></div>
+        <div><label>TOTP Secret (Base32, private)</label><div class="row" style="gap:8px"><input id="totp_secret" value="${esc(auth.totpSecret||'')}" placeholder="Auto-generated on enable" style="flex:1; font-family:monospace"><button class="btn sm" type="button" id="totp_gen">Generate</button></div></div>
+        <div style="grid-column:1/-1"><div id="totp_qr" style="display:flex; justify-content:center; padding:12px; background:#fff; border-radius:12px; border:1px solid var(--edge); min-height:0"></div><p class="hint" style="margin-top:8px">Scan QR with Google Authenticator, Authy, 1Password, etc. Or enter secret manually. QR uses otpauth:// URI compatible with all authenticator apps.</p></div>
+        <div><label>Verify Code from App (6-digit)</label><div class="row" style="gap:8px"><input id="totp_verify" maxlength="6" placeholder="123456" style="flex:1; letter-spacing:4px; text-align:center; font-weight:800"><button class="btn teal sm" type="button" id="totp_verifyBtn">Verify & Save</button></div></div>
+        <div style="display:flex; align-items:flex-end"><button class="btn primary sm" id="totp_save">💾 Save Authenticator Settings</button></div>
+      </div>
+    </div>
+
+    <div class="card gold-accent"><h3>🛡️ Email OTP 2-FA (Backup)</h3>
       <div class="alert ${twoFA?'ok':'warn'}" style="margin-bottom:12px">
         ${twoFA?'<b>✅ 2-FA Enabled</b> — Login requires Password + OTP (6-digit, 5 min). Extra security against hijacking.' : '<b>⚠️ 2-FA Disabled</b> — Enable for best security. Login will require Password + OTP.'}
       </div>
@@ -4280,6 +4293,69 @@ function renderSecurity(body){
   </div>`;
 
   document.getElementById('twofa_toggle').value = twoFA ? '1' : '0';
+  // TOTP handlers
+  const totpToggle=document.getElementById('totp_toggle');
+  const totpSecretInp=document.getElementById('totp_secret');
+  const totpQR=document.getElementById('totp_qr');
+  if(totpToggle) totpToggle.value = auth.totpEnabled ? '1' : '0';
+  async function renderTOTPQR(){
+    const sec=totpSecretInp.value.trim();
+    if(!sec){ totpQR.innerHTML='<span class="hint">Generate secret first</span>'; return; }
+    const uri=getTOTPAuthURI(sec, auth.username||'admin', 'Ruli DH Lab');
+    totpQR.innerHTML='';
+    try{
+      // Try QRCode library if available
+      if(window.QRCode){
+        // Use qrcode library to generate data URL
+        const canvas=document.createElement('canvas');
+        // Fallback to simple text + link if library not loaded yet
+        totpQR.innerHTML=`<div style="text-align:center"><div style="font-family:monospace; font-size:11px; word-break:break-all; background:#F7F8FC; padding:8px; border-radius:8px; margin-bottom:10px">${esc(uri)}</div><a href="${esc(uri)}" target="_blank" class="btn sm primary">Open in Authenticator App</a><p class="hint" style="margin-top:8px">If QR not showing, copy URI above into your authenticator app manually.</p></div>`;
+        // Try to generate QR via QRCode.toCanvas if available
+        if(window.QRCode.toCanvas){
+          const c=document.createElement('canvas');
+          await window.QRCode.toCanvas(c, uri, {width:200, margin:1});
+          totpQR.innerHTML=''; totpQR.appendChild(c);
+          const p=document.createElement('p'); p.className='hint'; p.textContent='Scan this QR with Google Authenticator / Authy'; totpQR.appendChild(p);
+        }
+      } else {
+        // Fallback: use Google Charts QR API (HD)
+        const qrUrl = 'https://chart.googleapis.com/chart?chs=240x240&chld=M|0&cht=qr&chl='+encodeURIComponent(uri);
+        totpQR.innerHTML=`<img src="${qrUrl}" alt="QR Code" style="width:200px;height:200px; border:1px solid #e6e9f1; border-radius:12px"><div style="font-family:monospace; font-size:10px; word-break:break-all; margin-top:8px; background:#F7F8FC; padding:6px; border-radius:6px">${esc(uri)}</div>`;
+      }
+    }catch(e){ totpQR.innerHTML='<span class="hint">QR error: '+esc(e.message)+'</span><br><span style="font-family:monospace; font-size:10px">'+esc(uri)+'</span>'; }
+  }
+  document.getElementById('totp_gen').onclick=()=>{
+    const sec=generateTOTPSecret();
+    totpSecretInp.value=sec;
+    renderTOTPQR();
+    toast('Secret generated — scan QR with authenticator app','ok');
+  };
+  totpSecretInp.oninput=renderTOTPQR;
+  renderTOTPQR();
+
+  document.getElementById('totp_verifyBtn').onclick=async()=>{
+    const code=document.getElementById('totp_verify').value.trim();
+    const sec=totpSecretInp.value.trim();
+    if(!sec) return toast('Generate secret first','warn');
+    if(!code) return toast('Enter 6-digit code from app','warn');
+    const ok = await verifyTOTP(code, sec);
+    if(ok) toast('✅ Code valid — authenticator app compatible! Save settings.','ok');
+    else toast('❌ Invalid code — check time sync on phone','err');
+  };
+
+  document.getElementById('totp_save').onclick=()=>{
+    const enabled=totpToggle.value==='1';
+    const sec=totpSecretInp.value.trim();
+    if(enabled && !sec) return toast('Generate secret before enabling','warn');
+    const authRec=getAuthRec();
+    authRec.totpEnabled=enabled;
+    authRec.totpSecret=enabled?sec:null;
+    authRec.lastTOTPChange=new Date().toISOString();
+    saveAuthRec(authRec);
+    toast(enabled?'✅ Authenticator App 2-FA Enabled — compatible with Google Authenticator/Authy':'⚠️ Authenticator App Disabled','ok');
+    renderSecurity(body);
+  };
+
   
   document.getElementById('changePassForm').addEventListener('submit',ev=>{
     ev.preventDefault();
@@ -4624,6 +4700,8 @@ const SESSION_KEY='labSystems.session.v1';
 const OTP_KEY='labSystems.otp.v1';
 
 function getAuthRec(){
+  // patched to include TOTP
+
   try{
     let rec = JSON.parse(localStorage.getItem(AUTH_KEY));
     if(!rec){
@@ -4749,6 +4827,73 @@ function requireAdmin(){
 
 // Login handlers
 
+
+/* ===== TOTP - Authenticator App Compatible (Google Authenticator, Authy) ===== */
+function base32Encode(bytes){
+  const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let bits=0, value=0, output='';
+  for(let i=0;i<bytes.length;i++){
+    value = (value<<8) | bytes[i];
+    bits+=8;
+    while(bits>=5){
+      output+=alphabet[(value>>>(bits-5)) & 31];
+      bits-=5;
+    }
+  }
+  if(bits>0) output+=alphabet[(value<<(5-bits)) & 31];
+  return output;
+}
+function base32Decode(str){
+  const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  str=str.toUpperCase().replace(/=+$/,'').replace(/[^A-Z2-7]/g,'');
+  let bits=0, value=0, output=[];
+  for(let i=0;i<str.length;i++){
+    const idx=alphabet.indexOf(str[i]); if(idx===-1) continue;
+    value = (value<<5) | idx;
+    bits+=5;
+    if(bits>=8){
+      output.push((value>>>(bits-8)) & 255);
+      bits-=8;
+    }
+  }
+  return new Uint8Array(output);
+}
+function generateTOTPSecret(){
+  const arr=new Uint8Array(20); // 160 bits
+  if(window.crypto && window.crypto.getRandomValues) crypto.getRandomValues(arr);
+  else for(let i=0;i<arr.length;i++) arr[i]=Math.floor(Math.random()*256);
+  return base32Encode(arr);
+}
+async function hmacSHA1(key, data){
+  const cryptoKey = await crypto.subtle.importKey('raw', key, {name:'HMAC', hash:'SHA-1'}, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', cryptoKey, data);
+  return new Uint8Array(sig);
+}
+async function generateTOTP(secret, timeStep=30, digits=6, timestamp=Date.now()){
+  const key = base32Decode(secret);
+  const counter = Math.floor(timestamp/1000/timeStep);
+  const counterBytes = new Uint8Array(8);
+  let c=counter;
+  for(let i=7;i>=0;i--){ counterBytes[i]=c & 0xff; c>>=8; }
+  const hmac = await hmacSHA1(key, counterBytes);
+  const offset = hmac[hmac.length-1] & 0x0f;
+  const bin = ((hmac[offset] & 0x7f)<<24) | ((hmac[offset+1] & 0xff)<<16) | ((hmac[offset+2] & 0xff)<<8) | (hmac[offset+3] & 0xff);
+  const otp = bin % (10**digits);
+  return String(otp).padStart(digits,'0');
+}
+async function verifyTOTP(code, secret, window=1){
+  const now=Date.now();
+  for(let i=-window;i<=window;i++){
+    const t = now + i*30*1000;
+    const expected = await generateTOTP(secret, 30, 6, t);
+    if(expected===String(code).trim()) return true;
+  }
+  return false;
+}
+function getTOTPAuthURI(secret, account='admin', issuer='Ruli DH Lab'){
+  return `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(account)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`;
+}
+
 /* ===== THEME TOGGLE - light/dark with gold accent ===== */
 const THEME_KEY='labSystems.theme.v1';
 function getTheme(){ try{ return localStorage.getItem(THEME_KEY) || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }catch(e){ return 'light'; } }
@@ -4830,22 +4975,31 @@ function wireAuth(){
       window.open('mailto:'+email+'?subject='+subj+'&body='+body, '_blank');
     }catch(e){}
   };
-  document.getElementById('verifyOtpBtn').onclick = ()=>{
+  document.getElementById('verifyOtpBtn').onclick = async()=>{
     const email = document.getElementById('otpEmail').value.trim();
     const code = document.getElementById('otpCode').value.trim();
     const rec=getAuthRec();
-    // Check backup codes too
     if(rec.backupCodes && rec.backupCodes.includes(code)){
       rec.backupCodes = rec.backupCodes.filter(c=>c!==code);
       saveAuthRec(rec);
       setSession(); closeAuth(); updateAuthUI(); toast('🔓 Backup code verified — Admin access granted','ok');
-      window._pending2FA=false;
+      window._pending2FA=false; window._pendingTOTP=false;
       return;
     }
+    // If TOTP enabled, verify TOTP from authenticator app
+    if(rec.totpEnabled && rec.totpSecret){
+      const ok = await verifyTOTP(code, rec.totpSecret);
+      if(ok){
+        setSession(); closeAuth(); updateAuthUI(); toast('🔓 Authenticator App code verified — Admin access granted (TOTP)','ok');
+        window._pending2FA=false; window._pendingTOTP=false;
+        return;
+      }
+      // Fall through to try email OTP as backup if TOTP fails
+    }
     const v = verifyOTP(code, email, 'login');
-    if(!v.ok) return toast(v.msg,'err');
+    if(!v.ok) return toast(v.msg+' — try authenticator app code if TOTP enabled','err');
     setSession(); closeAuth(); updateAuthUI(); toast('🔓 OTP verified — Admin access granted'+(window._pending2FA?' (2-FA)':''),'ok');
-    window._pending2FA=false;
+    window._pending2FA=false; window._pendingTOTP=false;
   };
 
   document.getElementById('sendResetOtpBtn').onclick = ()=>{
