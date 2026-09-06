@@ -1295,219 +1295,211 @@ function previewPlanHTML(key){
 async function exportPlanPNG(key){
   const ver=(DB.workingPlans[key]||{}).primary; if(!ver) return toast('No plan for this month','err');
   const ex=buildPlanExport(key,ver);
+  if(!ex || !ex.staff || !ex.staff.length) return toast('No staff in plan','err');
   const crest=await imgOr(DB.settings.crest||null,'moh'); const logo=await imgOr(DB.settings.logo||null,'hospital');
   const W=1400; const scale=2;
   const cols=ex.colInfo.length; const nRows=ex.staff.length;
   const _tmpCv=document.createElement('canvas'); const _tg=_tmpCv.getContext('2d'); _tg.font='bold 12px Space Grotesk';
-  const maxName=Math.max(160, ...ex.staff.map(nm=>Math.round(_tg.measureText(nm).width+40)));
-  const nameW=Math.min(260, maxName);
-  const cellW=Math.max(26, Math.floor((W-40-nameW)/cols));
-  const top=110, hdrH=42; // light premium - move up Ruli DH
-  const legH=Math.ceil(ex.legends.length/3)*18+ (ex.holidays.length?28:0);
-  const phoneH=Math.ceil(ex.phones.length/2)*18+18;
-  const sigH=62;
-  const rowH=26;
+  const maxName=Math.max(170, ...ex.staff.map(nm=>Math.round(_tg.measureText(nm).width+44)));
+  const nameW=Math.min(280, maxName);
+  const cellW=Math.max(28, Math.floor((W-48-nameW)/cols));
+  const rowH=30, hdrH=46;
   const tableH=hdrH+nRows*rowH;
-  let H=top+tableH+legH+phoneH+sigH+24;
-  if(H<720) H=720; // compact premium, not too tall
+  // Premium spacing - single header, keys spacious, contacts in blocks, signatures original
+  const legH= 42 + Math.ceil(ex.legends.length/4)*30;
+  const phoneH= 44 + Math.ceil(ex.phones.length/3)*38;
+  const sigH= 120;
+  let H= 20 + 90 + 50 + tableH + 28 + legH + 24 + phoneH + 30 + sigH + 30;
+  if(H<820) H=820;
   const cv=document.createElement('canvas'); cv.width=W*scale; cv.height=H*scale; const g=cv.getContext('2d'); g.scale(scale,scale);
   g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
   g.textBaseline='alphabetic';
-  // Light premium header - only Ruli DH, gold accent line
-  g.fillStyle='#F7F8FC'; g.fillRect(0,0,W,84);
-  g.fillStyle='#0B1C3D'; g.font='900 24px Space Grotesk'; g.textAlign='center'; g.fillText(ex.hospital, W/2, 34);
-  g.fillStyle='#5a6b8c'; g.font='600 13px Space Grotesk'; g.fillText(ex.dept+' · '+ex.email+' · '+ex.phone, W/2, 56);
-  g.strokeStyle='#C9A84C'; g.lineWidth=3; g.beginPath(); g.moveTo(24,76); g.lineTo(W-24,76); g.stroke();
-  // Optional logos - light premium, no MOH shield if not uploaded
-  if(crest){ g.drawImage(crest, 24, 8, 60, 60); }
-  if(logo){ g.drawImage(logo, W-84, 8, 60, 60); }
-  // hospital block
-  g.fillStyle='#16233f'; g.textAlign='center'; g.font='bold 24px Georgia'; g.fillText(ex.hospital, W/2, 128);
-  g.fillStyle='#4a5a7d'; g.font='bold 15px Arial'; g.fillText(ex.dept, W/2, 152);
-  g.fillStyle='#5a6a8c'; g.font='12px Arial'; g.fillText(ex.email+'  ·  '+ex.phone, W/2, 172);
-  g.font='bold 20px Georgia'; g.fillStyle='#0e2e5c'; g.fillText(ex.title, W/2, 200);
-  g.textAlign='left'; g.fillStyle='#5a6a8c'; g.font='11.5px Arial';
-  g.fillText('Date: '+ex.date+'     FY: '+ex.fy+'     Period: '+ex.period, W/2-280, 214);
-  g.strokeStyle='#0e2e5c'; g.lineWidth=2.5; g.beginPath(); g.moveTo(20,224); g.lineTo(W-20,224); g.stroke();
-  // table - premium with breathing space
+  // Single premium header - centered, light, no MOH deep blue, gold line only
+  let y=20;
+  if(crest){ try{ g.drawImage(crest, 28, 14, 64, 64); }catch(e){} }
+  if(logo){ try{ g.drawImage(logo, W-92, 14, 64, 64); }catch(e){} }
+  g.fillStyle='#0B1C3D'; g.font='900 26px Space Grotesk'; g.textAlign='center'; g.fillText(ex.hospital, W/2, y+22);
+  g.fillStyle='#0B1C3D'; g.font='700 13px Space Grotesk'; g.fillText(ex.dept, W/2, y+42);
+  g.fillStyle='#5a6b8c'; g.font='500 11px Space Grotesk'; g.fillText(ex.email+' · '+ex.phone, W/2, y+60);
+  g.strokeStyle='#C9A84C'; g.lineWidth=3; g.beginPath(); g.moveTo(28,y+74); g.lineTo(W-28,y+74); g.stroke();
+  y+=90;
+  // Title - single, centered
+  g.fillStyle='#000000'; g.font='800 18px Space Grotesk'; g.textAlign='center'; g.fillText(ex.title, W/2, y+10);
+  g.fillStyle='#000000'; g.font='600 11px Space Grotesk'; g.fillText('Date: '+ex.date+'   FY: '+ex.fy+'   Period: '+ex.period, W/2, y+28);
+  y+=50;
+  // Table
   let x0=24, y0=y;
-  g.font='bold 11px Arial';
   const drawCell=(x,y,w,h,fill,text,tcolor)=>{
     g.fillStyle=fill; g.fillRect(x,y,w,h);
-    if(text!=null){ g.fillStyle=tcolor; g.textAlign='center'; g.textBaseline='middle'; g.fillText(text,x+w/2,y+h/2); }
-    g.strokeStyle='#d9e0ec'; g.lineWidth=0.6; g.strokeRect(x,y,w,h); };
-  // header rows: day names + numbers (two rows as requested)
-  for(let i=0;i<cols;i++){ const c=ex.colInfo[i];
-    const fill=c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#f7f8fc');
-    drawCell(x0+nameW+i*cellW, y0, cellW, 18, fill, c.dow, c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#5a6b8c'));
-    drawCell(x0+nameW+i*cellW, y0+18, cellW, 22, c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6'), c.dom, c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#0B1C3D'));
-    if(c.next){ g.fillStyle='rgba(201,168,76,0.12)'; g.fillRect(x0+nameW+i*cellW, y0, cellW, 40); } }
-  drawCell(x0,y0,nameW,18,'#0B1C3D','STAFF','#fff');
-  drawCell(x0,y0+18,nameW,22,'#F7F8FC','Name','#0B1C3D');
+    if(text!=null && text!==''){
+      g.fillStyle=tcolor||'#000'; g.textAlign='center'; g.textBaseline='middle'; g.font='700 11px Space Grotesk';
+      if(text==='N' || text==='DN'){ g.font='800 11px Space Grotesk'; }
+      g.fillText(text,x+w/2,y+h/2+1);
+    }
+    g.strokeStyle='#e6e9f1'; g.lineWidth=0.6; g.strokeRect(x,y,w,h);
+  };
+  // header
+  for(let i=0;i<cols;i++){
+    const c=ex.colInfo[i];
+    const fill=c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC');
+    drawCell(x0+nameW+i*cellW, y0, cellW, 20, fill, c.dow, c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#5a6b8c'));
+    drawCell(x0+nameW+i*cellW, y0+20, cellW, 26, c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6'), String(c.dom), '#000000');
+  }
+  drawCell(x0,y0,nameW,20,'#0B1C3D','STAFF','#ffffff');
+  drawCell(x0,y0+20,nameW,26,'#F7F8FC','Name','#000000');
+  // body
   for(let r=0;r<nRows;r++){
-    const yy=y0+40+r*rowH;
-    const req=ex.staff[r].endsWith('*');
-    g.fillStyle=(r%2)?'#f6f8fc':'#ffffff'; g.fillRect(x0,yy,nameW,30);
-    g.fillStyle='#16233f'; g.textAlign='left'; g.textBaseline='middle'; g.font='bold 12px Arial';
-    g.fillText(ex.staff[r], x0+10, yy+15);
-    g.font='11px Arial';
+    const yy=y0+hdrH+r*rowH;
+    g.fillStyle=(r%2)?'#fbfcff':'#ffffff'; g.fillRect(x0,yy,nameW,rowH);
+    g.fillStyle='#000000'; g.textAlign='left'; g.textBaseline='middle'; g.font='700 11px Space Grotesk'; g.fillText(ex.staff[r], x0+12, yy+rowH/2+1);
     for(let i=0;i<cols;i++){
-      const code=(ex.codes[r]||[])[i]||'';
-      const c=ex.colInfo[i];
-      let fill, txt, tcol=CODE_TX[code];
-      if(!code){ fill=c.holiday?'#ffe9e9':'#ffffff'; }
-      else { fill=CODE_COLORS[code]||'#fff'; txt=code; }
-      if(c.next) { fill=blend(fill,'#eef1f7',0.5); }
-      drawCell(x0+nameW+i*cellW, yy, cellW, rowH, fill, txt, tcol); } }
-  // ===== KEYS - spacious, not inside table =====
-  let ly=y0+tableH+24;
-  g.fillStyle='#0B1C3D'; g.font='800 12px Space Grotesk'; g.textAlign='left'; g.fillText('Keys:', x0, ly);
-  ly+=18;
-  // Draw keys as premium tags with color dots
+      const code=(ex.codes[r]||[])[i]||''; const c=ex.colInfo[i];
+      let fill='#ffffff', tcol='#000000';
+      if(code==='D'){ fill=CODE_COLORS.D; tcol=CODE_TX.D; }
+      else if(code==='N'){ fill=CODE_COLORS.N; tcol=CODE_TX.N; }
+      else if(code==='DN'){ fill=CODE_COLORS.DN; tcol='#0B1C3D'; }
+      else if(code==='OFF'){ fill=CODE_COLORS.OFF; tcol=CODE_TX.OFF; }
+      else if(code==='AL'){ fill=CODE_COLORS.AL; tcol=CODE_TX.AL; }
+      else if(code){ fill=CODE_COLORS[code]||'#f7f8fc'; tcol=CODE_TX[code]||'#000'; }
+      else { fill=c.holiday?'#fdf0f0':(c.weekend?'#fef9ec':'#ffffff'); }
+      drawCell(x0+nameW+i*cellW, yy, cellW, rowH, fill, code, tcol);
+    }
+  }
+  // Keys - spacious, below table, not inside
+  let ly=y0+tableH+28;
+  g.fillStyle='#000000'; g.font='800 12px Space Grotesk'; g.textAlign='left'; g.fillText('Keys:', x0, ly);
+  ly+=20;
   let kx=x0, ky=ly;
-  const keyW=320, keyH=26, gap=12;
-  ex.legends.forEach((lg,idx)=>{
+  const keyW=300, keyH=26, gap=12;
+  ex.legends.forEach((lg)=>{
     if(kx+keyW > W-24){ kx=x0; ky+=keyH+gap; }
-    const code = lg.split(' — ')[0];
-    const col = CODE_COLORS[code]||'#f7f8fc';
-    // tag background
+    const code=lg.split(' — ')[0].trim();
+    const col=CODE_COLORS[code]||'#F7F8FC';
     g.fillStyle='#F7F8FC'; g.beginPath(); if(g.roundRect) g.roundRect(kx,ky,keyW,keyH,8); else g.rect(kx,ky,keyW,keyH); g.fill();
     g.strokeStyle='#e6e9f1'; g.lineWidth=0.8; if(g.roundRect) g.roundRect(kx,ky,keyW,keyH,8); else g.rect(kx,ky,keyW,keyH); g.stroke();
-    // color dot
-    g.fillStyle=col; g.beginPath(); g.arc(kx+14, ky+keyH/2, 6, 0, Math.PI*2); g.fill();
-    g.strokeStyle='#d4d9e6'; g.lineWidth=0.5; g.stroke();
-    g.fillStyle='#0B1C3D'; g.font='600 10.5px Space Grotesk'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(lg, kx+26, ky+keyH/2+0.5);
+    g.fillStyle=col; g.beginPath(); g.arc(kx+14, ky+keyH/2, 5, 0, Math.PI*2); g.fill();
+    g.fillStyle='#000000'; g.font='600 10px Space Grotesk'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(lg, kx+26, ky+keyH/2+1);
     kx+=keyW+gap;
   });
-  ly = ky+keyH+16;
+  ly=ky+keyH+20;
   if(ex.holidays.length){
-    g.fillStyle='#c94c5a'; g.font='700 10.5px Space Grotesk'; g.textAlign='left'; g.fillText('Holidays: '+ex.holidays.join(' · '), x0, ly);
+    g.fillStyle='#000000'; g.font='600 10px Space Grotesk'; g.textAlign='left'; g.fillText('Holidays: '+ex.holidays.join(' · '), x0, ly);
     ly+=18;
   }
-
-  // ===== STAFF CONTACTS - premium rectangular blocks =====
-  g.fillStyle='#0B1C3D'; g.font='800 12px Space Grotesk'; g.fillText('Staff contacts:', x0, ly);
+  // Staff contacts - premium rectangular blocks, black text
+  g.fillStyle='#000000'; g.font='800 12px Space Grotesk'; g.fillText('Staff contacts:', x0, ly);
   ly+=20;
-  let cx=x0, cy=ly;
-  const cW= Math.floor((W-48)/3), cH=32, cGap=12;
-  ex.phones.forEach((p,idx)=>{
-    if(cx+cW > W-20){ cx=x0; cy+=cH+cGap; }
-    // block
-    g.fillStyle='#F7F8FC'; g.beginPath(); if(g.roundRect) g.roundRect(cx,cy,cW-4,cH,10); else g.rect(cx,cy,cW-4,cH); g.fill();
-    g.strokeStyle='#e6e9f1'; g.lineWidth=0.8; if(g.roundRect) g.roundRect(cx,cy,cW-4,cH,10); else g.rect(cx,cy,cW-4,cH); g.stroke();
-    // gold left accent
-    g.fillStyle='#C9A84C'; g.fillRect(cx,cy,3,cH);
-    g.fillStyle='#0B1C3D'; g.font='700 11px Space Grotesk'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(p.name, cx+14, cy+11);
-    g.fillStyle='#5a6b8c'; g.font='500 10px Space Grotesk'; g.fillText(p.phone, cx+14, cy+22);
-    cx+=cW;
+  let pcx=x0, pcy=ly;
+  const cW=Math.floor((W-48)/3), cH=32, cGap=10;
+  ex.phones.forEach((p)=>{
+    if(pcx+cW > W-20){ pcx=x0; pcy+=cH+cGap; }
+    g.fillStyle='#F7F8FC'; g.beginPath(); if(g.roundRect) g.roundRect(pcx,pcy,cW-6,cH,10); else g.rect(pcx,pcy,cW-6,cH); g.fill();
+    g.strokeStyle='#e6e9f1'; g.lineWidth=0.8; if(g.roundRect) g.roundRect(pcx,pcy,cW-6,cH,10); else g.rect(pcx,pcy,cW-6,cH); g.stroke();
+    g.fillStyle='#C9A84C'; g.fillRect(pcx,pcy,3,cH);
+    g.fillStyle='#000000'; g.font='700 10.5px Space Grotesk'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(p.name, pcx+14, pcy+10);
+    g.fillStyle='#000000'; g.font='500 9.5px Space Grotesk'; g.fillText(p.phone, pcx+14, pcy+21);
+    pcx+=cW;
   });
-  ly = cy+cH+28;
-
-  // ===== SIGNATORIES - use empty space, premium centered =====
+  ly=pcy+cH+32;
+  // Signatories - keep way it was (original 3 columns with line)
   const sy=ly;
-  g.strokeStyle='#C9A84C'; g.lineWidth=1.2;
-  g.beginPath(); g.moveTo(24,sy-12); g.lineTo(W-24,sy-12); g.stroke();
+  g.strokeStyle='#C9A84C'; g.lineWidth=1.2; g.beginPath(); g.moveTo(24,sy-10); g.lineTo(W-24,sy-10); g.stroke();
   for(let i=0;i<3;i++){
-    const sx=24+i*(W-48)/3;
-    const bx=Math.min(260,(W-48)/3-20);
-    // signature line
-    g.strokeStyle='#8a9ab5'; g.lineWidth=1; g.beginPath(); g.moveTo(sx+8,sy+28); g.lineTo(sx+8+bx,sy+28); g.stroke();
-    g.fillStyle='#5a6b8c'; g.font='700 10px Space Grotesk'; g.textAlign='left'; g.fillText(ex.sig[i].l, sx+8, sy+10);
-    g.fillStyle='#0B1C3D'; g.font='800 12px Space Grotesk'; g.fillText(ex.sig[i].n, sx+8, sy+44);
-    g.fillStyle='#5a6b8c'; g.font='500 10.5px Space Grotesk'; g.fillText(ex.sig[i].r, sx+8, sy+58);
+    const sx=24+i*(W-48)/3; const bx=Math.min(260,(W-48)/3-20);
+    g.strokeStyle='#8a9ab5'; g.lineWidth=1; g.beginPath(); g.moveTo(sx+10,sy+26); g.lineTo(sx+10+bx,sy+26); g.stroke();
+    g.fillStyle='#000000'; g.font='700 10px Space Grotesk'; g.textAlign='left'; g.fillText(ex.sig[i].l, sx+10, sy+8);
+    g.fillStyle='#000000'; g.font='800 11px Space Grotesk'; g.fillText(ex.sig[i].n, sx+10, sy+42);
+    g.fillStyle='#000000'; g.font='500 10px Space Grotesk'; g.fillText(ex.sig[i].r, sx+10, sy+56);
   }
-  cv.toBlob(b=>download(b,'Working-Plan-'+ex.key+'.png'));
-  function blend(a,b,t){ const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16)), pb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
-    return '#'+pa.map((v,i)=>Math.round(v+(pb[i]-v)*t).toString(16).padStart(2,'0')).join(''); }
+  cv.toBlob(b=>{ if(b) download(b,'Working-Plan-'+ex.key+'.png'); else toast('PNG export failed','err'); });
 }
+
 
 function exportPlanPDF(key){
   const ver=(DB.workingPlans[key]||{}).primary; if(!ver) return toast('Generate the plan first','warn');
   const ex=buildPlanExport(key,ver);
-  const d=new PDF.Doc(); const W=842, H=595; // A4 landscape
+  if(!ex || !ex.staff || !ex.staff.length) return toast('No staff in plan','err');
+  const d=new PDF.Doc(); const W=842, H=595;
   d.addPage(W,H);
   const cols=ex.colInfo.length, nRows=ex.staff.length;
-  const nameW=156;
-  const cellW=Math.floor((W-40-nameW)/cols);
-  const rowH=19, hdrH=36;
-  // ---- light premium header ----
-  d.text(ex.hospital, W/2, 26, {size:14, bold:true});
-  d.text(ex.dept+' · '+ex.email+' · '+ex.phone, W/2, 40, {size:9});
-  d.line(40,48,W-40,48,{width:2,color:'#C9A84C'});
-  d.text(ex.title, W/2, 68, {size:15, bold:true});
-  d.text('Date: '+ex.date+'     FY: '+ex.fy+'     Period: '+ex.period, 40, 84, {size:9});
-  const y0=106;
-  // ---- 2-row header ----
-  for(let i=0;i<cols;i++){ const c=ex.colInfo[i];
-    const x=40+nameW+i*cellW;
-    d.rect(x,y0,cellW,16,{fill:c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC')});
-    d.text(c.dow,x+cellW/2,y0+4,{size:8,bold:true,color:c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#5a6b8c')});
-    d.rect(x,y0+16,cellW,20,{fill:c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6')});
-    d.text(String(c.dom),x+cellW/2,y0+21,{size:8.5,bold:true,color:c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#0B1C3D')});
-    d.rectBorder(x,y0,cellW,36,{width:0.4,color:'#d4d9e6'}); }
-  d.rect(40,y0,nameW,36,{fill:'#0B1C3D'}); d.text('STAFF',42,y0+13,{size:9,bold:true,color:'1 1 1 rg'});
-  // ---- body - premium light ----
+  const nameW=160; const cellW=Math.max(12, Math.floor((W-48-nameW)/cols));
+  const rowH=20, hdrH=44;
+  let y=20;
+  // Single header light premium - black text, gold line only
+  d.text(ex.hospital, W/2, y+4, {size:14, bold:true, color:'#000000'});
+  d.text(ex.dept+' · '+ex.email+' · '+ex.phone, W/2, y+18, {size:9, color:'#000000'});
+  d.line(24,y+28,W-24,y+28,{width:2,color:'#C9A84C'});
+  y+=36;
+  d.text(ex.title, W/2, y+6, {size:13, bold:true, color:'#000000'});
+  d.text('Date: '+ex.date+'   FY: '+ex.fy+'   Period: '+ex.period, W/2, y+20, {size:9, color:'#000000'});
+  y+=36;
+  const y0=y;
+  // header
+  for(let i=0;i<cols;i++){
+    const c=ex.colInfo[i]; const x=24+nameW+i*cellW;
+    const fill=c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC');
+    d.rect(x,y0,cellW,18,{fill});
+    d.text(c.dow,x+cellW/2,y0+4,{size:7,bold:true,color:'#000000'});
+    d.rect(x,y0+18,cellW,26,{fill:c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6')});
+    d.text(String(c.dom),x+cellW/2,y0+22,{size:8,bold:true,color:'#000000'});
+  }
+  d.rect(24,y0,nameW,44,{fill:'#0B1C3D'}); d.text('STAFF',26,y0+8,{size:8,bold:true,color:'1 1 1 rg'}); d.text('Name',26,y0+24,{size:8,bold:true,color:'1 1 1 rg'});
+  // body - with names, dates, days
   for(let r=0;r<nRows;r++){
     const yy=y0+hdrH+r*rowH;
-    d.rect(40,yy,nameW,rowH,{fill:(r%2)?'#F7F8FC':'#ffffff'});
-    d.text(ex.staff[r],42,yy+5,{size:8,bold:true,color:'#0B1C3D'});
+    d.rect(24,yy,nameW,rowH,{fill:(r%2)?'#fbfcff':'#ffffff'});
+    d.text(ex.staff[r],26,yy+6,{size:8,bold:true,color:'#000000'});
     for(let i=0;i<cols;i++){
       const code=(ex.codes[r]||[])[i]||''; const c=ex.colInfo[i];
-      const x=40+nameW+i*cellW;
       let fill='#ffffff';
       if(code==='D') fill='#e8eefb';
       else if(code==='N'||code==='DN') fill='#0B1C3D';
       else if(code==='AL') fill='#fdf3d7';
       else if(code) fill='#f7f8fc';
-      else if(c.holiday) fill='#fde2e2';
-      else if(c.weekend) fill='#fdf3d7';
-      if(c.next) fill='#f7f8fc';
-      d.rect(x,yy,cellW,rowH,{fill});
+      else if(c.holiday) fill='#fdf0f0';
+      else if(c.weekend) fill='#fef9ec';
+      d.rect(24+nameW+i*cellW,yy,cellW,rowH,{fill});
       if(code){
-        const col = code==='N'||code==='DN' ? '1 1 1 rg' : '0.04 0.11 0.24 rg';
-        d.text(code,x+cellW/2,yy+6,{size:7.5,bold:true,color:col});
+        const col = (code==='N'||code==='DN') ? '1 1 1 rg' : '0 0 0 rg';
+        d.text(code,24+nameW+i*cellW+cellW/2,yy+6,{size:7.5,bold:true,color:col});
       }
-      d.rectBorder(x,yy,cellW,rowH,{width:0.3,color:'#d4d9e6'});
+      d.rectBorder(24+nameW+i*cellW,yy,cellW,rowH,{width:0.3,color:'#d4d9e6'});
     }
   }
-  // ---- bottom - premium spacious ----
-  let ly=y0+hdrH+nRows*rowH+18;
-  d.text('Keys:', 40, ly, {size:9, bold:true, color:'#0B1C3D'});
-  ly+=14;
-  // Keys in 4 columns with spacing
+  let ly=y0+hdrH+nRows*rowH+16;
+  d.text('Keys:', 24, ly, {size:9, bold:true, color:'#000000'});
+  ly+=12;
   ex.legends.forEach((lg,idx)=>{
     const col=idx%4, row=Math.floor(idx/4);
-    const x=40+col*190, y=ly+row*14;
-    d.text(lg, x, y, {size:7.5, color:'#0B1C3D'});
+    d.text(lg, 24+col*190, ly+row*12, {size:7, color:'#000000'});
   });
-  ly+= Math.ceil(ex.legends.length/4)*14 + 10;
+  ly+= Math.ceil(ex.legends.length/4)*12 + 8;
   if(ex.holidays.length){
-    d.text('Holidays: '+ex.holidays.join(' · '), 40, ly, {size:7.5, color:'#c94c5a'});
-    ly+=12;
+    d.text('Holidays: '+ex.holidays.join(' · '), 24, ly, {size:7, color:'#000000'});
+    ly+=10;
   }
-  // Staff contacts as rectangular blocks
-  d.text('Staff contacts:', 40, ly, {size:9, bold:true, color:'#0B1C3D'});
-  ly+=14;
+  d.text('Staff contacts:', 24, ly, {size:9, bold:true, color:'#000000'});
+  ly+=12;
   ex.phones.forEach((p,i)=>{
     const col=i%3, row=Math.floor(i/3);
-    const x=40+col*250, y=ly+row*16;
-    d.rect(x,y,240,12,{fill:'#F7F8FC', border:'#e6e9f1'});
+    const x=24+col*250, y=ly+row*14;
+    d.rect(x,y,238,12,{fill:'#F7F8FC'});
     d.rect(x,y,2,12,{fill:'#C9A84C'});
-    d.text(p.name+' — '+p.phone, x+8, y+3, {size:7, color:'#0B1C3D'});
+    d.text(p.name+' — '+p.phone, x+8, y+3, {size:7, color:'#000000'});
   });
-  ly+= Math.ceil(ex.phones.length/3)*16 + 20;
-  // Signatures - use empty space, centered, gold line above
-  const sy=H-52;
-  d.line(40,sy-10,W-40,sy-10,{width:1.2,color:'#C9A84C'});
+  ly+= Math.ceil(ex.phones.length/3)*14 + 16;
+  const sy=H-56;
+  d.line(24,sy-10,W-24,sy-10,{width:1.2,color:'#C9A84C'});
   for(let i=0;i<3;i++){
-    const sx=40+i*(W-80)/3; const bw=Math.min(240,(W-80)/3-20);
-    d.line(sx+6,sy+14,sx+6+bw,sy+14,{width:0.8,color:'#8a9ab5'});
-    d.text(ex.sig[i].l, sx+6, sy+2, {size:8, bold:true, color:'#5a6b8c'});
-    d.text(ex.sig[i].n, sx+6, sy+26, {size:10, bold:true, color:'#0B1C3D'});
-    d.text(ex.sig[i].r, sx+6, sy+36, {size:8, color:'#5a6b8c'});
+    const sx=24+i*(W-48)/3; const bw=Math.min(240,(W-48)/3-20);
+    d.line(sx+8,sy+18,sx+8+bw,sy+18,{width:0.8,color:'#8a9ab5'});
+    d.text(ex.sig[i].l, sx+8, sy+2, {size:8, bold:true, color:'#000000'});
+    d.text(ex.sig[i].n, sx+8, sy+30, {size:10, bold:true, color:'#000000'});
+    d.text(ex.sig[i].r, sx+8, sy+40, {size:8, color:'#000000'});
   }
   download(new Blob([d.save()],{type:'application/pdf'}),'Working-Plan-'+ex.key+'.pdf');
 }
+
 function exportPlanXLSX(key){
   const ver=(DB.workingPlans[key]||{}).primary; if(!ver) return toast('No plan for this month','err');
   const ex=buildPlanExport(key,ver);
