@@ -2575,44 +2575,62 @@ function openTrainingForm(fifoDefault, isPast, editId){
 /* ================= PERSONAL TRAINING REVENUE TRACKER ================= */
 'use strict';
 const EXP_CATS=['Transport / Travel','Food','Lodging','Drinks','Other'];
-function renderRevenue(){ if(isViewer()){ const el=document.getElementById("mod-revenue"); if(el){ el.innerHTML=`<div class="viewer-banner"><div class="ic">LOCK</div><div><b>Training Revenue - Confidential</b><br><span style="font-weight:500">This module contains personal financial data and is visible only to Admin. Please login.</span></div><button class="btn primary sm" onclick="openAuth('pass')" style="margin-left:auto">Admin Login</button></div>`; } return; }
+function renderRevenue(){
   const el=$('#mod-revenue');
+  if(typeof isViewer==='function' && isViewer()){
+    el.innerHTML=`<div class="viewer-banner"><div class="ic">🔒</div><div><b>Training Revenue — Confidential — Admin Only</b><br><span style="font-weight:500">Personal financial data visible only to Admin. Login to view.</span></div><button class="btn primary sm" onclick="openAuth('pass')" style="margin-left:auto">🔐 Admin Login</button></div>`;
+    return;
+  }
   const t=expTotals();
   const sessions=DB.trainingExpenses||[];
-  const perSession=sessions.map(s=>({label:s.title.slice(0,14), exp:s.expenses.reduce((a,x)=>a+(+x.amount||0),0), reim:s.reimbursements.reduce((a,r)=>a+(+r.amount||0),0)}));
+  const perSession=sessions.map(s=>({label:s.title.slice(0,18), exp:s.expenses.reduce((a,x)=>a+(+x.amount||0),0), reim:s.reimbursements.reduce((a,r)=>a+(+r.amount||0),0)}));
   const cats={}; sessions.forEach(s=>s.expenses.forEach(x=>{ cats[x.cat]=cats[x.cat]||0; cats[x.cat]+=(+x.amount||0); }));
   const catArr=Object.entries(cats).map(([k,v])=>({label:k,value:v})).sort((a,b)=>b.value-a.value);
-  // monthly trend
-  const months={}; sessions.forEach(s=>{ const m=s.start.slice(0,7); months[m]=months[m]||{exp:0,reim:0}; s.expenses.forEach(x=>months[m].exp+=(+x.amount||0)); s.reimbursements.forEach(r=>months[m].reim+=(+r.amount||0)); });
+  const months={}; sessions.forEach(s=>{ const m=s.start.slice(0,7); months[m]=months[m]||{exp:0,reim:0,profit:0,count:0}; s.expenses.forEach(x=>months[m].exp+=(+x.amount||0)); s.reimbursements.forEach(r=>months[m].reim+=(+r.amount||0)); months[m].count++; });
+  Object.keys(months).forEach(k=>months[k].profit=months[k].reim-months[k].exp);
   const mArr=Object.entries(months).sort((a,b)=>a[0].localeCompare(b[0]));
-  const trendX=mArr.map(([k])=>MONTHS3[+k.slice(5,7)-1]);
-  const net=perSession.map(s=>({label:s.label,value:s.reim-s.exp}));
+  const trendX=mArr.map(([k])=>k.slice(5,7)+'/'+k.slice(2,4));
+  const trendExp=mArr.map(m=>m[1].exp);
+  const trendReim=mArr.map(m=>m[1].reim);
+  const monthlyProfit = mArr.map(([k,v])=>({label:k.slice(5,7)+'/'+k.slice(2,4), value:v.profit, color:v.profit>=0?'#0e9f8a':'#c94c5a'}));
+  const net=perSession.map(s=>({label:s.label,value:s.reim-s.exp,color:s.reim-s.exp>=0?'#0e9f8a':'#c94c5a'}));
   el.innerHTML=`
-  <div class="section-title"> Personal Training Revenue Tracker <small>expenses · reimbursements · profit/loss per training</small></div>
-  <div class="grid g-auto" style="margin-bottom:16px">
-    ${kpiCard('Net balance', fmtRWF(t.net), t.net<0?'you lost on trainings':'you benefited on trainings', {tone:t.net<0?'red':'green', ic:''})}
-    ${kpiCard('Total expenses', fmtRWF(t.expenses), 'travel · food · lodging · drinks …', {tone:'amber', ic:''})}
-    ${kpiCard('Paid off (reimbursed)', fmtRWF(t.reimbursed), 'recovered from organizers', {tone:'teal', ic:''})}
-    ${kpiCard('Logged training sessions', t.count, 'with itemized expenses', {tone:'blue', ic:''})}
+  <div class="section-title">💰 Training Revenue — Elaborated <small>month-over-month comparative · expenses vs income · profit · category breakdown</small></div>
+  <div class="grid g-auto" style="gap:16px; margin-bottom:20px">
+    ${kpiCard('Net balance', fmtRWF(t.net), t.net<0?'Loss — you spent more than reimbursed':'Profit — you benefited', {tone:t.net<0?'red':'green', ic:'💰'})}
+    ${kpiCard('Total expenses', fmtRWF(t.expenses), 'Food · Transport · Lodging · Drinks · Other', {tone:'amber', ic:'💸'})}
+    ${kpiCard('Reimbursed (Income)', fmtRWF(t.reimbursed), 'Income recovered from organizers', {tone:'teal', ic:'💵'})}
+    ${kpiCard('Sessions', t.count, 'Avg '+ (t.count?fmtRWF(Math.round(t.expenses/t.count)):'—')+' per trip', {tone:'blue', ic:'📚'})}
   </div>
-  <div class="grid g-2" style="margin-bottom:16px; gap:16px">
-    <div class="card span2"><h3> Net gain/loss per training session</h3><div class="chart-box">${svgBar(net.map(n=>({label:n.label,value:n.value,color:n.value>=0?'#1f9d61':'#dd4b4b'})))}</div></div>
-    <div class="card"><h3> Expenses vs reimbursed (per session)</h3><div class="chart-box">${svgStackBar([
-      {label:'Expenses',color:'#e8a33d',values:perSession.map(s=>s.exp)},
-      {label:'Reimbursed',color:'#22a06b',values:perSession.map(s=>s.reim)}],{xLabels:perSession.map(s=>s.label)})}</div></div>
-    <div class="card"><h3> Expense breakdown by category</h3>
-      ${catArr.length?`<div class="chart-box">${svgHBar(catArr.map((c,i)=>({label:c.label,value:c.value,color:['#e8a33d','#3b6ff2','#22a06b','#8b2fb3','#e5484d'][i%5]})))}</div>
-      <div class="row" style="gap:10px;margin-top:8px;flex-wrap:wrap">${catArr.map(c=>`<span class="chip">${esc(c.label)}: <b>${fmtRWF(c.value)}</b></span>`).join('')}</div>`:'<div class="empty">No expenses logged</div>'}</div>
-    <div class="card span2"><h3> Monthly trend — expenses vs reimbursements</h3><div class="chart-box">${mArr.length?svgStackBar([
-      {label:'Expenses',color:'#e8a33d',values:mArr.map(m=>m[1].exp)},
-      {label:'Reimbursed',color:'#1f9d61',values:mArr.map(m=>m[1].reim)}],{xLabels:trendX}):'<div class="empty">No data</div>'}</div></div>
+  <div class="grid g-2" style="gap:16px; margin-bottom:20px">
+    <div class="card gold-accent"><h3>📈 Month-over-Month — Expenses vs Income (Comparative)</h3>
+      <div class="chart-box">${mArr.length?svgStackBar([
+        {label:'Expenses',color:'#e8a33d',values:trendExp},
+        {label:'Income',color:'#0e9f8a',values:trendReim}],{xLabels:trendX}):'<div class="empty">No monthly data — log sessions to see MoM trend</div>'}
+      </div>
+      <div class="chart-legend"><span><i style="background:#e8a33d"></i>Expenses</span><span><i style="background:#0e9f8a"></i>Income</span><span><i style="background:var(--gold)"></i>Gold highlight</span></div>
+      <p class="hint" style="margin-top:8px">Comparative MoM: which months you spent most vs recovered.</p>
+    </div>
+    <div class="card gold-accent"><h3>💹 Monthly Profit / Loss — MoM Trend</h3>
+      <div class="chart-box">${monthlyProfit.length?svgBar(monthlyProfit):'<div class="empty">No profit data</div>'}</div>
+      <div class="chart-legend"><span><i style="background:#0e9f8a"></i>Profit</span><span><i style="background:#c94c5a"></i>Loss</span></div>
+      <p class="hint" style="margin-top:8px">Net = Income - Expenses per month.</p>
+    </div>
+    <div class="card"><h3>📊 Net gain/loss per session</h3><div class="chart-box">${net.length?svgBar(net):'<div class="empty">No sessions yet</div>'}</div><p class="hint" style="margin-top:8px">Per-session profit.</p></div>
+    <div class="card"><h3>🍽️ Expense breakdown — Food · Transport · Lodging · Drinks · Other</h3>
+      ${catArr.length?`<div class="chart-box">${svgHBar(catArr.map((c,i)=>({label:c.label,value:c.value,color:['#C9A84C','#0B1C3D','#0e9f8a','#e8a33d','#c94c5a'][i%5]})))}</div>
+      <div class="row" style="gap:10px; margin-top:12px; flex-wrap:wrap">${catArr.map(c=>`<span class="chip" style="border-left:3px solid var(--gold)"><b>${esc(c.label)}</b>: ${fmtRWF(c.value)}</span>`).join('')}</div>
+      <div class="hint" style="margin-top:10px">Food = meals, Transport = travel, Lodging = hotel, Drinks = beverages, Other = misc.</div>`:'<div class="empty">No expenses logged</div>'}
+    </div>
   </div>
-  <div class="card"><h3> Logged training sessions</h3>
+  <div class="card"><h3>Logged training sessions</h3>
     <div class="toolbar" style="margin-bottom:12px"><span class="chip"><b>${sessions.length}</b> sessions</span><span class="spacer"></span>
-      <button class="btn primary" id="logSession"> Log new training</button></div>
-    ${sessions.length?`<div class="grid g-2">${sessions.map(s=>revCard(s)).join('')}</div>`:'<div class="empty"><div class="big"></div>No sessions yet — log your first training trip.</div>'}</div>`;
-  $('#logSession').onclick=()=>openRevSessionForm();
+      <button class="btn primary" id="logSession">Log new training</button></div>
+    ${sessions.length?`<div class="grid g-2">${sessions.map(s=>revCard(s)).join('')}</div>`:'<div class="empty"><div class="big">📚</div>No sessions yet — log your first training trip.</div>'}</div>`;
+  const btn=document.getElementById('logSession'); if(btn) btn.onclick=()=>openRevSessionForm();
 }
+
+
 function revCard(s){
   const exp=s.expenses.reduce((a,x)=>a+(+x.amount||0),0);
   const reim=s.reimbursements.reduce((a,r)=>a+(+r.amount||0),0);
