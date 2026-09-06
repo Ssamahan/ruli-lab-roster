@@ -477,7 +477,7 @@ body.viewer-mode [data-confidential]{display:none !important}
 <div id="authOverlay">
   <div class="auth-card">
     <h2>🔐 Lab Systems — Admin Access</h2>
-    <p class="hint">Only the Lab Manager can generate & edit. Staff can view & download rosters in read-only mode. Default: <b>admin / RuliLab@2026</b></p>
+    <p class="hint">Only the Lab Manager can generate & edit. Staff can view & download rosters in read-only mode. Admin access — private credentials</p>
     <div class="auth-tabs">
       <button class="on" data-auth-tab="pass">Password</button>
       <button data-auth-tab="otp">OTP Code</button>
@@ -497,7 +497,7 @@ body.viewer-mode [data-confidential]{display:none !important}
       <p class="hint" style="margin-top:8px">Demo mode: OTP is shown on screen and can be sent via mailto. In production, integrate EmailJS.</p>
     </div>
     <div id="authTab-reset" style="display:none">
-      <div class="auth-field"><label>Registered Admin Email</label><input id="resetEmail" placeholder="smhnklvn@gmail.com"></div>
+      <div class="auth-field"><label>Registered Admin Email</label><input id="resetEmail" placeholder="registered admin email"></div>
       <div class="row" style="margin-bottom:10px"><button class="btn teal sm" id="sendResetOtpBtn">📧 Send Reset OTP</button><span class="hint" id="resetInfo"></span></div>
       <div class="auth-field"><label>Reset OTP</label><input id="resetOtp" maxlength="6" placeholder="6-digit code"></div>
       <div class="auth-field"><label>New Password</label><input id="newPass" type="password" placeholder="New strong password"></div>
@@ -606,7 +606,7 @@ function buildSeed(){
       manifestPrefix:'BLC'
     },
     staff:[
-      {id:'s1', name:'Kelvin SAMAHANI', sex:'Male', dob:'1997-06-15', role:'Laboratory Manager', phone:'0787055121', email:'smhnklvn@gmail.com', contract:'statute', pattern:'manager', nightPref:'no', maxNights:0, maxConsecN:0, status:'active', joinDate:'2023-05-10', exitDate:null, note:'Lab Manager - no weekends/holidays/nights'},
+      {id:'s1', name:'Kelvin SAMAHANI', sex:'Male', dob:'1997-06-15', role:'Laboratory Manager', phone:'0787055121', email:'registered admin email', contract:'statute', pattern:'manager', nightPref:'no', maxNights:0, maxConsecN:0, status:'active', joinDate:'2023-05-10', exitDate:null, note:'Lab Manager - no weekends/holidays/nights'},
       {id:'s2', name:'Diane UWASE', sex:'Female', dob:'1997-03-15', role:'Lab Quality Officer', phone:'0781732887', email:'umutoniwasedianetona@gmail.com', contract:'statute', pattern:'normal', nightPref:'min', maxNights:2, maxConsecN:2, status:'exited', joinDate:'2023-03-08', exitDate:'2026-08-12', note:'Exited 12/08/2026 - kept for history, minimal nights before exit'},
       {id:'s3', name:'Beatrice NGEZEKURE', sex:'Female', dob:'1969-01-15', role:'Laboratory Technologist', phone:'0788767548', email:'ngezebeatha@gmail.com', contract:'statute', pattern:'dayonly', nightPref:'no', maxNights:0, maxConsecN:0, status:'active', joinDate:'1998-01-01', exitDate:null, note:'Reception mostly, Parasitology when limited, never Phlebotomy/TB'},
       {id:'s4', name:'Aurelie YANSONEYE', sex:'Female', dob:'1987-04-15', role:'HIV Lab Quality Corp', phone:'0782129036', email:'aurelieyansoneye@gmail.com', contract:'statute', pattern:'weekendonly', nightPref:'yes', maxNights:16, maxConsecN:2, weekendPattern:'DN', weekendOnly:true, status:'active', joinDate:'2016-10-31', exitDate:null, note:'Weekend-only: works Day+Night Sat & Sun, rests Mon-Fri'},
@@ -4479,7 +4479,7 @@ function finishSplash(){
 }
 
 /* ================= ADMIN AUTH SYSTEM =================
-   - Default: admin / RuliLab@2026 / smhnklvn@gmail.com
+   - Admin access — private credentials / registered admin email
    - Staff = viewer: can view & download, cannot generate/edit
    - OTP + Email reset (client-side demo, mailto fallback)
 */
@@ -4491,11 +4491,11 @@ function getAuthRec(){
   try{
     let rec = JSON.parse(localStorage.getItem(AUTH_KEY));
     if(!rec){
-      rec = {username:'admin', password:'RuliLab@2026', email:'smhnklvn@gmail.com', created:new Date().toISOString()};
+      rec = {username:'admin', password:'••••••••', email:'registered admin email', created:new Date().toISOString()};
       localStorage.setItem(AUTH_KEY, JSON.stringify(rec));
     }
     return rec;
-  }catch(e){ return {username:'admin', password:'RuliLab@2026', email:'smhnklvn@gmail.com'}; }
+  }catch(e){ return {username:'admin', password:'••••••••', email:'registered admin email'}; }
 }
 function saveAuthRec(r){ localStorage.setItem(AUTH_KEY, JSON.stringify(r)); }
 
@@ -4675,7 +4675,7 @@ function wireAuth(){
     if(u===rec.username && p===rec.password){
       setSession(); closeAuth(); updateAuthUI(); toast('🔓 Welcome Admin — editing enabled','ok');
     }else{
-      toast('❌ Wrong username or password — default admin / RuliLab@2026','err');
+      toast('❌ Wrong username or password — admin credentials','err');
     }
   };
 

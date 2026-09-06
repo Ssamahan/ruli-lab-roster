@@ -5,7 +5,7 @@
 
 Premium, luxurious, professional laboratory command-center — single-file HTML app (`index.html`), zero-cost, works on phone & PC, offline-first (localStorage).
 
-Built for **Lab Manager: Kelvin SAMAHANI** | Email: smhnklvn@gmail.com
+Built for **Lab Manager: Kelvin SAMAHANI** | Email: registered Admin email
 Verified by **Dr. Judson B. MUMBERE** (Clinical Director) | Approved by **Jean de Dieu SIBOMANA** (HR Officer)
 
 ---
@@ -24,12 +24,12 @@ Verified by **Dr. Judson B. MUMBERE** (Clinical Director) | Approved by **Jean d
 
 ### 🔐 Admin Login & Confidentiality
 
-- **Default Admin:** Username `admin` / Password `RuliLab@2026` / Email `smhnklvn@gmail.com` (changeable in app or code)
+- **Default Admin:** Admin access — private credentials set by Lab Manager (contact Kelvin SAMAHANI for access)
 - **Login Options:** Password + OTP (6-digit, 5 min expiry, mailto fallback) + Reset via Email OTP
 - **Session:** 24h expiry, persists via sessionStorage + localStorage fallback
 - **Viewer Mode (Staff):** 
   - Can view & download Working Plan & Roster (PNG/PDF/Excel/Print) — cannot generate/edit
-  - **Confidentiality:** Patient names/IDs masked as `..... Confidential`, Training Revenue hidden, EQA editable only by admin
+  - **Confidentiality:** Patient names/IDs masked as `..... Confidential`, Training Revenue hidden, EQA editable only by Admin
   - All generate/edit buttons show 🔒 Admin badge and are disabled + toast `🔒 Admin only`
 - **Delete Confirmations:** EVERY delete requires confirmation dialog (samples, manifests, stock, hospitals, health centers, consumables, tests, staff, trainings, leaves, holidays, absences, wishes, PT) — prevents accidental loss
 
@@ -55,7 +55,7 @@ Verified by **Dr. Judson B. MUMBERE** (Clinical Director) | Approved by **Jean d
 
 #### 4. Training Roster — FIFO Queue, Registry, History
 - **FIFO Logic Fixed:** Longest wait first (most overdue = next), recent last — Beatrice & Aurelie Jun 2026 now at END, Faustin 1022d next with blinking gold rings
-- **Spotlight:** Next in FIFO queue with name, role, wait days, gold tag, Invite button (admin only)
+- **Spotlight:** Next in FIFO queue with name, role, wait days, gold tag, Invite button (Admin only)
 - **Queue Rail:** Horizontal scroll, avatars, wait badges (42d, 281d...), connector gradient, hover lift, blinking pulse for next
 - **Timeline Flow (Premium 7-Step like image):** Alternating top/bottom nodes with arcs, icons 📊🔬🧬⚗️, gold line gradient, horizontal on desktop, **vertical toggle on phone** (≤640px) — premium flow
 - **Charts:** Trainings per staff (HBar), Age distribution (Bar)
@@ -69,7 +69,7 @@ Verified by **Dr. Judson B. MUMBERE** (Clinical Director) | Approved by **Jean d
   - Net gain/loss per session (Bar)
   - Expense breakdown Food/Transport/Lodging/Drinks/Other (HBar with gold/navy/teal/amber/rose)
 - **Sessions:** Log training with title (sync from Training Roster), organizer, location, start/end, expenses itemized by category, reimbursements, profit calc
-- **Confidential:** Hidden for viewers (admin only)
+- **Confidential:** Hidden for viewers (Admin only)
 
 #### 6. Working Plan — Monthly Working Plan + Weekly Unit Roster
 - **Covers full month + first week next month** (report week protected, Sep 2026 = Sep 01-30 + Oct 01-06)
@@ -84,7 +84,7 @@ Verified by **Dr. Judson B. MUMBERE** (Clinical Director) | Approved by **Jean d
   - No 7-day work: wouldWork7 check + post-process forces OFF
   - No 2 AL overlap: validation + auto-resolver shifts overlapping AL
   - Holidays: Rwanda calendar with observed Mondays, one fair day-duty H + night kept, Kelvin & Aurelie exempt
-- **Features:** Generate fair plan (gap-aware, avoids singles, Patrick triples), tap cell to edit (admin only, viewers see hint "Viewer mode"), block shifts 2N/3N/2D/3D/DN + 2/3/5 OFFs batch, version history (12 versions), import Excel past plans for fairness, export
+- **Features:** Generate fair plan (gap-aware, avoids singles, Patrick triples), tap cell to edit (Admin only, viewers see hint "Viewer mode"), block shifts 2N/3N/2D/3D/DN + 2/3/5 OFFs batch, version history (12 versions), import Excel past plans for fairness, export
 - **Exports Premium Light (Fixed):**
   - Single centered header: Ruli DH 26px 900 black + dept 13px black + email/phone 11px black + gold line 3px only (no Republic of Rwanda / Ministry deep blue, no MOH shield unless uploaded high-res)
   - Title: Working Plan — September 2026 full month name (not Sep) + Date FY only (Period removed, already in title)
@@ -121,8 +121,8 @@ Verified by **Dr. Judson B. MUMBERE** (Clinical Director) | Approved by **Jean d
 ### 📱 Usage
 
 - Open https://ssamahan.github.io/ruli-lab-roster/ → Viewer mode read-only by default (👁️ Viewer — read-only chip)
-- **Admin Login:** Top header 🔐 Admin Login → Username `admin` / Password `RuliLab@2026` / OTP via `smhnklvn@gmail.com` (6-digit, 5 min) / Reset via Email OTP
-- After login: 🔓 Admin: admin chip, editing enabled, all generate/edit buttons active
+- **Admin Login:** Top header 🔐 Admin Login → Private access (password + OTP + Reset via Email) — contact Lab Manager
+- After login: 🔓 Admin: private chip, editing enabled, all generate/edit buttons active
 - **Tab Preservation:** Refresh stays on same module (Training Revenue, EQA, etc.) via hash + localStorage `labSystems.lastTab.v1`
 - **Phone:** Hamburger menu minimizes sidebar and main fills full screen (fix half-screen bug), timeline vertical on phone, charts responsive
 
@@ -159,5 +159,5 @@ High-end hospital laboratory command center — refined, modern, trustworthy, pr
 
 ### 📧 Contact
 
-Lab Manager: Kelvin SAMAHANI — smhnklvn@gmail.com — 0787055121
+Lab Manager: Kelvin SAMAHANI — registered Admin email — 0787055121
 Ruli District Hospital — Laboratory Department — rulidhlab@gmail.com — 0787-055-121
