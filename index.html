@@ -1221,7 +1221,8 @@ const PDF=(()=>{
 function crestSVG(which){ if(which==='hospital'){
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="4" y="4" width="56" height="56" rx="14" fill="#0e2e5c"/><path d="M18 20h28v8h-8v18h-12V28h-8z" fill="#fff"/><circle cx="50" cy="12" r="7" fill="#22a06b"/><text x="32" y="52" font-size="8" fill="#9db9e8" text-anchor="middle" font-family="sans-serif">RULI DH</text></svg>`;
  }
- return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M32 4 L58 12 V30 C58 46 47 56 32 60 C17 56 6 46 6 30 V12 Z" fill="#f8fafc" stroke="#0e2e5c" stroke-width="2"/><path d="M32 10 L52 16 V30 C52 42 44 50 32 54 C20 50 12 42 12 30 V16 Z" fill="url(#rg)"/><defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f7bd9"/><stop offset="0.55" stop-color="#f6c445"/><stop offset="1" stop-color="#3da55d"/></linearGradient></defs><text x="32" y="40" font-size="13" font-weight="bold" fill="#fff" text-anchor="middle" font-family="sans-serif">MOH</text><path d="M26 26h12M32 20v12" stroke="#fff" stroke-width="2.5"/></svg>`;
+ // High-res crisp MOH crest - vector, not bitmap, for premium exports
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B1C3D"/><stop offset="0.55" stop-color="#C9A84C"/><stop offset="1" stop-color="#0e9f8a"/></linearGradient></defs><path d="M64 6 L112 22 V60 C112 88 94 108 64 120 C34 108 16 88 16 60 V22 Z" fill="#F7F8FC" stroke="#0B1C3D" stroke-width="2.5"/><path d="M64 18 L100 30 V60 C100 82 88 100 64 110 C40 100 28 82 28 60 V30 Z" fill="url(#rg)"/><text x="64" y="72" font-size="22" font-weight="900" fill="#fff" text-anchor="middle" font-family="'Space Grotesk',sans-serif">MOH</text></svg>`;
 }
 function crestToDataURI(which){ return 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(crestSVG(which)))); }
 
@@ -1330,8 +1331,16 @@ async function exportPlanPNG(key){
   g.textBaseline='alphabetic';
   // Single premium header - centered, light, no MOH deep blue, gold line only
   let y=20;
-  if(crest){ try{ g.drawImage(crest, 28, 14, 64, 64); }catch(e){} }
-  if(logo){ try{ g.drawImage(logo, W-92, 14, 64, 64); }catch(e){} }
+  // No MOH coat of arm for Working Plan - light premium only Ruli DH per user request
+  // Only draw hospital logo if uploaded, high-res crisp
+  if(logo){
+    try{
+      g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high';
+      // Draw at high-res 72px, keep aspect
+      g.drawImage(logo, W-96, 12, 72, 72);
+    }catch(e){}
+  }
+  // Crest (MOH) not shown for Working Plan to avoid depixelation and keep light premium
   g.fillStyle='#0B1C3D'; g.font='900 26px Space Grotesk'; g.textAlign='center'; g.fillText(ex.hospital, W/2, y+22);
   g.fillStyle='#0B1C3D'; g.font='700 13px Space Grotesk'; g.fillText(ex.dept, W/2, y+42);
   g.fillStyle='#5a6b8c'; g.font='500 11px Space Grotesk'; g.fillText(ex.email+' · '+ex.phone, W/2, y+60);
