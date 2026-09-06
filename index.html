@@ -436,6 +436,8 @@ body.viewer-mode [data-confidential]{display:none !important}
       <div class="nav-section">Scheduling</div>
       <button class="nav-item" data-tab="roster"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 4V2M16 4V2M8 14h4M8 17h4"/></svg></span>Working Plan</button>
       <button class="nav-item" data-tab="leave"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19l5-5 4 4 7-8"/><path d="M20 6v5h-5"/></svg></span>Leave &amp; Timeline</button>
+      <div class="nav-section">Quality</div>
+      <button class="nav-item" data-tab="eqa"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></span>EQA / PT Scores</button>
       <div class="nav-section">Admin</div>
       <button class="nav-item" data-tab="staff"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span>Staff &amp; Settings</button>
 </nav>
@@ -466,6 +468,7 @@ body.viewer-mode [data-confidential]{display:none !important}
     <div class="module" id="mod-revenue"></div>
     <div class="module" id="mod-roster"></div>
     <div class="module" id="mod-leave"></div>
+    <div class="module" id="mod-eqa"></div>
     <div class="module" id="mod-staff"></div>
   </main>
   </div>
@@ -799,6 +802,13 @@ function buildSeed(){
     offExceptions:[],
     workingPlans: normalizePlans(SEED_PLANS),
     unitRosters:{'2026-08-10':{weekStart:'2026-08-10', assignments:{'2026-08-10':{Reception:'Beatrice NGEZEKURE'}}}},
+    eqa:[
+      {id:'eqa1', code:'Q1 2026/27', program:'Hematology', scoring:'SD', delivered:'2026-07-15', tested:'2026-07-18', reported:'2026-07-20', scorePublished:'2026-08-05', score:0.6, scorePercent:null, analytes:{WBC:0.5,RBC:0.3,HCT:0.8,MCV:1.1,PLT:0.2,Hemoglobin:0.4}, overall:'Pass', note:'PT Q1 Jul-Sep 2026'},
+      {id:'eqa2', code:'Q2 2026/27', program:'Biochemistry', scoring:'SD', delivered:'2026-10-10', tested:'2026-10-12', reported:'2026-10-13', scorePublished:'2026-11-02', score:0.9, scorePercent:null, analytes:{Glucose:1.2,Creatinine:0.8,ALT:0.5}, overall:'Pass', note:'Q2 Oct-Dec 2026'},
+      {id:'eqa3', code:'Q2 2026/27', program:'HIV', scoring:'%', delivered:'2026-10-10', tested:'2026-10-11', reported:'2026-10-12', scorePublished:'2026-11-02', score:null, scorePercent:98, analytes:{HIV:98}, overall:'Pass', note:'HIV scored in %'},
+      {id:'eqa4', code:'Q2 2026/27', program:'TB', scoring:'%', delivered:'2026-10-10', tested:'2026-10-11', reported:'2026-10-12', scorePublished:'2026-11-02', score:null, scorePercent:100, analytes:{'MTB GeneXpert':100}, overall:'Pass', note:'TB GeneXpert %'},
+      {id:'eqa5', code:'Q1 2026/27', program:'Serology', scoring:'SD', delivered:'2026-07-15', tested:'2026-07-16', reported:'2026-07-18', scorePublished:'2026-08-05', score:0.4, scorePercent:null, analytes:{RPR:0.3,HCV:0.5}, overall:'Pass', note:'Serology may come soon - RPR, HCV'}
+    ],
     versions:[]
   };
   mergeLeaveTrainings(out); mergeRevenueTrainings(out);
@@ -915,6 +925,7 @@ function migrateDB(d){
     d.samples=d.samples||[]; d.manifests=d.manifests||[]; d.trainings=d.trainings||[];
     d.trainingExpenses=d.trainingExpenses||[]; d.leaves=d.leaves||[]; d.holidays=d.holidays||[];
     d.absences=d.absences||[]; d.offWishes=d.offWishes||[]; d.offExceptions=d.offExceptions||[];
+    d.eqa=d.eqa||[];
     d.unitRosters=d.unitRosters||{}; d.versions=d.versions||[]; d.manifestCounter=d.manifestCounter||{last:0};
   }catch(e){ console.warn('Migration issue:',e.message); }
 }
@@ -1098,6 +1109,75 @@ function svgStackBar(layers,opts){ // responsive stacked - Daily staffing trend 
   let gl=''; for(let g=0;g<=4;g++){ const gy=pad.t+(ih*g)/4;
     gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/><text x="${pad.l-10}" y="${gy+3}" text-anchor="end" font-size="${Math.max(fs-1,10)}" fill="#9aa7ba" font-weight="600">${Math.round(max*(4-g)/4)}</text>`; }
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px">${gl}${bars}</svg>`;
+}
+
+
+function svgLineChart(series, opts){
+  // series: [{label, values:[{x,y}], color}, ...] or single values array
+  opts=opts||{};
+  const tier = typeof getScreenTier==='function' ? getScreenTier() : 'lg';
+  const w = tier==='xs' ? 360 : tier==='sm' ? 540 : (opts.w||700);
+  const h = tier==='xs' ? 220 : tier==='sm' ? 260 : (opts.h||300);
+  const pad={l: tier==='xs'?42:56, r: tier==='xs'?12:20, t: tier==='xs'?24:32, b: tier==='xs'?42:52};
+  const fs = typeof chartFontScale==='function' ? chartFontScale(w) : 12;
+  const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
+
+  // Normalize series
+  let allSeries=[];
+  if(Array.isArray(series) && series.length && typeof series[0].values!=='undefined'){
+    allSeries=series;
+  } else if(Array.isArray(series) && series.length && typeof series[0]==='number'){
+    allSeries=[{label:opts.label||'Value', values:series.map((v,i)=>({x:i,y:v})), color:opts.color||'#C9A84C'}];
+  } else {
+    allSeries=[{label:'', values:[], color:'#C9A84C'}];
+  }
+
+  const allY = allSeries.flatMap(s=>s.values.map(v=>v.y)).concat(0);
+  const allX = allSeries.flatMap(s=>s.values.map(v=>v.x));
+  const maxY=Math.max(...allY,1), minY=Math.min(...allY,0);
+  const rangeY=(maxY-minY)||1;
+  const maxX=Math.max(...allX, allSeries[0].values.length-1, 1);
+  const minX=Math.min(...allX,0);
+  const rangeX=(maxX-minX)||1;
+
+  let gl='';
+  for(let g=0;g<=4;g++){
+    const gy=pad.t+(ih*g)/4; const val = (maxY - (rangeY*g)/4);
+    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/>`;
+    gl+=`<text x="${pad.l-10}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,10)}" fill="#9aa7ba" font-weight="600">${typeof val==='number'?val.toFixed(val>=10?0:1):val}</text>`;
+  }
+
+  let lines='', dots='', xLabels='';
+  allSeries.forEach((s,si)=>{
+    const col=s.color||CHART_COLORS[si%CHART_COLORS.length];
+    const pts = s.values.map((pt)=>{
+      const x = pad.l + ((pt.x - minX)/rangeX)*iw;
+      const y = pad.t + ih - ((pt.y - minY)/rangeY)*ih;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    // line
+    lines+=`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="${tier==='xs'?2.2:2.8}" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.08))"><title>${esc(s.label)}</title></polyline>`;
+    // area under line (soft)
+    const areaPts = pts + ` ${ (pad.l + ((s.values[s.values.length-1].x - minX)/rangeX)*iw).toFixed(1)},${(pad.t+ih).toFixed(1)} ${ (pad.l + ((s.values[0].x - minX)/rangeX)*iw).toFixed(1)},${(pad.t+ih).toFixed(1)}`;
+    lines+=`<polygon points="${areaPts}" fill="${col}" opacity="0.08"/>`;
+    // dots
+    s.values.forEach(pt=>{
+      const x = pad.l + ((pt.x - minX)/rangeX)*iw;
+      const y = pad.t + ih - ((pt.y - minY)/rangeY)*ih;
+      dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${tier==='xs'?3.5:4.5}" fill="${col}" stroke="#fff" stroke-width="2" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,0.12))"><title>${esc(s.label)}: ${pt.y} at ${pt.x}</title></circle>`;
+      dots+=`<text x="${x.toFixed(1)}" y="${(y-10).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-2,10)}" font-weight="700" fill="#0B1C3D">${typeof pt.y==='number' && pt.y!==0 ? (pt.y>=100?Math.round(pt.y):pt.y.toFixed(1)) : ''}</text>`;
+    });
+  });
+
+  // X labels
+  if(opts.xLabels){
+    opts.xLabels.forEach((lab,i)=>{
+      const x = pad.l + (i/(Math.max(opts.xLabels.length-1,1)))*iw;
+      xLabels+=`<text x="${x.toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,10)}" fill="#5d6b82" font-weight="600">${esc(String(lab).slice(0,12))}</text>`;
+    });
+  }
+
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px; background:var(--surface); border-radius:12px"><g>${gl}</g><g>${lines}</g><g>${dots}</g><g>${xLabels}</g></svg>`;
 }
 
 function svgSpark(values,color){ color=color||'#2878f0'; const w=120,h=30,max=Math.max(...values,1),n=values.length;
@@ -2113,8 +2193,13 @@ function renderSmBody(){
    :'<div class="card"><div class="empty"><div class="big"></div>No samples match. Register the first one.</div></div>'}`;
   $('#smSearch').oninput=e=>{ UI.smQ=e.target.value; renderSmBody(); };
   $('#smStatus').onchange=e=>{ UI.smStatus=e.target.value; renderSmBody(); };
+  // View Results quick filters
+  const viewAll=document.getElementById('viewAllOrders'); if(viewAll) viewAll.onclick=()=>{ UI.smStatus='All'; renderSmBody(); };
+  const viewPend=document.getElementById('viewPending'); if(viewPend) viewPend.onclick=()=>{ UI.smStatus='Pending'; renderSmBody(); };
   $('#btnRegister').onclick=openSampleForm;
   $('#btnManifest').onclick=openManifestForm;
+  const btnRes=document.getElementById('btnViewResults'); if(btnRes) btnRes.onclick=()=>{ UI.smStatus='Done'; UI.smQ=''; renderSmBody(); toast('Showing results — Done/Positive/Negative'); };
+
 }
 function sampleCard(s){
   const elapsed=daysBetween(s.sentDate||s.collectionDate,todayISO());
@@ -4205,8 +4290,8 @@ function renderDataMgr(body){
 /* ================= BOOT ================= */
 'use strict';
 const UI={tab:'dash',smTab:'list',stTab:'ov',trTab:'dash',wpTab:'plan',lvTab:'plan',stfTab:'staff'};
-const TAB_META={dash:[' Dashboard','all modules · KPIs except personal revenue'],samples:[' Referred Samples','register · track · manifest'],stock:[' Stock & Supplies','consumables · batches · health centers'],training:[' Training Roster','FIFO queue · registry · history'],revenue:[' Training Revenue','expenses · reimbursements · net balance'],roster:[' Working Plan','fair monthly plan · unit roster'],leave:[' Leave & Timeline','planner · records · master timeline'],staff:[' Staff & Settings','registry · letterhead · data']};
-const RENDER={dash:renderDash,samples:renderSamples,stock:renderStock,training:renderTraining,revenue:renderRevenue,roster:renderRoster,leave:renderLeave,staff:renderStaff};
+const TAB_META={dash:[' Dashboard','all modules · KPIs except personal revenue'],samples:[' Referred Samples','register · track · manifest'],stock:[' Stock & Supplies','consumables · batches · health centers'],training:[' Training Roster','FIFO queue · registry · history'],revenue:[' Training Revenue','expenses · reimbursements · net balance'],roster:[' Working Plan','fair monthly plan · unit roster'],leave:[' Leave & Timeline','planner · records · master timeline'],eqa:[' EQA / PT Scores','proficiency testing · quarters · pass +-2SD'],staff:[' Staff & Settings','registry · letterhead · data']};
+const RENDER={dash:renderDash,samples:renderSamples,stock:renderStock,training:renderTraining,revenue:renderRevenue,roster:renderRoster,leave:renderLeave,eqa:renderEQA,staff:renderStaff};
 
 function setTab(tab,silent){
   if(!RENDER[tab]) tab='dash';
@@ -4655,6 +4740,317 @@ function installAdminGuards(){
 
 }
 
+
+
+/* ================= EQA / PROFICIENCY TESTING MODULE =================
+   - Quarters: Q1 = Jul-Sep, Q2 = Oct-Dec, Q3 = Jan-Mar, Q4 = Apr-Jun (FY starts July)
+   - Programs: Hematology (WBC,RBC,HCT,MCV,PLT,HGB), Biochemistry (Glucose,Creatinine,ALT), TB (MTB GeneXpert), HIV (%), Serology (RPR,HCV)
+   - HIV & TB scored in %, others in SD, Pass if within +-2SD or >=80% for %
+*/
+const EQA_PROGRAMS = {
+  Hematology: {tests:['WBC','RBC','HCT','MCV','PLT','Hemoglobin'], scoring:'SD', unit:'SD'},
+  Biochemistry: {tests:['Glucose','Creatinine','ALT'], scoring:'SD', unit:'SD'},
+  TB: {tests:['MTB GeneXpert'], scoring:'%', unit:'%'},
+  HIV: {tests:['HIV'], scoring:'%', unit:'%'},
+  Serology: {tests:['RPR','HCV'], scoring:'SD', unit:'SD'}
+};
+
+function quarterLabel(dateISO){
+  const d=new Date(dateISO+'T12:00:00'); const m=d.getMonth(); const y=d.getFullYear();
+  // FY starts July: Q1 Jul-Sep, Q2 Oct-Dec, Q3 Jan-Mar, Q4 Apr-Jun
+  let q, fyYear;
+  if(m>=6 && m<=8){ q=1; fyYear=y; }
+  else if(m>=9 && m<=11){ q=2; fyYear=y; }
+  else if(m>=0 && m<=2){ q=3; fyYear=y-1; }
+  else { q=4; fyYear=y-1; }
+  return `Q${q} ${fyYear}/${String(fyYear+1).slice(2)}`;
+}
+function quarterCode(dateISO){
+  const d=new Date(dateISO+'T12:00:00'); const m=d.getMonth(); const y=d.getFullYear();
+  let q, fy;
+  if(m>=6 && m<=8){ q=1; fy=y; }
+  else if(m>=9 && m<=11){ q=2; fy=y; }
+  else if(m>=0 && m<=2){ q=3; fy=y-1; }
+  else { q=4; fy=y-1; }
+  return {q, fy, label:`Q${q} ${fy}/${String(fy+1).slice(2)}`, start: fy+'-07-01'};
+}
+
+function renderEQA(){
+  const el=document.getElementById('mod-eqa');
+  if(!el) return;
+  const ptList = (DB.eqa||[]).slice().sort((a,b)=>b.delivered.localeCompare(a.delivered));
+  const programs = Object.keys(EQA_PROGRAMS);
+  const fy = fyOf(todayISO());
+
+  // Stats
+  const total=ptList.length;
+  const passed=ptList.filter(p=>p.overall==='Pass').length;
+  const failed=ptList.filter(p=>p.overall==='Fail').length;
+  const pending=ptList.filter(p=>!p.scorePublished).length;
+  const passRate = total? Math.round(passed/total*100):0;
+
+  // Chart data: line chart of scores over time per program
+  const chartData = {};
+  programs.forEach(prog=>{
+    const pts = ptList.filter(p=>p.program===prog && p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered));
+    chartData[prog] = pts.map((p,i)=>({x:i, y: typeof p.score==='number'?p.score: (p.scoring==='%'?p.scorePercent||0:0)}));
+  });
+
+  // Timeline flow for PT (premium like training)
+  const timelineSteps = ptList.slice(0,8).map((p,i)=>{
+    const icons = {Hematology:'🩸', Biochemistry:'⚗️', TB:'🧬', HIV:'🦠', Serology:'🧫'};
+    return `<div class="timeline-step">
+      <div class="timeline-year">${esc(p.code||quarterLabel(p.delivered))}</div>
+      <div class="timeline-dot ${p.overall==='Pass'?'':'next'}" style="${p.overall==='Pass'?'border-color:var(--teal)':'border-color:var(--rose)'}">${icons[p.program]||'📋'}</div>
+      <div class="timeline-content"><b>${esc(p.program)} · ${esc(p.overall||'Pending')}</b><small>${fmtDate(p.delivered)} → Score: ${p.score!=null?p.score:(p.scorePercent!=null?p.scorePercent+'%':'—')}</small></div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=`
+  <div class="section-title">🧬 EQA / Proficiency Testing <small>PT scores · quarters Q1 Jul-Sep, Q2 Oct-Dec, Q3 Jan-Mar, Q4 Apr-Jun · Pass +-2SD or >=80%</small></div>
+
+  <div class="grid g-auto" style="gap:16px; margin-bottom:20px">
+    ${kpiCard('Total PT', total, 'all programs', {tone:'blue', ic:'📋'})}
+    ${kpiCard('Pass rate', passRate+'%', passed+' passed, '+failed+' failed', {tone:passRate>=80?'green':'red', ic:'✅', bar:passRate})}
+    ${kpiCard('Pending', pending, 'awaiting scores', {tone:'amber', ic:'⏳'})}
+    ${kpiCard('Programs', programs.length, 'Hem, Biochem, TB, HIV, Serology', {tone:'teal', ic:'🧪'})}
+  </div>
+
+  ${ptList.length?`<div class="timeline-flow"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px"><h3>PT Journey — Timeline Flow</h3><span class="hint">Premium flow · Q1 Jul-Sep = current FY start</span></div><div class="timeline-flow-track"><div class="timeline-flow-line"></div>${timelineSteps}</div></div>`:''}
+
+  <div class="grid g-2" style="gap:16px; margin-bottom:20px">
+    <div class="card gold-accent"><h3>📈 PT Scores Over Time — Line Chart (All Programs)</h3>
+      <div class="chart-box">${(function(){
+        const series = programs.map((prog,i)=>({
+          label: prog,
+          color: CHART_COLORS[i%CHART_COLORS.length],
+          values: (DB.eqa||[]).filter(p=>p.program===prog && p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered)).map((p,idx)=>({x:idx, y: p.scoring==='%' ? (p.scorePercent||0) : (p.score||0)}))
+        })).filter(s=>s.values.length>0);
+        if(!series.length) return '<div class="empty">No scored PT yet — record scores to see trend</div>';
+        const xLabels = (DB.eqa||[]).filter(p=>p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered)).map(p=>p.code||p.delivered.slice(0,7));
+        return svgLineChart(series, {xLabels});
+      })()}</div>
+      <div class="chart-legend"><span><i style="background:#C9A84C"></i>Hematology SD</span><span><i style="background:#0B1C3D"></i>Biochemistry SD</span><span><i style="background:#0e9f8a"></i>HIV %</span><span><i style="background:#c94c5a"></i>TB %</span></div>
+    </div>
+    <div class="card"><h3>📊 Pass/Fail per Program</h3>
+      <div class="chart-box">${(function(){
+        const data = programs.map(prog=>{
+          const list = ptList.filter(p=>p.program===prog);
+          const pass = list.filter(p=>p.overall==='Pass').length;
+          return {label:prog, value: list.length? Math.round(pass/list.length*100):0, color: pass>=80?'#0e9f8a':'#e8a33d'};
+        });
+        return svgBar(data);
+      })()}</div>
+    </div>
+    <div class="card"><h3>🧪 Hematology — WBC,RBC,HCT,MCV,PLT,HGB — SD Trend (Line)</h3>
+      <div class="chart-box">${(function(){
+        const pts = ptList.filter(p=>p.program==='Hematology' && p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered));
+        if(!pts.length) return '<div class="empty">No Hematology PT scored yet</div>';
+        const analytes = EQA_PROGRAMS.Hematology.tests;
+        const series = analytes.map((an,i)=>({
+          label: an,
+          color: CHART_COLORS[i%CHART_COLORS.length],
+          values: pts.map((p,idx)=>({x:idx, y: (p.analytes&&p.analytes[an]!=null)?p.analytes[an]:0}))
+        }));
+        const xLabels = pts.map(p=>p.code||p.delivered.slice(5,7)+'/'+p.delivered.slice(2,4));
+        return svgLineChart(series, {xLabels});
+      })()}</div>
+      <p class="hint">Pass if within +-2SD. Each line = analyte.</p>
+    </div>
+    <div class="card"><h3>⚗️ Biochemistry — Glucose, Creatinine, ALT — SD Trend</h3>
+      <div class="chart-box">${(function(){
+        const pts = ptList.filter(p=>p.program==='Biochemistry' && p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered));
+        if(!pts.length) return '<div class="empty">No Biochemistry PT scored yet</div>';
+        const analytes = EQA_PROGRAMS.Biochemistry.tests;
+        const series = analytes.map((an,i)=>({
+          label: an,
+          color: CHART_COLORS[i%CHART_COLORS.length],
+          values: pts.map((p,idx)=>({x:idx, y: (p.analytes&&p.analytes[an]!=null)?p.analytes[an]:0}))
+        }));
+        const xLabels = pts.map(p=>p.code||p.delivered.slice(5,7)+'/'+p.delivered.slice(2,4));
+        return svgLineChart(series, {xLabels});
+      })()}</div>
+    </div>
+    <div class="card"><h3>🧬 TB & HIV — Percentage Scores (Line)</h3>
+      <div class="chart-box">${(function(){
+        const pts = ptList.filter(p=>(p.program==='TB'||p.program==='HIV') && p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered));
+        if(!pts.length) return '<div class="empty">No TB/HIV PT scored yet</div>';
+        const series = pts.map(p=>({label:p.program+' '+(p.code||''), color: p.program==='HIV'?'#0e9f8a':'#c94c5a', values:[{x:0,y:p.scorePercent||0}]}));
+        // Better: group by program
+        const hiv = ptList.filter(p=>p.program==='HIV'&&p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered)).map((p,i)=>({x:i,y:p.scorePercent||0}));
+        const tb = ptList.filter(p=>p.program==='TB'&&p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered)).map((p,i)=>({x:i,y:p.scorePercent||0}));
+        const s = [{label:'HIV %', color:'#0e9f8a', values:hiv},{label:'TB %', color:'#c94c5a', values:tb}].filter(x=>x.values.length);
+        const xLabels = mArr || ptList.filter(p=>p.scorePublished).map(p=>p.code);
+        return svgLineChart(s, {xLabels: ptList.filter(p=>p.scorePublished).map(p=>p.code||p.delivered.slice(0,7))});
+      })()}</div>
+      <p class="hint">HIV & TB scored in %, Pass >=80%</p>
+    </div>
+    <div class="card"><h3>🧫 Serology — RPR, HCV — SD Trend</h3>
+      <div class="chart-box">${(function(){
+        const pts = ptList.filter(p=>p.program==='Serology' && p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered));
+        if(!pts.length) return '<div class="empty">No Serology PT yet — will come soon</div>';
+        const analytes = EQA_PROGRAMS.Serology.tests;
+        const series = analytes.map((an,i)=>({label:an, color:CHART_COLORS[i%CHART_COLORS.length], values: pts.map((p,idx)=>({x:idx, y: (p.analytes&&p.analytes[an]!=null)?p.analytes[an]:0}))}));
+        return svgLineChart(series, {xLabels: pts.map(p=>p.code)});
+      })()}</div>
+    </div>
+  </div>
+
+  <div class="card"><h3>📋 PT Registry — Record Delivery, Testing, Reporting, Scores</h3>
+    <div class="toolbar" style="margin-bottom:14px">
+      <span class="chip"><b>${ptList.length}</b> PT records</span>
+      <span class="chip">Q1 Jul-Sep · Q2 Oct-Dec · Q3 Jan-Mar · Q4 Apr-Jun</span>
+      <span class="spacer"></span>
+      <button class="btn primary" id="addPT">+ Add PT</button>
+      <button class="btn" id="addPTHist">📚 Add History</button>
+    </div>
+    ${ptList.length?`<div class="tbl-wrap"><table class="tbl"><tr><th>Quarter Code</th><th>Program</th><th>Delivered</th><th>Tested</th><th>Reported to NRL</th><th>Score Published</th><th>Score</th><th>Overall</th><th>Tests</th><th></th></tr>
+    ${ptList.map(p=>`<tr>
+      <td><b>${esc(p.code||'—')}</b></td>
+      <td><span class="tag blue">${esc(p.program)}</span></td>
+      <td>${fmtDate(p.delivered)}</td>
+      <td>${p.tested?fmtDate(p.tested):'<span class="hint">—</span>'}</td>
+      <td>${p.reported?fmtDate(p.reported):'<span class="hint">—</span>'}</td>
+      <td>${p.scorePublished?fmtDate(p.scorePublished):'<span class="hint">pending</span>'}</td>
+      <td>${p.scoring==='%'? (p.scorePercent!=null?'<b>'+p.scorePercent+'%</b>':'—') : (p.score!=null?'<b>'+p.score+' SD</b>':'—')}</td>
+      <td><span class="tag ${p.overall==='Pass'?'green':p.overall==='Fail'?'red':'amber'}">${esc(p.overall||'Pending')}</span></td>
+      <td class="hint">${esc(Object.keys(p.analytes||{}).slice(0,3).join(', ')||'—')}</td>
+      <td><button class="btn xs" data-ptedit="${p.id}">Edit</button><button class="btn xs danger" data-ptdel="${p.id}">Del</button></td>
+    </tr>`).join('')}</table></div>`:'<div class="empty"><div class="big">🧬</div>No PT records yet — add your first proficiency testing.</div>'}
+  </div>
+  `;
+
+  document.getElementById('addPT').onclick=()=>openPTForm();
+  document.getElementById('addPTHist').onclick=()=>openPTHistoryForm();
+  document.querySelectorAll('[data-ptedit]').forEach(b=>b.onclick=()=>openPTForm(b.dataset.ptedit));
+  document.querySelectorAll('[data-ptdel]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); DB.eqa=DB.eqa.filter(x=>x.id!==b.dataset.ptdel); saveDB(); renderEQA(); });
+}
+
+function openPTForm(id){
+  if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin();
+  const p=id?DB.eqa.find(x=>x.id===id):null;
+  const programs=Object.keys(EQA_PROGRAMS);
+  const q = p? p.code : quarterLabel(todayISO());
+  openModal(`<h2>${p?'Edit PT':'Add PT — Proficiency Testing'}</h2>
+  <form id="ptForm"><div class="form-grid fg-2">
+    <div><label>Quarter Code (e.g. Q2 2026 = Oct-Dec 2026)</label><input id="pt_code" value="${esc((p?p.code:undefined)||q)}" placeholder="Q2 2026" required></div>
+    <div><label>Program</label><select id="pt_prog">${programs.map(pr=>`<option ${p&&p.program===pr?'selected':''}>${pr}</option>`).join('')}</select></div>
+    <div><label>Delivered to lab (date)</label><input type="date" id="pt_del" value="${(p?p.delivered:undefined)||todayISO()}" required></div>
+    <div><label>Tested (date)</label><input type="date" id="pt_tested" value="${(p?p.tested:undefined)||''}"></div>
+    <div><label>Reported to NRL (date)</label><input type="date" id="pt_rep" value="${(p?p.reported:undefined)||''}"></div>
+    <div><label>Score Published (date)</label><input type="date" id="pt_pub" value="${(p?p.scorePublished:undefined)||''}"></div>
+    <div id="pt_scoreWrap"><label>Overall Score (SD or %)</label><input type="number" step="0.1" id="pt_score" value="${(p?p.score:undefined)||''}" placeholder="e.g. 0.8 SD or 95%"><div class="hint">For SD: enter SD value (e.g. 0.5, 1.2). Pass if +-2SD. For %: use % field below.</div></div>
+    <div><label>Score % (for HIV & TB)</label><input type="number" id="pt_perc" value="${(p?p.scorePercent:undefined)||''}" placeholder="e.g. 95"></div>
+    <div style="grid-column:1/-1"><label>Analytes / Tests (add more as lab elaborates)</label><div id="pt_analytes" class="grid g-3"></div><button type="button" class="btn sm" id="addAnalyte">+ Add test</button></div>
+    <div style="grid-column:1/-1"><label>Notes</label><input id="pt_note" value="${esc((p?p.note:undefined)||'')}"></div>
+  </div><div class="row" style="margin-top:16px"><button class="btn primary" type="submit">Save PT</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
+
+  const progSel=document.getElementById('pt_prog');
+  const scoreWrap=document.getElementById('pt_scoreWrap');
+
+  function renderAnalytes(){
+    const prog = progSel.value;
+    const tests = EQA_PROGRAMS[prog] ? EQA_PROGRAMS[prog].tests : [];
+    const container=document.getElementById('pt_analytes');
+    // Merge existing analytes with program defaults
+    const existing = p? (p.analytes||{}) : {};
+    const allTests = Array.from(new Set([...tests, ...Object.keys(existing)]));
+    container.innerHTML = allTests.map(an=>`<div><label>${esc(an)}</label><input data-an="${esc(an)}" type="number" step="0.1" value="${existing[an]!=null?existing[an]:''}" placeholder="SD or %"></div>`).join('');
+  }
+  progSel.onchange=renderAnalytes;
+  renderAnalytes();
+
+  document.getElementById('addAnalyte').onclick=()=>{
+    const name=prompt('Add new test analyte (e.g. HB, CD4, RPR, HCV):'); if(!name) return;
+    const prog=progSel.value;
+    if(!EQA_PROGRAMS[prog].tests.includes(name)) EQA_PROGRAMS[prog].tests.push(name);
+    // Also add to current form
+    const container=document.getElementById('pt_analytes');
+    const div=document.createElement('div'); div.innerHTML=`<label>${esc(name)}</label><input data-an="${esc(name)}" type="number" step="0.1" placeholder="SD or %">`;
+    container.appendChild(div);
+  };
+
+  document.getElementById('ptForm').addEventListener('submit',ev=>{
+    ev.preventDefault();
+    const prog=progSel.value;
+    const scoring = EQA_PROGRAMS[prog] ? EQA_PROGRAMS[prog].scoring : 'SD';
+    const analytes={};
+    document.querySelectorAll('#pt_analytes [data-an]').forEach(inp=>{
+      const v=inp.value.trim(); if(v!=='') analytes[inp.dataset.an]=parseFloat(v);
+    });
+    const scoreVal = parseFloat(document.getElementById('pt_score').value);
+    const percVal = parseFloat(document.getElementById('pt_perc').value);
+    let overall='Pending';
+    if(!isNaN(scoreVal) || !isNaN(percVal)){
+      if(scoring==='%'){
+        overall = (!isNaN(percVal) && percVal>=80) ? 'Pass' : 'Fail';
+      } else {
+        // Check each analyte within +-2SD, and overall SD
+        const vals = Object.values(analytes);
+        const within = vals.length ? vals.every(v=> Math.abs(v) <=2) : (!isNaN(scoreVal) && Math.abs(scoreVal)<=2);
+        overall = within ? 'Pass' : 'Fail';
+      }
+    }
+    const data={
+      code:document.getElementById('pt_code').value.trim(),
+      program:prog,
+      scoring,
+      delivered:document.getElementById('pt_del').value,
+      tested:document.getElementById('pt_tested').value||null,
+      reported:document.getElementById('pt_rep').value||null,
+      scorePublished:document.getElementById('pt_pub').value||null,
+      score: isNaN(scoreVal)?null:scoreVal,
+      scorePercent: isNaN(percVal)?null:percVal,
+      analytes,
+      overall,
+      note:document.getElementById('pt_note').value.trim()
+    };
+    if(p){ Object.assign(p,data); toast('PT updated — '+(overall||'Pending')); }
+    else { DB.eqa=DB.eqa||[]; DB.eqa.unshift({id:uid('eqa'),...data}); toast('PT recorded — '+data.code); }
+    saveDB(); closeModal(); renderEQA();
+  });
+}
+
+function openPTHistoryForm(){
+  if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin();
+  openModal(`<h2>📚 Add History of Previous PT</h2>
+  <p class="hint" style="margin-bottom:12px">Paste previous PT scores — e.g. Q1 2024 Hematology 95% Pass, or JSON array. Supports quarters Q1-Q4 (FY starts July).</p>
+  <textarea id="pt_hist" rows="12" style="width:100%" placeholder="Q1 2024 | Hematology | WBC:0.5,RBC:0.3,HCT:0.8,MCV:1.1,PLT:0.2,HGB:0.4 | Score:0.6 SD | Pass
+Q2 2024 | Biochemistry | Glucose:1.2,Creatinine:0.8,ALT:0.5 | Score:0.9 SD | Pass
+Q3 2024 | HIV | Score:95% | Pass"></textarea>
+  <div class="row" style="margin-top:12px"><button class="btn primary" id="histSave">Import History</button><button class="btn" onclick="closeModal()">Cancel</button></div>`);
+  document.getElementById('histSave').onclick=()=>{
+    const raw=document.getElementById('pt_hist').value.trim(); if(!raw) return;
+    let count=0;
+    raw.split(/\n+/).forEach(line=>{
+      const parts=line.split('|').map(s=>s.trim()); if(parts.length<2) return;
+      const code=parts[0]; const prog=parts[1];
+      if(!EQA_PROGRAMS[prog]) return;
+      const analytes={};
+      if(parts[2]){
+        parts[2].split(',').forEach(pair=>{
+          const [k,v]=pair.split(':').map(s=>s.trim()); if(k&&v) analytes[k]=parseFloat(v);
+        });
+      }
+      let score=null, perc=null, overall='Pending';
+      if(parts[3]){
+        const m=parts[3].match(/([0-9.]+)\s*%/); if(m) perc=parseFloat(m[1]);
+        const m2=parts[3].match(/([0-9.-]+)\s*SD/); if(m2) score=parseFloat(m2[1]);
+      }
+      if(parts[4]) overall=parts[4];
+      else {
+        if(EQA_PROGRAMS[prog].scoring==='%') overall= perc>=80?'Pass':'Fail';
+        else overall= Object.values(analytes).every(v=>Math.abs(v)<=2) ? 'Pass':'Fail';
+      }
+      DB.eqa=DB.eqa||[];
+      if(!DB.eqa.some(x=>x.code===code && x.program===prog)){
+        DB.eqa.push({id:uid('eqa'), code, program:prog, scoring:EQA_PROGRAMS[prog].scoring, delivered:code.includes('202')?code.slice(-4)+'-10-01':todayISO(), tested:null, reported:null, scorePublished:todayISO(), score, scorePercent:perc, analytes, overall, note:'Imported history'});
+        count++;
+      }
+    });
+    saveDB(); closeModal(); toast('📚 Imported '+count+' PT history records'); renderEQA();
+  };
+}
 
 function boot(){
   try{ DB=loadDB(); }catch(e){ console.error('loadDB:',e); showBootError('loadDB: '+(e&&e.message||e)); DB=buildSeed(); }
