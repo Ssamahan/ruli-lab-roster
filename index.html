@@ -2499,10 +2499,10 @@ function renderCatalog(body){
   </div>`;
   $('#addHosp').onclick=()=>addSimpleItem('hospital'); $('#addTest').onclick=()=>addSimpleItem('test');
   $('#addHC').onclick=()=>addSimpleItem('hc'); $('#addCons').onclick=addConsumable;
-  document.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); DB.catalog.tests=DB.catalog.tests.filter(x=>x.id!==b.dataset.tdel); saveDB(); renderStock(); });
-  document.querySelectorAll('[data-hdel]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); DB.catalog.hospitals=DB.catalog.hospitals.filter(x=>x.id!==b.dataset.hdel); saveDB(); renderStock(); });
-  document.querySelectorAll('[data-hcdel]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); DB.catalog.healthCenters=DB.catalog.healthCenters.filter(x=>x.id!==b.dataset.hcdel); saveDB(); renderStock(); });
-  document.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); DB.catalog.consumables=DB.catalog.consumables.filter(x=>x.id!==b.dataset.cdel); saveDB(); renderStock(); });
+    document.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>{ if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin(); const t=DB.catalog.tests.find(x=>x.id===b.dataset.tdel); confirmDlg('Delete test '+(t?t.name:b.dataset.tdel)+'? Confirm deletion.',()=>{ DB.catalog.tests=DB.catalog.tests.filter(x=>x.id!==b.dataset.tdel); saveDB(); renderStock(); toast('Test deleted'); }); });
+  document.querySelectorAll('[data-hdel]').forEach(b=>b.onclick=()=>{ if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin(); const h=DB.catalog.hospitals.find(x=>x.id===b.dataset.hdel); confirmDlg('Delete hospital '+(h?h.name:b.dataset.hdel)+'? Confirm.',()=>{ DB.catalog.hospitals=DB.catalog.hospitals.filter(x=>x.id!==b.dataset.hdel); saveDB(); renderStock(); toast('Hospital deleted'); }); });
+  document.querySelectorAll('[data-hcdel]').forEach(b=>b.onclick=()=>{ if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin(); const hc=DB.catalog.healthCenters.find(x=>x.id===b.dataset.hcdel); confirmDlg('Delete health center '+(hc?hc.name:b.dataset.hcdel)+'? Confirm.',()=>{ DB.catalog.healthCenters=DB.catalog.healthCenters.filter(x=>x.id!==b.dataset.hcdel); saveDB(); renderStock(); toast('Health center deleted'); }); });
+  document.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=()=>{ if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin(); const c=DB.catalog.consumables.find(x=>x.id===b.dataset.cdel); confirmDlg('Delete consumable '+(c?c.name:b.dataset.cdel)+'? Confirm.',()=>{ DB.catalog.consumables=DB.catalog.consumables.filter(x=>x.id!==b.dataset.cdel); saveDB(); renderStock(); toast('Consumable deleted'); }); });
   document.querySelectorAll('[data-hedit]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); const h=DB.catalog.hospitals.find(x=>x.id===b.dataset.hedit); if(!h) return; const name=prompt('Edit hospital name:',h.name); if(name){ h.name=name.trim(); saveDB(); renderStock(); } });
   document.querySelectorAll('[data-hcedit]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); const hc=DB.catalog.healthCenters.find(x=>x.id===b.dataset.hcedit); if(!hc) return; const name=prompt('Edit health center:',hc.name); if(name){ hc.name=name.trim(); saveDB(); renderStock(); } });
   document.querySelectorAll('[data-cedit]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); const c=DB.catalog.consumables.find(x=>x.id===b.dataset.cedit); if(!c) return; const name=prompt('Edit consumable name:',c.name); if(name){ c.name=name.trim(); const thr=prompt('Threshold:',c.threshold); if(thr) c.threshold=+thr; saveDB(); renderStock(); } });
@@ -2707,7 +2707,7 @@ function renderTrStaff(body){
       <button class="btn xs danger" data-staffDel="${s.id}">Delete</button></div></div>`; }).join('')}</div>`;
   $('#addStaffBtn').onclick=()=>openStaffForm();
   document.querySelectorAll('[data-staffEdit]').forEach(b=>b.onclick=()=>openStaffForm(b.dataset.staffedit||b.dataset.staffEdit));
-  document.querySelectorAll('[data-staffDel]').forEach(b=>b.onclick=()=>{ DB.staff=DB.staff.filter(x=>x.id!==b.dataset.staffDel); saveDB(); renderTraining(); });
+  document.querySelectorAll('[data-staffDel]').forEach(b=>b.onclick=()=>{ if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin(); const s=DB.staff.find(x=>x.id===b.dataset.staffDel); confirmDlg('Delete staff '+(s?s.name:b.dataset.staffDel)+'? This will remove all history — confirm.',()=>{ DB.staff=DB.staff.filter(x=>x.id!==b.dataset.staffDel); saveDB(); renderTraining(); toast('Staff deleted'); }); });
 }
 function renderTrRegistry(body){
   const list=(DB.trainings||[]).filter(t=>t.status==='upcoming').sort((a,b)=>a.start.localeCompare(b.start));
@@ -2720,7 +2720,7 @@ function renderTrRegistry(body){
   $('#newInvite').onclick=()=>openTrainingForm(true);
   $('#recPast').onclick=()=>openTrainingForm(false,true);
   document.querySelectorAll('[data-tedit]').forEach(b=>b.onclick=()=>openTrainingForm(false,false,b.dataset.tedit));
-  document.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>{ DB.trainings=DB.trainings.filter(x=>x.id!==b.dataset.tdel); saveDB(); renderTraining(); });
+  document.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>{ if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin(); const tr=DB.trainings.find(x=>x.id===b.dataset.tdel); confirmDlg('Delete training '+(tr?tr.title:b.dataset.tdel)+'? Confirm.',()=>{ DB.trainings=DB.trainings.filter(x=>x.id!==b.dataset.tdel); saveDB(); renderTraining(); toast('Training deleted'); }); });
 }
 function renderTrHistory(body){
   const list=(DB.trainings||[]).filter(t=>t.status==='completed').sort((a,b)=>b.start.localeCompare(a.start)); // latest first
@@ -2737,7 +2737,7 @@ function renderTrHistory(body){
     const m=$('#syncMsg'); if(m){ m.innerHTML='<div class="alert ok">Synced from Training Revenue — '+(added>0?added+' training(s) added':'no new trainings (all already present)')+'.</div>'; }
     renderTraining(); };
   document.querySelectorAll('[data-tedit]').forEach(b=>b.onclick=()=>openTrainingForm(false,false,b.dataset.tedit));
-  document.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>{ DB.trainings=DB.trainings.filter(x=>x.id!==b.dataset.tdel); saveDB(); renderTraining(); });
+  document.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>{ if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin(); const tr=DB.trainings.find(x=>x.id===b.dataset.tdel); confirmDlg('Delete training '+(tr?tr.title:b.dataset.tdel)+'? Confirm.',()=>{ DB.trainings=DB.trainings.filter(x=>x.id!==b.dataset.tdel); saveDB(); renderTraining(); toast('Training deleted'); }); });
 }
 function trCard(t){
   const att=t.attendees.map(id=>staffById(id)).filter(Boolean);
@@ -4936,7 +4936,7 @@ function renderEQA(){
   document.getElementById('addPT').onclick=()=>openPTForm();
   document.getElementById('addPTHist').onclick=()=>openPTHistoryForm();
   document.querySelectorAll('[data-ptedit]').forEach(b=>b.onclick=()=>openPTForm(b.dataset.ptedit));
-  document.querySelectorAll('[data-ptdel]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); DB.eqa=DB.eqa.filter(x=>x.id!==b.dataset.ptdel); saveDB(); renderEQA(); });
+  document.querySelectorAll('[data-ptdel]').forEach(b=>b.onclick=()=>{ if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin(); const pt=DB.eqa.find(x=>x.id===b.dataset.ptdel); confirmDlg('Delete PT '+(pt?pt.code+' '+pt.program:b.dataset.ptdel)+'? Confirm deletion.',()=>{ DB.eqa=DB.eqa.filter(x=>x.id!==b.dataset.ptdel); saveDB(); renderEQA(); toast('PT deleted'); }); });
 }
 
 function openPTForm(id){
