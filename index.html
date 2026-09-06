@@ -1113,7 +1113,6 @@ function svgStackBar(layers,opts){ // responsive stacked - Daily staffing trend 
 
 
 function svgLineChart(series, opts){
-  // series: [{label, values:[{x,y}], color}, ...] or single values array
   opts=opts||{};
   const tier = typeof getScreenTier==='function' ? getScreenTier() : 'lg';
   const w = tier==='xs' ? 360 : tier==='sm' ? 540 : (opts.w||700);
@@ -1122,7 +1121,6 @@ function svgLineChart(series, opts){
   const fs = typeof chartFontScale==='function' ? chartFontScale(w) : 12;
   const iw=w-pad.l-pad.r, ih=h-pad.t-pad.b;
 
-  // Normalize series
   let allSeries=[];
   if(Array.isArray(series) && series.length && typeof series[0].values!=='undefined'){
     allSeries=series;
@@ -1147,29 +1145,58 @@ function svgLineChart(series, opts){
     gl+=`<text x="${pad.l-10}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,10)}" fill="#9aa7ba" font-weight="600">${typeof val==='number'?val.toFixed(val>=10?0:1):val}</text>`;
   }
 
-  let lines='', dots='', xLabels='';
+  // Helper to create smooth curved path from points
+  function smoothPath(points, tension=0.4){
+    if(points.length<2) return '';
+    if(points.length===2){
+      return `M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)} L${points[1].x.toFixed(1)},${points[1].y.toFixed(1)}`;
+    }
+    let path=`M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
+    for(let i=0;i<points.length-1;i++){
+      const p0 = i>0 ? points[i-1] : points[0];
+      const p1 = points[i];
+      const p2 = points[i+1];
+      const p3 = i+2 < points.length ? points[i+2] : p2;
+      
+      // Catmull-Rom to Bezier with tension
+      const cp1x = p1.x + (p2.x - p0.x) * tension / 6;
+      const cp1y = p1.y + (p2.y - p0.y) * tension / 6;
+      const cp2x = p2.x - (p3.x - p1.x) * tension / 6;
+      const cp2y = p2.y - (p3.y - p1.y) * tension / 6;
+      
+      path+=` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+    }
+    return path;
+  }
+
+  let lines='', dots='', xLabels='', areas='';
   allSeries.forEach((s,si)=>{
     const col=s.color||CHART_COLORS[si%CHART_COLORS.length];
-    const pts = s.values.map((pt)=>{
+    const points = s.values.map(pt=>{
       const x = pad.l + ((pt.x - minX)/rangeX)*iw;
       const y = pad.t + ih - ((pt.y - minY)/rangeY)*ih;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    }).join(' ');
-    // line
-    lines+=`<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="${tier==='xs'?2.2:2.8}" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.08))"><title>${esc(s.label)}</title></polyline>`;
-    // area under line (soft)
-    const areaPts = pts + ` ${ (pad.l + ((s.values[s.values.length-1].x - minX)/rangeX)*iw).toFixed(1)},${(pad.t+ih).toFixed(1)} ${ (pad.l + ((s.values[0].x - minX)/rangeX)*iw).toFixed(1)},${(pad.t+ih).toFixed(1)}`;
-    lines+=`<polygon points="${areaPts}" fill="${col}" opacity="0.08"/>`;
-    // dots
-    s.values.forEach(pt=>{
-      const x = pad.l + ((pt.x - minX)/rangeX)*iw;
-      const y = pad.t + ih - ((pt.y - minY)/rangeY)*ih;
-      dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${tier==='xs'?3.5:4.5}" fill="${col}" stroke="#fff" stroke-width="2" style="filter:drop-shadow(0 2px 3px rgba(0,0,0,0.12))"><title>${esc(s.label)}: ${pt.y} at ${pt.x}</title></circle>`;
-      dots+=`<text x="${x.toFixed(1)}" y="${(y-10).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-2,10)}" font-weight="700" fill="#0B1C3D">${typeof pt.y==='number' && pt.y!==0 ? (pt.y>=100?Math.round(pt.y):pt.y.toFixed(1)) : ''}</text>`;
+      return {x, y, orig:pt};
+    });
+
+    // Curved line path
+    const pathD = smoothPath(points, 0.5);
+    // Curved area path (fill under curve)
+    let areaD = pathD;
+    if(points.length>1){
+      areaD+=` L${points[points.length-1].x.toFixed(1)},${(pad.t+ih).toFixed(1)} L${points[0].x.toFixed(1)},${(pad.t+ih).toFixed(1)} Z`;
+    }
+    areas+=`<path d="${areaD}" fill="${col}" opacity="0.10" style="transition:all 250ms ease"/>`;
+    lines+=`<path d="${pathD}" fill="none" stroke="${col}" stroke-width="${tier==='xs'?2.6:3}" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 3px 6px rgba(0,0,0,0.10)); transition:all 250ms ease"><title>${esc(s.label)}</title></path>`;
+
+    // Dots on curve
+    points.forEach(pt=>{
+      dots+=`<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${tier==='xs'?4:5}" fill="${col}" stroke="#fff" stroke-width="2.2" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.14)); transition:all 250ms ease"><title>${esc(s.label)}: ${pt.orig.y} at ${pt.orig.x}</title></circle>`;
+      if(pt.orig.y!==0 && pt.orig.y!=null){
+        dots+=`<text x="${pt.x.toFixed(1)}" y="${(pt.y-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-2,10)}" font-weight="800" fill="#0B1C3D" style="paint-order:stroke; stroke:#fff; stroke-width:3px; stroke-linejoin:round">${typeof pt.orig.y==='number' ? (Math.abs(pt.orig.y)>=100?Math.round(pt.orig.y):pt.orig.y.toFixed(1)) : ''}</text>`;
+      }
     });
   });
 
-  // X labels
   if(opts.xLabels){
     opts.xLabels.forEach((lab,i)=>{
       const x = pad.l + (i/(Math.max(opts.xLabels.length-1,1)))*iw;
@@ -1177,8 +1204,9 @@ function svgLineChart(series, opts){
     });
   }
 
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px; background:var(--surface); border-radius:12px"><g>${gl}</g><g>${lines}</g><g>${dots}</g><g>${xLabels}</g></svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px; background:var(--surface); border-radius:12px"><g>${gl}</g><g>${areas}</g><g>${lines}</g><g>${dots}</g><g>${xLabels}</g></svg>`;
 }
+
 
 function svgSpark(values,color){ color=color||'#2878f0'; const w=120,h=30,max=Math.max(...values,1),n=values.length;
   if(n<2) return ''; const pts=values.map((v,i)=>`${(i/(n-1)*w).toFixed(1)},${(h-(v/max)*h).toFixed(1)}`).join(' ');
@@ -2868,41 +2896,83 @@ function renderRevenue(){
   const trendReim=mArr.map(m=>m[1].reim);
   const monthlyProfit = mArr.map(([k,v])=>({label:k.slice(5,7)+'/'+k.slice(2,4), value:v.profit, color:v.profit>=0?'#0e9f8a':'#c94c5a'}));
   const net=perSession.map(s=>({label:s.label,value:s.reim-s.exp,color:s.reim-s.exp>=0?'#0e9f8a':'#c94c5a'}));
+
+  // Stexo-inspired premium revenue dashboard - main KPIs focused, line charts
   el.innerHTML=`
-  <div class="section-title">💰 Training Revenue — Elaborated <small>month-over-month comparative · expenses vs income · profit · category breakdown</small></div>
-  <div class="grid g-auto" style="gap:16px; margin-bottom:20px">
-    ${kpiCard('Net balance', fmtRWF(t.net), t.net<0?'Loss — you spent more than reimbursed':'Profit — you benefited', {tone:t.net<0?'red':'green', ic:'💰'})}
-    ${kpiCard('Total expenses', fmtRWF(t.expenses), 'Food · Transport · Lodging · Drinks · Other', {tone:'amber', ic:'💸'})}
-    ${kpiCard('Reimbursed (Income)', fmtRWF(t.reimbursed), 'Income recovered from organizers', {tone:'teal', ic:'💵'})}
-    ${kpiCard('Sessions', t.count, 'Avg '+ (t.count?fmtRWF(Math.round(t.expenses/t.count)):'—')+' per trip', {tone:'blue', ic:'📚'})}
+  <div class="section-title">💰 Training Revenue — Command Center <small>expenses · income · profit · month-over-month · premium Stexo style</small></div>
+
+  <!-- Main KPI Row - 4 premium like Stexo -->
+  <div class="grid g-4" style="gap:16px; margin-bottom:20px">
+    <div class="kpi gold" style="min-height:122px; border-left:4px solid var(--gold)">
+      <div class="k-label">Net Balance</div>
+      <div class="k-val" style="font-size:36px; color:${t.net<0?'var(--rose)':'var(--teal)'}">${fmtRWF(t.net)}</div>
+      <div class="k-foot">${t.net<0?'Loss — spent more than reimbursed':'Profit — benefited from trainings'} · ${t.count} sessions</div>
+      <span class="k-ic" style="background:var(--gold-soft); color:var(--gold)">💰</span>
+      <div class="k-bar"><i style="width:${Math.min(100, Math.abs(t.net)/1000)}%; background:${t.net<0?'var(--rose)':'var(--teal)'}"></i></div>
+    </div>
+    <div class="kpi" style="min-height:122px; border-left:4px solid var(--amber)">
+      <div class="k-label">Total Expenses</div>
+      <div class="k-val" style="font-size:36px">${fmtRWF(t.expenses)}</div>
+      <div class="k-foot">Food · Transport · Lodging · Drinks · Other · Avg ${t.count?fmtRWF(Math.round(t.expenses/t.count)):'—'}/trip</div>
+      <span class="k-ic" style="background:var(--amber-soft); color:var(--amber)">💸</span>
+      <div class="k-bar"><i style="width:${Math.min(100, t.expenses/2000)}%; background:var(--amber)"></i></div>
+    </div>
+    <div class="kpi" style="min-height:122px; border-left:4px solid var(--teal)">
+      <div class="k-label">Reimbursed (Income)</div>
+      <div class="k-val" style="font-size:36px">${fmtRWF(t.reimbursed)}</div>
+      <div class="k-foot">Income recovered from organizers · ${mArr.length} months tracked</div>
+      <span class="k-ic" style="background:var(--teal-soft); color:var(--teal)">💵</span>
+      <div class="k-bar"><i style="width:${t.expenses?Math.round(t.reimbursed/t.expenses*100):0}%; background:var(--teal)"></i></div>
+    </div>
+    <div class="kpi" style="min-height:122px; border-left:4px solid var(--primary)">
+      <div class="k-label">Sessions Logged</div>
+      <div class="k-val" style="font-size:36px">${t.count}</div>
+      <div class="k-foot">${catArr.length} categories · Most: ${catArr[0]?catArr[0].label+' '+fmtRWF(catArr[0].value):'—'}</div>
+      <span class="k-ic">📚</span>
+      <div class="k-bar"><i style="width:${Math.min(100, t.count*20)}%; background:var(--primary)"></i></div>
+    </div>
   </div>
-  <div class="grid g-2" style="gap:16px; margin-bottom:20px">
-    <div class="card gold-accent"><h3>📈 Month-over-Month — Expenses vs Income (Comparative)</h3>
-      <div class="chart-box">${mArr.length?svgStackBar([
-        {label:'Expenses',color:'#e8a33d',values:trendExp},
-        {label:'Income',color:'#0e9f8a',values:trendReim}],{xLabels:trendX}):'<div class="empty">No monthly data — log sessions to see MoM trend</div>'}
+
+  <!-- Main Charts Row - 2fr + 1fr like Stexo dashboard -->
+  <div class="grid" style="grid-template-columns: 2fr 1fr; gap:16px; margin-bottom:20px">
+    <div class="card gold-accent"><h3>📈 Month-over-Month — Expenses vs Income — Line Chart (Main KPI)</h3>
+      <div class="chart-box">${mArr.length?svgLineChart([
+        {label:'Expenses',color:'#e8a33d',values:trendExp.map((v,i)=>({x:i,y:v}))},
+        {label:'Income',color:'#0e9f8a',values:trendReim.map((v,i)=>({x:i,y:v}))}],{xLabels:trendX}):'<div class="empty">No monthly data — log sessions to see MoM line trend</div>'}
       </div>
-      <div class="chart-legend"><span><i style="background:#e8a33d"></i>Expenses</span><span><i style="background:#0e9f8a"></i>Income</span><span><i style="background:var(--gold)"></i>Gold highlight</span></div>
-      <p class="hint" style="margin-top:8px">Comparative MoM: which months you spent most vs recovered.</p>
+      <div class="chart-legend"><span><i style="background:#e8a33d"></i>Expenses</span><span><i style="background:#0e9f8a"></i>Income (Reimbursements)</span><span><i style="background:var(--gold)"></i>Gold = premium</span></div>
+      <p class="hint" style="margin-top:8px">Main KPI: Comparative MoM line — see spend vs recovery trend over months. Premium line with dots and area fill.</p>
     </div>
-    <div class="card gold-accent"><h3>💹 Monthly Profit / Loss — MoM Trend</h3>
-      <div class="chart-box">${monthlyProfit.length?svgBar(monthlyProfit):'<div class="empty">No profit data</div>'}</div>
+    <div class="card"><h3>💹 Monthly Profit / Loss — MoM Bar + Line</h3>
+      <div class="chart-box">${monthlyProfit.length?svgLineChart([{label:'Profit', color:'#0B1C3D', values: monthlyProfit.map((d,i)=>({x:i, y:d.value}))}], {xLabels: trendX}):'<div class="empty">No profit data</div>'}</div>
       <div class="chart-legend"><span><i style="background:#0e9f8a"></i>Profit</span><span><i style="background:#c94c5a"></i>Loss</span></div>
-      <p class="hint" style="margin-top:8px">Net = Income - Expenses per month.</p>
-    </div>
-    <div class="card"><h3>📊 Net gain/loss per session</h3><div class="chart-box">${net.length?svgBar(net):'<div class="empty">No sessions yet</div>'}</div><p class="hint" style="margin-top:8px">Per-session profit.</p></div>
-    <div class="card"><h3>🍽️ Expense breakdown — Food · Transport · Lodging · Drinks · Other</h3>
-      ${catArr.length?`<div class="chart-box">${svgHBar(catArr.map((c,i)=>({label:c.label,value:c.value,color:['#C9A84C','#0B1C3D','#0e9f8a','#e8a33d','#c94c5a'][i%5]})))}</div>
-      <div class="row" style="gap:10px; margin-top:12px; flex-wrap:wrap">${catArr.map(c=>`<span class="chip" style="border-left:3px solid var(--gold)"><b>${esc(c.label)}</b>: ${fmtRWF(c.value)}</span>`).join('')}</div>
-      <div class="hint" style="margin-top:10px">Food = meals, Transport = travel, Lodging = hotel, Drinks = beverages, Other = misc.</div>`:'<div class="empty">No expenses logged</div>'}
+      <p class="hint" style="margin-top:8px">Net = Income - Expenses per month — green profit, rose loss.</p>
     </div>
   </div>
-  <div class="card"><h3>Logged training sessions</h3>
-    <div class="toolbar" style="margin-bottom:12px"><span class="chip"><b>${sessions.length}</b> sessions</span><span class="spacer"></span>
-      <button class="btn primary" id="logSession">Log new training</button></div>
-    ${sessions.length?`<div class="grid g-2">${sessions.map(s=>revCard(s)).join('')}</div>`:'<div class="empty"><div class="big">📚</div>No sessions yet — log your first training trip.</div>'}</div>`;
+
+  <!-- Second Charts Row - HBar and Bar well arranged -->
+  <div class="grid g-2" style="gap:16px; margin-bottom:20px">
+    <div class="card"><h3>📊 Net Gain/Loss per Training Session — Bar</h3>
+      <div class="chart-box">${net.length?svgBar(net):'<div class="empty">No sessions yet</div>'}</div>
+      <p class="hint" style="margin-top:8px">Per-session profit — which trainings most profitable. Visualizes net balance block.</p>
+    </div>
+    <div class="card"><h3>🍽️ Expense Breakdown — Food · Transport · Lodging · Drinks · Other — HBar + Donut</h3>
+      ${catArr.length?`<div class="grid" style="grid-template-columns:1.2fr 0.8fr; gap:12px; align-items:center">
+        <div class="chart-box" style="border:none; padding:0">${svgHBar(catArr.map((c,i)=>({label:c.label,value:c.value,color:['#C9A84C','#0B1C3D','#0e9f8a','#e8a33d','#c94c5a'][i%5]})))}</div>
+        <div class="chart-box" style="border:none; min-height:160px">${svgDonut(catArr.map((c,i)=>({label:c.label,value:c.value,color:['#C9A84C','#0B1C3D','#0e9f8a','#e8a33d','#c94c5a'][i%5]})),{center:catArr.length+' cats'})}</div>
+      </div>
+      <div class="row" style="gap:10px; margin-top:12px; flex-wrap:wrap">${catArr.map(c=>`<span class="chip" style="border-left:3px solid var(--gold)"><b>${esc(c.label)}</b>: ${fmtRWF(c.value)}</span>`).join('')}</div>
+      <div class="hint" style="margin-top:10px">Food=meals, Transport=travel, Lodging=hotel, Drinks=beverages, Other=misc — premium gold highlights, donut + HBar combo like Stexo widgets.</div>`:'<div class="empty">No expenses logged — categories will appear here with donut + bar</div>'}
+    </div>
+  </div>
+
+  <div class="card"><h3>📋 Logged Training Sessions — Detailed</h3>
+    <div class="toolbar" style="margin-bottom:12px"><span class="chip"><b>${sessions.length}</b> sessions · ${catArr.length} categories · MoM ${mArr.length} months</span><span class="spacer"></span>
+      <button class="btn primary" id="logSession">+ Log new training</button></div>
+    ${sessions.length?`<div class="grid g-2" style="gap:16px">${sessions.map(s=>revCard(s)).join('')}</div>`:'<div class="empty"><div class="big">📚</div>No sessions yet — log your first training trip to see premium charts.</div>'}</div>`;
   const btn=document.getElementById('logSession'); if(btn) btn.onclick=()=>openRevSessionForm();
 }
+
 
 
 function revCard(s){
