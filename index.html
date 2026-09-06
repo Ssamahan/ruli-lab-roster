@@ -2038,9 +2038,16 @@ function renderSmBody(){
   const body=$('#smBody');
   if(UI.smTab==='manifests') return renderManifests(body);
   const q=(UI.smQ||'').toLowerCase(); const st=UI.smStatus||'All';
+  // Action dashboard for referred samples - calling for action
+  const allSamples=DB.samples||[];
+  const pend=allSamples.filter(s=>s.status==='Pending');
+  const over=pend.filter(s=>daysBetween(s.sentDate||s.collectionDate,todayISO())>7);
+  const pos=allSamples.filter(s=>s.status==='Positive').length;
+  const neg=allSamples.filter(s=>s.status==='Negative').length;
+  const done=allSamples.filter(s=>s.status==='Done').length;
+  
   let list=(DB.samples||[]).filter(s=>(st==='All'||s.status===st))
     .filter(s=>!q||[s.sampleId,s.patientName,s.test,s.hospital,s.healthFacility,s.patientId].join(' ').toLowerCase().includes(q));
-  const allSamples=DB.samples||[];
   const pendN=allSamples.filter(s=>s.status==='Pending').length;
   const overN=allSamples.filter(s=>s.status==='Pending'&&daysBetween(s.sentDate||s.collectionDate,todayISO())>7).length;
   const posN=allSamples.filter(s=>s.status==='Positive').length;
@@ -2056,7 +2063,29 @@ function renderSmBody(){
   const smMon={}; allSamples.forEach(s=>{ const m=s.sentDate?s.sentDate.slice(0,7):''; if(m) smMon[m]=(smMon[m]||0)+1; });
   const smMonArr=Object.entries(smMon).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>({label:MONTHS3[+k.slice(5,7)-1],value:v}));
   const smStatus=[{label:'Pending',value:pendN},{label:'Positive',value:posN},{label:'Negative',value:negN},{label:'Rejected',value:rejN}].filter(x=>x.value>0);
-  body.innerHTML=`
+
+  // Action row - calling for action dashboard
+  const actionRow = `
+  <div class="card gold-accent" style="margin-bottom:16px; background:linear-gradient(135deg,var(--surface),var(--surface-2))">
+    <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between">
+      <div><h3 style="margin:0">🧪 Referred Sample Actions</h3><p class="hint" style="margin-top:4px">Dashboard · All orders · Pending · Register · Manifest · Results</p></div>
+      <div class="row" style="gap:10px">
+        <button class="btn primary" id="btnRegister">+ Register sample</button>
+        <button class="btn teal" id="btnManifest">📦 Generate manifest</button>
+        <button class="btn" id="btnViewResults">👁️ View results</button>
+      </div>
+    </div>
+    <div class="grid g-auto" style="gap:12px; margin-top:16px">
+      ${kpiCard('All orders', allSamples.length, 'total referred', {tone:'blue', ic:'📦'})}
+      ${kpiCard('Pending orders', pend.length, over.length+' overdue', {tone:over.length?'red':'amber', ic:'⏳'})}
+      ${kpiCard('Positive', pos, 'results', {tone:'green', ic:'✅'})}
+      ${kpiCard('Negative', neg, 'results', {tone:'teal', ic:'🔬'})}
+      ${kpiCard('Done', done, 'completed', {tone:'blue', ic:'✔️'})}
+    </div>
+  </div>`;
+
+  body.innerHTML=`${actionRow}
+  
   <div class="grid g-2" style="margin-bottom:14px">
     <div class="card" style="margin:0"><h3>Referral volume per hospital</h3><div class="chart-box">${svgHBar(smHospArr)}</div></div>
     <div class="card" style="margin:0"><h3>Most referred sample types</h3><div class="chart-box">${svgHBar(smTests)}</div></div>
@@ -2366,11 +2395,11 @@ function openStockForm(cid){
 }
 function renderCatalog(body){
   body.innerHTML=`
-  <div class="grid g-2">
-    <div class="card"><h3> Referral hospitals</h3>
-      ${(DB.catalog.hospitals||[]).map(h=>`<div class="list-row" style="margin-bottom:6px"><div class="grow"><div class="t">${esc(h.name)}</div><div class="s">${esc(h.type||'')}</div></div>
-      <button class="btn xs danger" data-hdel="${h.id}">Del</button></div>`).join('')}
-      <div class="row" style="margin-top:10px"><button class="btn sm" id="addHosp"> Add hospital</button></div></div>
+  <div class="grid g-2" style="gap:16px">
+    <div class="card"><h3>🏥 Referral hospitals</h3>
+      ${(DB.catalog.hospitals||[]).map(h=>`<div class="list-row" style="margin-bottom:8px; display:flex; align-items:center; justify-content:space-between"><div class="grow"><div class="t">${esc(h.name)}</div><div class="s">${esc(h.type||'')}</div></div>
+      <div class="row" style="gap:6px"><button class="btn xs" data-hedit="${h.id}">Edit</button><button class="btn xs danger" data-hdel="${h.id}">Del</button></div></div>`).join('')}
+      <div class="row" style="margin-top:12px"><button class="btn sm primary" id="addHosp">+ Add hospital</button></div></div>
     <div class="card"><h3> Test catalog</h3>
       ${(DB.catalog.tests||[]).map(t=>`<div class="list-row" style="margin-bottom:6px"><span class="tag ${t.cat==='General'?'blue':'teal'}" style="min-width:64px">${esc(t.cat.split(' ')[0])}</span><div class="grow"><div class="t">${esc(t.name)}</div><div class="s">${t.code?'code: <b>'+esc(t.code)+'</b> · ':''}TAT ${t.tat!=null?t.tat+'d':'—'}${t.prefHosp?' · pref: '+esc(t.prefHosp):''}${t.prefix?' · prefix: '+esc(t.prefix):''}</div></div>
     <button class="btn xs" data-tedit2="${t.id}">Edit</button>
@@ -2379,16 +2408,19 @@ function renderCatalog(body){
     <div class="card"><h3> Health centers (VTM distribution)</h3>
       <div class="grid g-2" style="gap:6px">${(DB.catalog.healthCenters||[]).map(h=>`<div class="list-row" style="margin:0"><div class="grow"><div class="t" style="font-size:12.5px">${esc(h.name)}</div></div><button class="btn xs danger" data-hcdel="${h.id}">Del</button></div>`).join('')}</div>
       <div class="row" style="margin-top:10px"><button class="btn sm" id="addHC"> Add health center</button></div></div>
-    <div class="card"><h3> Consumables &amp; thresholds</h3>
-      ${(DB.catalog.consumables||[]).map(c=>`<div class="list-row" style="margin-bottom:6px"><div class="grow"><div class="t">${esc(c.name)}</div><div class="s">threshold <b>${c.threshold}</b> ${c.ageGroup?'· tracks age groups':''}</div></div><button class="btn xs danger" data-cdel="${c.id}">Del</button></div>`).join('')}
-      <div class="row" style="margin-top:10px"><button class="btn sm" id="addCons"> Add consumable</button></div></div>
+        <div class="card"><h3>📦 Consumables &amp; thresholds</h3>
+      ${(DB.catalog.consumables||[]).map(c=>`<div class="list-row" style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center"><div class="grow"><div class="t">${esc(c.name)}</div><div class="s">threshold <b>${c.threshold}</b> ${c.ageGroup?'· tracks age groups':''} · <span class="tag ${stockStatus(c.id)==='out'?'red':stockStatus(c.id)==='low'?'amber':'teal'}">${stockStatus(c.id)}</span></div></div><div class="row" style="gap:6px"><button class="btn xs" data-cedit="${c.id}">Edit</button><button class="btn xs danger" data-cdel="${c.id}">Del</button></div></div>`).join('')}
+      <div class="row" style="margin-top:12px"><button class="btn sm primary" id="addCons">+ Add consumable</button></div></div>
   </div>`;
   $('#addHosp').onclick=()=>addSimpleItem('hospital'); $('#addTest').onclick=()=>addSimpleItem('test');
   $('#addHC').onclick=()=>addSimpleItem('hc'); $('#addCons').onclick=addConsumable;
-  document.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>{ DB.catalog.tests=DB.catalog.tests.filter(x=>x.id!==b.dataset.tdel); saveDB(); renderStock(); });
-  document.querySelectorAll('[data-hdel]').forEach(b=>b.onclick=()=>{ DB.catalog.hospitals=DB.catalog.hospitals.filter(x=>x.id!==b.dataset.hdel); saveDB(); renderStock(); });
-  document.querySelectorAll('[data-hcdel]').forEach(b=>b.onclick=()=>{ DB.catalog.healthCenters=DB.catalog.healthCenters.filter(x=>x.id!==b.dataset.hcdel); saveDB(); renderStock(); });
-  document.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=()=>{ DB.catalog.consumables=DB.catalog.consumables.filter(x=>x.id!==b.dataset.cdel); saveDB(); renderStock(); });
+  document.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); DB.catalog.tests=DB.catalog.tests.filter(x=>x.id!==b.dataset.tdel); saveDB(); renderStock(); });
+  document.querySelectorAll('[data-hdel]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); DB.catalog.hospitals=DB.catalog.hospitals.filter(x=>x.id!==b.dataset.hdel); saveDB(); renderStock(); });
+  document.querySelectorAll('[data-hcdel]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); DB.catalog.healthCenters=DB.catalog.healthCenters.filter(x=>x.id!==b.dataset.hcdel); saveDB(); renderStock(); });
+  document.querySelectorAll('[data-cdel]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); DB.catalog.consumables=DB.catalog.consumables.filter(x=>x.id!==b.dataset.cdel); saveDB(); renderStock(); });
+  document.querySelectorAll('[data-hedit]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); const h=DB.catalog.hospitals.find(x=>x.id===b.dataset.hedit); if(!h) return; const name=prompt('Edit hospital name:',h.name); if(name){ h.name=name.trim(); saveDB(); renderStock(); } });
+  document.querySelectorAll('[data-hcedit]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); const hc=DB.catalog.healthCenters.find(x=>x.id===b.dataset.hcedit); if(!hc) return; const name=prompt('Edit health center:',hc.name); if(name){ hc.name=name.trim(); saveDB(); renderStock(); } });
+  document.querySelectorAll('[data-cedit]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); const c=DB.catalog.consumables.find(x=>x.id===b.dataset.cedit); if(!c) return; const name=prompt('Edit consumable name:',c.name); if(name){ c.name=name.trim(); const thr=prompt('Threshold:',c.threshold); if(thr) c.threshold=+thr; saveDB(); renderStock(); } });
   document.querySelectorAll('[data-tedit2]').forEach(b=>b.onclick=()=>editTest(b.dataset.tedit2));
 }
 function addSimpleItem(kind){
@@ -3815,7 +3847,7 @@ function renderLvPlan(body){
     :'<div class="empty">No leave recorded for '+fy+' yet.</div>'}</div>
   <div class="card" style="margin-bottom:16px"><h3> Past Leave Timeline — full history, completed marked </h3>
     <div class="tbl-wrap"><table class="tbl"><tr><th>Staff</th><th>Type</th><th>From</th><th>To</th><th>Back on</th><th>Note</th><th>Status</th></tr>
-    ${sortedLeaves.map(l=>`<tr><td>${esc(staffName(l.staffId))}</td><td>${esc(LEAVE_NAMES[l.type]||l.type)}</td>
+    ${DB.leaves.slice().sort((a,b)=>b.from.localeCompare(a.from)).map(l=>`<tr><td>${esc(staffName(l.staffId))}</td><td>${esc(LEAVE_NAMES[l.type]||l.type)}</td>
     <td>${fmtDate(l.from)}</td><td>${fmtDate(l.to)}</td><td>${fmtDate(l.backOn)}</td><td class="hint">${esc(l.note||'')}</td>
     <td>${l.to<today?'<span class="tag green"> Completed</span>':`<span class="tag blue">${esc(l.status)}</span>`}</td></tr>`).join('')}</table></div></div>`;
   const lvAuto=()=>{ const st=DB.staff.find(s=>s.name===$('#lv_staff').value);
