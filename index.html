@@ -1329,8 +1329,8 @@ async function exportPlanPNG(key){
   g.textAlign='left'; g.fillStyle='#5a6a8c'; g.font='11.5px Arial';
   g.fillText('Date: '+ex.date+'     FY: '+ex.fy+'     Period: '+ex.period, W/2-280, 214);
   g.strokeStyle='#0e2e5c'; g.lineWidth=2.5; g.beginPath(); g.moveTo(20,224); g.lineTo(W-20,224); g.stroke();
-  // table
-  let x0=24, y0=232;
+  // table - premium with breathing space
+  let x0=24, y0=y;
   g.font='bold 11px Arial';
   const drawCell=(x,y,w,h,fill,text,tcolor)=>{
     g.fillStyle=fill; g.fillRect(x,y,w,h);
@@ -1359,27 +1359,63 @@ async function exportPlanPNG(key){
       else { fill=CODE_COLORS[code]||'#fff'; txt=code; }
       if(c.next) { fill=blend(fill,'#eef1f7',0.5); }
       drawCell(x0+nameW+i*cellW, yy, cellW, rowH, fill, txt, tcol); } }
-  // legends
-  let ly=y0+40+nRows*rowH+12;
-  g.fillStyle='#16233f'; g.font='bold 12px Arial'; g.fillText('Keys:', x0, ly);
-  g.font='10.5px Arial'; let lx=x0+40;
-  for(const lg of ex.legends){ const w=g.measureText(lg).width+8;
-    if(lx+w>W-30){ lx=x0+40; ly+=18; } g.fillStyle='#4a5a7d'; g.textAlign='left'; g.textBaseline='alphabetic'; g.fillText(lg,lx,ly-3); lx+=w; }
-  if(ex.holidays.length){ ly+=22; g.fillStyle='#c2272c'; g.font='bold 11px Arial'; g.fillText('Holidays this period: '+ex.holidays.join('; '), x0, ly); }
-  // phones
-  ly+=24; g.fillStyle='#16233f'; g.font='bold 12px Arial'; g.fillText('Staff contacts:', x0, ly);
-  g.font='10.5px Arial'; g.fillStyle='#4a5a7d';
-  let px=x0+90, py=ly;
-  for(const p of ex.phones){ const s=p.name+' — '+p.phone; const w=g.measureText(s).width+14;
-    if(px+w>W-20){ px=x0+90; py+=16; } g.fillText(s,px,py-3); px+=w; }
-  // signatures
-  const sy=y0+40+nRows*rowH+legH+phoneH+10;
-  g.strokeStyle='#9aa8c4'; g.lineWidth=1;
-  for(let i=0;i<3;i++){ const sx=20+i*(W-40)/3; const bx=Math.min(240,(W-40)/3-30);
-    g.beginPath(); g.moveTo(sx+10,sy); g.lineTo(sx+10+bx,sy); g.stroke();
-    g.fillStyle='#5a6a8c'; g.font='bold 11px Arial'; g.fillText(ex.sig[i].l, sx+10, sy+16);
-    g.fillStyle='#16233f'; g.font='bold 12px Arial'; g.fillText(ex.sig[i].n, sx+10, sy+34);
-    g.fillStyle='#5a6a8c'; g.font='10.5px Arial'; g.fillText(ex.sig[i].r, sx+10, sy+49); }
+  // ===== KEYS - spacious, not inside table =====
+  let ly=y0+tableH+24;
+  g.fillStyle='#0B1C3D'; g.font='800 12px Space Grotesk'; g.textAlign='left'; g.fillText('Keys:', x0, ly);
+  ly+=18;
+  // Draw keys as premium tags with color dots
+  let kx=x0, ky=ly;
+  const keyW=320, keyH=26, gap=12;
+  ex.legends.forEach((lg,idx)=>{
+    if(kx+keyW > W-24){ kx=x0; ky+=keyH+gap; }
+    const code = lg.split(' — ')[0];
+    const col = CODE_COLORS[code]||'#f7f8fc';
+    // tag background
+    g.fillStyle='#F7F8FC'; g.beginPath(); if(g.roundRect) g.roundRect(kx,ky,keyW,keyH,8); else g.rect(kx,ky,keyW,keyH); g.fill();
+    g.strokeStyle='#e6e9f1'; g.lineWidth=0.8; if(g.roundRect) g.roundRect(kx,ky,keyW,keyH,8); else g.rect(kx,ky,keyW,keyH); g.stroke();
+    // color dot
+    g.fillStyle=col; g.beginPath(); g.arc(kx+14, ky+keyH/2, 6, 0, Math.PI*2); g.fill();
+    g.strokeStyle='#d4d9e6'; g.lineWidth=0.5; g.stroke();
+    g.fillStyle='#0B1C3D'; g.font='600 10.5px Space Grotesk'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(lg, kx+26, ky+keyH/2+0.5);
+    kx+=keyW+gap;
+  });
+  ly = ky+keyH+16;
+  if(ex.holidays.length){
+    g.fillStyle='#c94c5a'; g.font='700 10.5px Space Grotesk'; g.textAlign='left'; g.fillText('Holidays: '+ex.holidays.join(' · '), x0, ly);
+    ly+=18;
+  }
+
+  // ===== STAFF CONTACTS - premium rectangular blocks =====
+  g.fillStyle='#0B1C3D'; g.font='800 12px Space Grotesk'; g.fillText('Staff contacts:', x0, ly);
+  ly+=20;
+  let cx=x0, cy=ly;
+  const cW= Math.floor((W-48)/3), cH=32, cGap=12;
+  ex.phones.forEach((p,idx)=>{
+    if(cx+cW > W-20){ cx=x0; cy+=cH+cGap; }
+    // block
+    g.fillStyle='#F7F8FC'; g.beginPath(); if(g.roundRect) g.roundRect(cx,cy,cW-4,cH,10); else g.rect(cx,cy,cW-4,cH); g.fill();
+    g.strokeStyle='#e6e9f1'; g.lineWidth=0.8; if(g.roundRect) g.roundRect(cx,cy,cW-4,cH,10); else g.rect(cx,cy,cW-4,cH); g.stroke();
+    // gold left accent
+    g.fillStyle='#C9A84C'; g.fillRect(cx,cy,3,cH);
+    g.fillStyle='#0B1C3D'; g.font='700 11px Space Grotesk'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(p.name, cx+14, cy+11);
+    g.fillStyle='#5a6b8c'; g.font='500 10px Space Grotesk'; g.fillText(p.phone, cx+14, cy+22);
+    cx+=cW;
+  });
+  ly = cy+cH+28;
+
+  // ===== SIGNATORIES - use empty space, premium centered =====
+  const sy=ly;
+  g.strokeStyle='#C9A84C'; g.lineWidth=1.2;
+  g.beginPath(); g.moveTo(24,sy-12); g.lineTo(W-24,sy-12); g.stroke();
+  for(let i=0;i<3;i++){
+    const sx=24+i*(W-48)/3;
+    const bx=Math.min(260,(W-48)/3-20);
+    // signature line
+    g.strokeStyle='#8a9ab5'; g.lineWidth=1; g.beginPath(); g.moveTo(sx+8,sy+28); g.lineTo(sx+8+bx,sy+28); g.stroke();
+    g.fillStyle='#5a6b8c'; g.font='700 10px Space Grotesk'; g.textAlign='left'; g.fillText(ex.sig[i].l, sx+8, sy+10);
+    g.fillStyle='#0B1C3D'; g.font='800 12px Space Grotesk'; g.fillText(ex.sig[i].n, sx+8, sy+44);
+    g.fillStyle='#5a6b8c'; g.font='500 10.5px Space Grotesk'; g.fillText(ex.sig[i].r, sx+8, sy+58);
+  }
   cv.toBlob(b=>download(b,'Working-Plan-'+ex.key+'.png'));
   function blend(a,b,t){ const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16)), pb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
     return '#'+pa.map((v,i)=>Math.round(v+(pb[i]-v)*t).toString(16).padStart(2,'0')).join(''); }
@@ -1410,39 +1446,66 @@ function exportPlanPDF(key){
     d.text(String(c.dom),x+cellW/2,y0+21,{size:8.5,bold:true,color:c.holiday?'#c94c5a':(c.weekend?'#8a6d2b':'#0B1C3D')});
     d.rectBorder(x,y0,cellW,36,{width:0.4,color:'#d4d9e6'}); }
   d.rect(40,y0,nameW,36,{fill:'#0B1C3D'}); d.text('STAFF',42,y0+13,{size:9,bold:true,color:'1 1 1 rg'});
-  // ---- body ----
+  // ---- body - premium light ----
   for(let r=0;r<nRows;r++){
     const yy=y0+hdrH+r*rowH;
-    d.rect(40,yy,nameW,rowH,{fill:(r%2)?'#f0f0f0':'#ffffff'});
-    d.text(ex.staff[r],42,yy+5,{size:8,bold:true});
-    for(let i=0;i<cols;i++){ const code=(ex.codes[r]||[])[i]||''; const c=ex.colInfo[i];
+    d.rect(40,yy,nameW,rowH,{fill:(r%2)?'#F7F8FC':'#ffffff'});
+    d.text(ex.staff[r],42,yy+5,{size:8,bold:true,color:'#0B1C3D'});
+    for(let i=0;i<cols;i++){
+      const code=(ex.codes[r]||[])[i]||''; const c=ex.colInfo[i];
       const x=40+nameW+i*cellW;
       let fill='#ffffff';
-      if(code==='N'||code==='DN') fill='#d0d0d0';
-      else if(code) fill='#f4f4f4';
-      else if(c.holiday) fill='#f2f2f2';
-      if(c.next) fill='#f7f7f7';
+      if(code==='D') fill='#e8eefb';
+      else if(code==='N'||code==='DN') fill='#0B1C3D';
+      else if(code==='AL') fill='#fdf3d7';
+      else if(code) fill='#f7f8fc';
+      else if(c.holiday) fill='#fde2e2';
+      else if(c.weekend) fill='#fdf3d7';
+      if(c.next) fill='#f7f8fc';
       d.rect(x,yy,cellW,rowH,{fill});
-      if(code) d.text(code,x+cellW/2,yy+5,{size:7,bold:true});
-      d.rectBorder(x,yy,cellW,rowH,{width:0.25,color:'#999'}); }
+      if(code){
+        const col = code==='N'||code==='DN' ? '1 1 1 rg' : '0.04 0.11 0.24 rg';
+        d.text(code,x+cellW/2,yy+6,{size:7.5,bold:true,color:col});
+      }
+      d.rectBorder(x,yy,cellW,rowH,{width:0.3,color:'#d4d9e6'});
+    }
   }
-  // ---- bottom block ----
-  let ly=y0+hdrH+nRows*rowH+12;
-  d.text('Keys:  '+ex.legends.join('   '), 40, ly, {size:7.5});
-  if(ex.holidays.length){ ly+=11; d.text('Holidays this period: '+ex.holidays.join('; '), 40, ly, {size:7.5}); }
-  ly+=13;
-  d.text('Staff contacts:', 40, ly, {size:7.5, bold:true});
-  const phHalf=Math.ceil(ex.phones.length/2);
-  ex.phones.forEach((p,i)=>{ const col=i<phHalf?0:1; const row=i<phHalf?i:(i-phHalf);
-    d.text((i+1)+') '+p.name+' — '+p.phone, 40+col*300, ly+9+row*9, {size:7}); });
-  // signatures pinned to the bottom
-  const sy=H-46;
-  d.line(40,sy,W-40,sy,{width:0.6,color:'#000'});
-  for(let i=0;i<3;i++){ const sx=40+i*(W-80)/3; const bw=Math.min(220,(W-80)/3-24);
-    d.line(sx+6,sy+12,sx+6+bw,sy+12,{width:0.6,color:'#000'});
-    d.text(ex.sig[i].l, sx+6, sy+20, {size:7.5, bold:true});
-    d.text(ex.sig[i].n, sx+6, sy+29, {size:8.5, serif:true, bold:true});
-    d.text(ex.sig[i].r, sx+6, sy+38, {size:7}); }
+  // ---- bottom - premium spacious ----
+  let ly=y0+hdrH+nRows*rowH+18;
+  d.text('Keys:', 40, ly, {size:9, bold:true, color:'#0B1C3D'});
+  ly+=14;
+  // Keys in 4 columns with spacing
+  ex.legends.forEach((lg,idx)=>{
+    const col=idx%4, row=Math.floor(idx/4);
+    const x=40+col*190, y=ly+row*14;
+    d.text(lg, x, y, {size:7.5, color:'#0B1C3D'});
+  });
+  ly+= Math.ceil(ex.legends.length/4)*14 + 10;
+  if(ex.holidays.length){
+    d.text('Holidays: '+ex.holidays.join(' · '), 40, ly, {size:7.5, color:'#c94c5a'});
+    ly+=12;
+  }
+  // Staff contacts as rectangular blocks
+  d.text('Staff contacts:', 40, ly, {size:9, bold:true, color:'#0B1C3D'});
+  ly+=14;
+  ex.phones.forEach((p,i)=>{
+    const col=i%3, row=Math.floor(i/3);
+    const x=40+col*250, y=ly+row*16;
+    d.rect(x,y,240,12,{fill:'#F7F8FC', border:'#e6e9f1'});
+    d.rect(x,y,2,12,{fill:'#C9A84C'});
+    d.text(p.name+' — '+p.phone, x+8, y+3, {size:7, color:'#0B1C3D'});
+  });
+  ly+= Math.ceil(ex.phones.length/3)*16 + 20;
+  // Signatures - use empty space, centered, gold line above
+  const sy=H-52;
+  d.line(40,sy-10,W-40,sy-10,{width:1.2,color:'#C9A84C'});
+  for(let i=0;i<3;i++){
+    const sx=40+i*(W-80)/3; const bw=Math.min(240,(W-80)/3-20);
+    d.line(sx+6,sy+14,sx+6+bw,sy+14,{width:0.8,color:'#8a9ab5'});
+    d.text(ex.sig[i].l, sx+6, sy+2, {size:8, bold:true, color:'#5a6b8c'});
+    d.text(ex.sig[i].n, sx+6, sy+26, {size:10, bold:true, color:'#0B1C3D'});
+    d.text(ex.sig[i].r, sx+6, sy+36, {size:8, color:'#5a6b8c'});
+  }
   download(new Blob([d.save()],{type:'application/pdf'}),'Working-Plan-'+ex.key+'.pdf');
 }
 function exportPlanXLSX(key){
@@ -2851,8 +2914,8 @@ function printPlanWindow(key){
   const p=(DB.workingPlans[key]||{}).primary; if(!p) return toast('Generate the plan first','warn');
   const ex=buildPlanExport(key,p);
   const w=window.open('','_blank'); if(!w) return toast('Pop-up blocked — allow pop-ups for print','err');
-  let h=`<table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;width:100%;font-size:9px">
-    <thead><tr><th style="background:#0e2e5c;color:#fff;width:120px">Staff</th>`;
+  let h=`<table border="1" cellspacing="0" cellpadding="5" style="border-collapse:collapse;width:100%;font-size:10px; font-family:'Space Grotesk',sans-serif">
+    <thead><tr><th style="background:#0B1C3D;color:#fff;width:160px; padding:8px; text-align:left; font-family:'Space Grotesk'">Staff</th>`;
   ex.colInfo.forEach(c=>{ h+=`<th style="background:${c.holiday?'#ffdcdc':(c.weekend?'#fdf0db':'#eaf0fa')};color:${c.holiday?'#c2272c':(c.weekend?'#9a6b10':'#5a6a8c')}">${c.dow}</th>`; });
   h+=`</tr><tr><th style="background:#eef3fb">Name</th>`;
   ex.colInfo.forEach(c=>{ h+=`<th style="background:${c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef3fb')}">${c.dom}</th>`; });
