@@ -4120,6 +4120,7 @@ function renderStaff(){
     <button class="tab active" data-stf="staff"> Staff Registry</button>
     <button class="tab" data-stf="let"> Letterhead &amp; Branding</button>
     <button class="tab" data-stf="data"> Data &amp; Backup</button>
+    <button class="tab" data-stf="sec">🔐 Security</button>
   </div><div id="stfBody"></div>`;
   $('#stfTabs').onclick=e=>{ const b=e.target.closest('.tab'); if(!b) return;
     $$('#stfTabs .tab').forEach(t=>t.classList.toggle('active',t===b)); UI.stfTab=b.dataset.stf; renderStfBody(); };
@@ -4129,6 +4130,7 @@ function renderStfBody(){
   const body=$('#stfBody');
   if(UI.stfTab==='let') return renderLetterhead(body);
   if(UI.stfTab==='data') return renderDataMgr(body);
+  if(UI.stfTab==='sec') return renderSecurity(body);
   body.innerHTML=`
   <div class="toolbar"><span class="chip"><b>${DB.staff.length}</b> staff · ${activeStaff().length} active</span>
     <span class="hint">Exited staff stay in records but are never suggested in new plans.</span>
@@ -4212,6 +4214,140 @@ function openStaffForm(id){
     renderDash();
   });
 }
+
+function renderSecurity(body){
+  if(typeof isAdmin==='function' && !isAdmin()){
+    body.innerHTML=`<div class="viewer-banner"><div class="ic">🔒</div><div><b>Security — Admin Only</b><br><span style="font-weight:500">Change password and 2-FA settings are visible only to Admin.</span></div><button class="btn primary sm" onclick="openAuth('pass')" style="margin-left:auto">🔐 Admin Login</button></div>`;
+    return;
+  }
+  const auth = getAuthRec();
+  const twoFA = auth.twoFAEnabled ? true : false;
+  const backupCodes = auth.backupCodes || [];
+
+  body.innerHTML=`
+  <div class="grid g-2" style="gap:16px">
+    <div class="card gold-accent"><h3>🔐 Change Password</h3>
+      <form id="changePassForm"><div class="form-grid fg-2">
+        <div><label>Current Password</label><input type="password" id="cp_old" placeholder="Current" required></div>
+        <div><label>New Password (≥8 chars, strong)</label><input type="password" id="cp_new" placeholder="New strong password" required style="border-left:3px solid var(--gold)"></div>
+        <div><label>Confirm New Password</label><input type="password" id="cp_new2" placeholder="Repeat new password" required></div>
+        <div style="display:flex; align-items:flex-end"><button class="btn primary" type="submit">💾 Update Password</button></div>
+      </div></form>
+      <p class="hint" style="margin-top:10px">Password is stored locally (localStorage) for this static site. Use strong password with numbers + symbols. No credential shown publicly.</p>
+    </div>
+
+    <div class="card gold-accent"><h3>🛡️ Two-Factor Authentication (2-FA)</h3>
+      <div class="alert ${twoFA?'ok':'warn'}" style="margin-bottom:12px">
+        ${twoFA?'<b>✅ 2-FA Enabled</b> — Login requires Password + OTP (6-digit, 5 min). Extra security against hijacking.' : '<b>⚠️ 2-FA Disabled</b> — Enable for best security. Login will require Password + OTP.'}
+      </div>
+      <div class="form-grid fg-2">
+        <div><label>2-FA Status</label>
+          <select id="twofa_toggle"><option value="0">Disabled</option><option value="1">Enabled — Require OTP after password</option></select>
+        </div>
+        <div><label>Registered Email for OTP</label><input id="twofa_email" value="${esc(auth.email||'')}" placeholder="registered admin email"></div>
+        <div style="grid-column:1/-1">
+          <div class="row" style="gap:10px; margin-top:8px">
+            <button class="btn primary sm" id="twofa_enable">💾 Save 2-FA Settings</button>
+            <button class="btn teal sm" id="twofa_genCodes">🎲 Generate Backup Codes</button>
+            <button class="btn sm" id="twofa_test">📧 Send Test OTP</button>
+          </div>
+        </div>
+        ${backupCodes.length?`<div style="grid-column:1/-1"><label>Backup Codes (one-time use, store safely)</label><div class="grid g-3" style="gap:8px">${backupCodes.map(c=>`<span class="chip" style="font-family:monospace; font-weight:800; border-left:3px solid var(--gold)">${esc(c)}</span>`).join('')}</div><p class="hint">Each backup code can be used once if you lose email access. Regenerate to invalidate old ones.</p></div>`:''}
+      </div>
+      <hr style="margin:16px 0">
+      <h3 style="font-size:13px">How 2-FA works on this static site (no server):</h3>
+      <ol style="font-size:12.5px; margin:8px 0 0 18px; line-height:1.6; color:var(--muted)">
+        <li>Enable 2-FA → Save → Login will now require <b>Password + OTP</b></li>
+        <li>On login, after correct password, system auto-generates 6-digit OTP valid 5 min, shows it here + opens mailto to your registered email</li>
+        <li>Enter OTP to complete login — session 24h</li>
+        <li>Backup codes work if email unavailable — each code one-time</li>
+        <li>For true server email delivery, integrate EmailJS API key in Data & Backup → add key → OTP will be emailed automatically</li>
+      </ol>
+    </div>
+
+    <div class="card"><h3>🔑 Session & Security Info</h3>
+      <div class="grid g-2" style="gap:12px">
+        <div><label>Current Session</label><div class="chip">${(function(){ const s=getSession(); return s? 'Active — expires '+ new Date(s.exp).toLocaleString() : 'No active session'; })()}</div></div>
+        <div><label>Last Password Change</label><div class="chip">${esc(auth.lastPassChange||auth.created||'—')}</div></div>
+        <div><label>Admin Username</label><div class="chip"><b>${esc(auth.username||'admin')}</b> · private</div></div>
+        <div><label>Registered Email</label><div class="chip">${esc(auth.email||'—')} · private</div></div>
+      </div>
+      <div class="row" style="margin-top:16px; gap:10px">
+        <button class="btn danger sm" id="secLogout">Logout Everywhere</button>
+        <button class="btn sm" id="secClearOTP">Clear OTP & Backup Codes</button>
+      </div>
+    </div>
+  </div>`;
+
+  document.getElementById('twofa_toggle').value = twoFA ? '1' : '0';
+  
+  document.getElementById('changePassForm').addEventListener('submit',ev=>{
+    ev.preventDefault();
+    const oldP=document.getElementById('cp_old').value;
+    const newP=document.getElementById('cp_new').value;
+    const newP2=document.getElementById('cp_new2').value;
+    const auth=getAuthRec();
+    if(oldP!==auth.password) return toast('Current password incorrect','err');
+    if(newP.length<8) return toast('New password must be ≥8 chars for security','warn');
+    if(newP!==newP2) return toast('New passwords do not match','err');
+    if(newP===oldP) return toast('New password must be different','warn');
+    auth.password=newP;
+    auth.lastPassChange=new Date().toISOString();
+    saveAuthRec(auth);
+    toast('✅ Password updated — use new password next login','ok');
+    document.getElementById('cp_old').value=''; document.getElementById('cp_new').value=''; document.getElementById('cp_new2').value='';
+    renderSecurity(body);
+  });
+
+  document.getElementById('twofa_enable').onclick=()=>{
+    const enabled=document.getElementById('twofa_toggle').value==='1';
+    const email=document.getElementById('twofa_email').value.trim();
+    if(!email || !email.includes('@')) return toast('Valid email required for OTP','warn');
+    const auth=getAuthRec();
+    auth.twoFAEnabled=enabled;
+    auth.email=email;
+    auth.last2FAChange=new Date().toISOString();
+    saveAuthRec(auth);
+    toast(enabled ? '✅ 2-FA Enabled — Password + OTP required' : '⚠️ 2-FA Disabled', enabled?'ok':'warn');
+    renderSecurity(body);
+  };
+
+  document.getElementById('twofa_genCodes').onclick=()=>{
+    const codes = Array.from({length:8},()=> Math.random().toString(36).slice(2,6).toUpperCase() + '-' + Math.random().toString(36).slice(2,6).toUpperCase());
+    const auth=getAuthRec();
+    auth.backupCodes=codes;
+    saveAuthRec(auth);
+    toast('🎲 8 backup codes generated — store safely','ok');
+    renderSecurity(body);
+  };
+
+  document.getElementById('twofa_test').onclick=()=>{
+    const auth=getAuthRec();
+    const email=auth.email;
+    const code=sendOTP(email,'login');
+    toast('📧 Test OTP: '+code+' (5 min) — check mailto and screen','ok');
+  };
+
+  document.getElementById('secLogout').onclick=()=>{
+    confirmDlg('Logout everywhere? This will clear session on this device and require re-login with password + OTP if 2-FA enabled.',()=>{
+      clearSession();
+      try{ localStorage.removeItem('labSystems.session.v1_persist'); }catch(e){}
+      toast('Logged out everywhere — re-login required','warn');
+      updateAuthUI();
+      renderSecurity(body);
+    });
+  };
+
+  document.getElementById('secClearOTP').onclick=()=>{
+    confirmDlg('Clear OTP and backup codes? This will invalidate all pending OTPs.',()=>{
+      try{ localStorage.removeItem('labSystems.otp.v1'); }catch(e){}
+      const auth=getAuthRec(); auth.backupCodes=[]; saveAuthRec(auth);
+      toast('OTP & backup codes cleared','ok');
+      renderSecurity(body);
+    });
+  };
+}
+
 function renderLetterhead(body){
   const s=DB.settings;
   body.innerHTML=`
@@ -4697,9 +4833,19 @@ function wireAuth(){
   document.getElementById('verifyOtpBtn').onclick = ()=>{
     const email = document.getElementById('otpEmail').value.trim();
     const code = document.getElementById('otpCode').value.trim();
+    const rec=getAuthRec();
+    // Check backup codes too
+    if(rec.backupCodes && rec.backupCodes.includes(code)){
+      rec.backupCodes = rec.backupCodes.filter(c=>c!==code);
+      saveAuthRec(rec);
+      setSession(); closeAuth(); updateAuthUI(); toast('🔓 Backup code verified — Admin access granted','ok');
+      window._pending2FA=false;
+      return;
+    }
     const v = verifyOTP(code, email, 'login');
     if(!v.ok) return toast(v.msg,'err');
-    setSession(); closeAuth(); updateAuthUI(); toast('🔓 OTP verified — Admin access granted','ok');
+    setSession(); closeAuth(); updateAuthUI(); toast('🔓 OTP verified — Admin access granted'+(window._pending2FA?' (2-FA)':''),'ok');
+    window._pending2FA=false;
   };
 
   document.getElementById('sendResetOtpBtn').onclick = ()=>{
