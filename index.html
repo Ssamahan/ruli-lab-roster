@@ -961,13 +961,10 @@ function expTotals(){ let expenses=0, reimbursed=0, count=0;
 
 /* ---------- charts (inline SVG) ---------- */
 // ============ CHARTS (reference-grade: flat, rounded, bold) ============
-const CHART_COLORS=['#C9A84C','#0B1C3D','#0e9f8a','#e8a33d','#c94c5a','#162a52','#b8963f','#2a9d8f','#8a6d2b','#5a6b8c'];
-function chartFontScale(w){ return Math.max(12, Math.round(w/46)); }
 function chartFontScale(w){ const base = w>=700 ? 13 : w>=500 ? 12 : 11; return base; }
+const CHART_COLORS=['#C9A84C','#0B1C3D','#0e9f8a','#e8a33d','#c94c5a','#162a52','#b8963f','#2a9d8f','#8a6d2b','#5a6b8c'];
 function getScreenTier(){ const ww = window.innerWidth || 1200; if(ww<=560) return 'xs'; if(ww<=980) return 'sm'; return 'lg'; }
 
-
-function chartFontScale(w){ const base = w>=700 ? 13 : w>=500 ? 12 : 11; return base; }
 
 function svgBar(data,opts){ // responsive vertical bars - predefined spaces
   opts=opts||{};
@@ -1030,6 +1027,23 @@ function svgHBar(data,opts){ // responsive horizontal bars - spacious
   });
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${Math.min(h, 600)}px">${rows}</svg>`;
 }
+
+function svgDonut(items,opts){ opts=opts||{}; const size=opts.size||160, cx=size/2, cy=size/2, r=size/2-12, ir=r*0.62;
+  const total=items.reduce((a,i)=>a+(i.value||0),0)||1; let acc=0; let segs='';
+  const tier = typeof getScreenTier==='function' ? getScreenTier() : 'lg';
+  items.forEach((it,i)=>{
+    const frac=it.value/total; if(frac<=0) return;
+    const a0=acc*2*Math.PI-Math.PI/2, a1=(acc+frac)*2*Math.PI-Math.PI/2;
+    const large=(a1-a0)>Math.PI?1:0;
+    const x0=cx+r*Math.cos(a0), y0=cy+r*Math.sin(a0), x1=cx+r*Math.cos(a1), y1=cy+r*Math.sin(a1);
+    const col=it.color||CHART_COLORS[i%CHART_COLORS.length];
+    segs+=`<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 ${large} 1 ${x1.toFixed(1)} ${y1.toFixed(1)} L${cx} ${cy} Z" fill="${col}" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.08))"><title>${esc(it.label)}: ${it.value}</title></path>`;
+    acc+=frac;
+  });
+  const centerColor = (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='dark') ? '#111E36' : '#fff';
+  return `<svg viewBox="0 0 ${size} ${size}" width="${opts.width||140}" height="${opts.height||140}" role="img" style="overflow:visible"><g>${segs}</g><circle cx="${cx}" cy="${cy}" r="${ir}" fill="${centerColor}" stroke="var(--edge)" stroke-width="1"/><text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="${tier==='xs'?14:16}" font-weight="900" fill="var(--text)">${opts.center||''}</text></svg>`;
+}
+
 function svgStackBar(layers,opts){ // responsive stacked - Daily staffing trend fix
   opts=opts||{}; const tier=getScreenTier();
   const n=layers[0]?layers[0].values.length:0; if(!n) return '';
@@ -1282,7 +1296,7 @@ async function exportPlanPNG(key){
   const ver=(DB.workingPlans[key]||{}).primary; if(!ver) return toast('No plan for this month','err');
   const ex=buildPlanExport(key,ver);
   const crest=await imgOr(DB.settings.crest||null,'moh'); const logo=await imgOr(DB.settings.logo||null,'hospital');
-  const W=1400;
+  const W=1400; const scale=2;
   const cols=ex.colInfo.length; const nRows=ex.staff.length;
   const _tmpCv=document.createElement('canvas'); const _tg=_tmpCv.getContext('2d'); _tg.font='bold 12px Space Grotesk';
   const maxName=Math.max(160, ...ex.staff.map(nm=>Math.round(_tg.measureText(nm).width+40)));
@@ -1299,15 +1313,14 @@ async function exportPlanPNG(key){
   const cv=document.createElement('canvas'); cv.width=W*scale; cv.height=H*scale; const g=cv.getContext('2d'); g.scale(scale,scale);
   g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
   g.textBaseline='alphabetic';
-  // header band
-  g.fillStyle='#0e2e5c'; g.fillRect(0,0,W,96); g.fillStyle='#ffffff';
-  g.font='bold 18px Georgia'; g.textAlign='center';
-  // Premium light header - Ruli DH only, no MOH deep blue
-  g.fillStyle='#0B1C3D'; g.font='bold 22px Space Grotesk'; g.fillText(ex.hospital+' · '+ex.dept, W/2, 36);
-  g.fillStyle='rgba(255,255,255,0.85)'; g.font='12px Arial'; g.fillText('National Reference & Laboratory Services', W/2, 88);
-  // crest left, logo right
-  if(crest){ g.drawImage(crest, 26, 10, 74, 74); } else { g.fillStyle='#f8fafc'; g.beginPath(); g.moveTo(63,10); g.lineTo(100,16); g.lineTo(100,52); g.quadraticCurveTo(100,74,63,82); g.quadraticCurveTo(26,74,26,52); g.lineTo(26,16); g.closePath(); g.fill(); g.strokeStyle='#0e2e5c'; g.stroke(); g.fillStyle='#0e2e5c'; g.font='bold 13px Arial'; g.fillText('MOH',63,50); }
-  if(logo){ g.drawImage(logo, W-100, 10, 74, 74); } else { g.fillStyle='#0e2e5c'; g.beginPath(); g.roundRect?g.roundRect(W-100,10,74,74,14):g.rect(W-100,10,74,74); g.fill(); g.fillStyle='#fff'; g.font='bold 14px Arial'; g.fillText('RDH', W-63, 50); }
+  // Premium light header - no deep blue, only Ruli DH
+  g.fillStyle='#F7F8FC'; g.fillRect(0,0,W,78);
+  g.fillStyle='#0B1C3D'; g.font='bold 22px Space Grotesk'; g.textAlign='center'; g.fillText(ex.hospital+' · '+ex.dept, W/2, 32);
+  g.fillStyle='#5a6b8c'; g.font='12px Space Grotesk'; g.fillText(ex.email+' · '+ex.phone, W/2, 52);
+  g.strokeStyle='#C9A84C'; g.lineWidth=3; g.beginPath(); g.moveTo(20,70); g.lineTo(W-20,70); g.stroke();
+  // Optional logos - light premium, no MOH shield if not uploaded
+  if(crest){ g.drawImage(crest, 24, 8, 60, 60); }
+  if(logo){ g.drawImage(logo, W-84, 8, 60, 60); }
   // hospital block
   g.fillStyle='#16233f'; g.textAlign='center'; g.font='bold 24px Georgia'; g.fillText(ex.hospital, W/2, 128);
   g.fillStyle='#4a5a7d'; g.font='bold 15px Arial'; g.fillText(ex.dept, W/2, 152);
@@ -1382,8 +1395,8 @@ function exportPlanPDF(key){
   const cellW=Math.floor((W-40-nameW)/cols);
   const rowH=18, hdrH=34;
   // ---- header ----
-  // Light premium header - only Ruli DH
   d.text(ex.hospital+' · '+ex.dept, W/2, 28, {size:12, bold:true});
+  d.text(ex.email+' · '+ex.phone, W/2, 40, {size:8});
   d.text(ex.hospital+' — '+ex.dept, W/2, 52, {size:11, bold:true});
   d.text(ex.email+'  ·  '+ex.phone, W/2, 63, {size:8});
   d.text(ex.title, W/2, 82, {size:14, serif:true, bold:true});
