@@ -2051,8 +2051,9 @@ function renderDash(){
   const upcoming=DB.trainings.filter(t=>t.status==='upcoming').length;
   const completed=DB.trainings.filter(t=>t.status==='completed').length;
   const today=todayISO();
-  const onLeaveNow=DB.leaves.filter(l=>l.from<=today&&l.to>=today&&l.status!=='Completed');
-  const returningSoon=mergedForDisplay.filter(l=>l.from<=today&&l.to>=today&&l.status!=='Completed'&&daysBetween(today,l.to)<=7);
+  const mergedForDisplayDash = (typeof mergeConsecutiveLeaves==='function') ? mergeConsecutiveLeaves(DB.leaves) : DB.leaves;
+  const onLeaveNow=mergedForDisplayDash.filter(l=>l.from<=today&&l.to>=today&&l.status!=='Completed'&&l.status!=='Ended');
+  const returningSoon=mergedForDisplayDash.filter(l=>l.from<=today&&l.to>=today&&l.status!=='Completed'&&l.status!=='Ended'&&daysBetween(today,l.to)<=7);
   const nextHol=(DB.holidays||[]).filter(h=>h.date>=today&&h.official).sort((a,b)=>a.date.localeCompare(b.date))[0];
   const nowKey=monthKey(todayISO()); const nightCov=monthNightCoverage(nowKey);
   const testTypes={}; samples.forEach(s=>{ testTypes[s.test]=(testTypes[s.test]||0)+1; });
@@ -2112,7 +2113,7 @@ function renderDash(){
   <!-- Secondary KPI Row - compact but visual -->
   <div class="grid g-4" style="gap:12px; margin-bottom:20px">
     ${kpiCard('Positivity Rate', posRate+'%', pos+' positive of '+tested.length+' tested', {tone:'green', ic:''})}
-    ${kpiCard('Pending Samples', pend.length, over.length+' overdue · '+rejRate+'% rejection', {tone:over.length?'red':'amber', ic:'⏳'})}
+    ${kpiCard('Pending Samples', pend.length, over.length+' overdue · '+rejRate+'% rejection', {tone:over.length?'red':'amber', ic:''})}
     ${kpiCard('Active Staff', act.length, 'avg age '+avgAge+'y · exp '+avgExp+'y · '+onLeaveNow.length+' on leave', {tone:'blue', ic:''})}
     ${kpiCard('Upcoming / Completed', upcoming+' / '+completed, 'trainings · FIFO '+ (fq[0]?fq[0].s.name.split(' ')[0]+' next':'—'), {tone:'teal', ic:''})}
   </div>
@@ -2135,7 +2136,7 @@ function renderDash(){
     <div class="card"><h3> Referral Volume per Hospital</h3><div class="chart-box">${svgHBar(hospArr)}</div></div>
     <div class="card"><h3> Most Referred Sample Types</h3><div class="chart-box">${svgHBar(mostTests)}</div></div>
     <div class="card"><h3> VTM Distributed per Health Center</h3><div class="chart-box">${svgHBar(vtmArr)}</div></div>
-    <div class="card"><h3>⏱ TAT — Average vs Expected (Days) — Line + Bar</h3>
+    <div class="card"><h3>TAT — Average vs Expected (Days) — Line + Bar</h3>
       <div class="chart-box">${(function(){
         const data=tats.map(t=>({label:t.test, value:t.avg, color:'#C9A84C'}));
         const exp=tats.map(t=>({label:t.test+' exp', value:t.exp, color:'#0B1C3D'}));
@@ -2154,7 +2155,7 @@ function renderDash(){
   </div>
 
   <div class="grid g-2" style="gap:16px">
-    <div class="card"><h3>⏳ Pending Samples — Aging List</h3>
+    <div class="card"><h3>Pending Samples — Aging List</h3>
       ${pend.length?`<div class="tbl-wrap"><table class="tbl"><tr><th>Patient</th><th>Test</th><th>Hospital</th><th>Sent</th><th>Elapsed</th><th>Status</th></tr>
       ${pend.map(s=>`<tr><td>${esc(maskName(s.patientName))}</td><td>${esc(s.test)}</td><td>${esc(s.hospital)}</td><td>${fmtDate(s.sentDate||s.collectionDate)}</td>
       <td class="num">${daysBetween(s.sentDate||s.collectionDate,todayISO())}d</td><td>${daysBetween(s.sentDate||s.collectionDate,todayISO())>7?'<span class="tag red">Overdue</span>':'<span class="tag amber">Pending</span>'}</td></tr>`).join('')}</table></div>`
@@ -2308,7 +2309,7 @@ function renderSmBody(){
     </div>
     <div class="grid g-auto" style="gap:12px; margin-top:16px">
       ${kpiCard('All orders', allSamples.length, 'total referred', {tone:'blue', ic:''})}
-      ${kpiCard('Pending orders', pend.length, over.length+' overdue', {tone:over.length?'red':'amber', ic:'⏳'})}
+      ${kpiCard('Pending orders', pend.length, over.length+' overdue', {tone:over.length?'red':'amber', ic:''})}
       ${kpiCard('Positive', pos, 'results', {tone:'green', ic:''})}
       ${kpiCard('Negative', neg, 'results', {tone:'teal', ic:''})}
       ${kpiCard('Done', done, 'completed', {tone:'blue', ic:''})}
@@ -2564,7 +2565,10 @@ function renderOverview(body){
       const ex=expiredBatches(c.id); const es=expiringSoon(c.id);
       const tone=st==='out'?'red':st==='low'?'amber':'green';
       const label=st==='out'?'OUT OF STOCK':st==='low'?'LOW':'OK';
-      const ser=(DB.stock.entries||[]).filter(e=>e.cid===c.id).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
+      const allEntries=(DB.stock.entries||[]).filter(e=>e.cid===c.id).sort((a,b)=>b.date.localeCompare(a.date));
+      const ser=allEntries.slice(0,2);
+      const hasMore=allEntries.length>2;
+      const moreCount=allEntries.length-2;
       return `<div class="card" style="margin:0">
         <div style="display:flex;gap:10px;align-items:flex-start"><div style="flex:1"><div class="t" style="font-weight:800;font-size:14.5px">${esc(c.name)}</div>
         <div class="hint">${esc(c.unit||'units')}${c.ageGroup?' · tracks Pediatric/Neonatal vs Adult':''}</div></div>
@@ -2575,12 +2579,22 @@ function renderOverview(body){
         ${es.length?`<div class="alert warn" style="padding:7px 10px;font-size:12px"> ${es.reduce((a,b)=>a+b.qty,0)} expiring ≤30d (${es.map(b=>b.expiry).join(', ')})</div>`:''}
         ${ex.length?`<div class="alert err" style="padding:7px 10px;font-size:12px"> Expired batch — ${ex.map(b=>b.expiry+(b.qty>0?' ('+b.qty+' left)':'')).join(', ')}</div>`:''}
         <div class="meter" style="margin:8px 0 12px"><i style="width:${Math.min(100,total/Math.max(c.threshold,1)*100)}%"></i></div>
-        <div class="hint" style="margin-bottom:6px">Recent entries</div>
-        ${ser.length?`<div style="font-size:11.5px;color:var(--muted)">${ser.map(e=>`<div style="display:flex;gap:8px;padding:2px 0"><span>${fmtDate(e.date)}</span><span class="tag ${e.type==='received'?'green':e.type==='issued'?'blue':e.type==='used'?'gray':'red'}">${e.type}</span><span>${e.qty} ${e.healthCenter?'→ '+esc(e.healthCenter):''}</span></div>`).join('')}</div>`:'<div class="hint">No entries yet</div>'}
+        <div class="hint" style="margin-bottom:6px">Recent entries (2 latest)</div>
+        ${ser.length?`<div style="font-size:11.5px;color:var(--muted)" id="stockRecent-${c.id}">${ser.map(e=>`<div style="display:flex;gap:8px;padding:3px 0; justify-content:space-between"><span>${fmtDate(e.date)}</span><span class="tag ${e.type==='received'?'green':e.type==='issued'?'blue':e.type==='used'?'gray':'red'}">${e.type}</span><span>${e.qty} ${e.healthCenter?'→ '+esc(e.healthCenter):''}</span></div>`).join('')}</div>`:'<div class="hint">No entries yet</div>'}
+        ${hasMore?`<div style="margin-top:8px"><button class="btn xs" data-stock-toggle="${c.id}" data-expanded="0">Show ${moreCount} more</button><div id="stockMore-${c.id}" style="display:none; font-size:11.5px; color:var(--muted); margin-top:6px">${allEntries.slice(2).map(e=>`<div style="display:flex;gap:8px;padding:3px 0; justify-content:space-between"><span>${fmtDate(e.date)}</span><span class="tag ${e.type==='received'?'green':e.type==='issued'?'blue':e.type==='used'?'gray':'red'}">${e.type}</span><span>${e.qty} ${e.healthCenter?'→ '+esc(e.healthCenter):''}</span></div>`).join('')}</div></div>`:''}
         <div class="row" style="margin-top:12px"><button class="btn sm" data-act="log" data-cid="${c.id}"> Log entry</button></div></div>`; }).join('')}
   </div>`;
   const logBtn=document.querySelectorAll('[data-act="log"]');
   logBtn.forEach(b=>b.onclick=()=>openStockForm(b.dataset.cid));
+  document.querySelectorAll('[data-stock-toggle]').forEach(b=>{
+    b.onclick=()=>{
+      const cid=b.dataset.stockToggle;
+      const more=document.getElementById('stockMore-'+cid);
+      const expanded=b.dataset.expanded==='1';
+      if(expanded){ more.style.display='none'; b.dataset.expanded='0'; b.textContent='Show '+(more.children.length)+' more'; }
+      else { more.style.display='block'; b.dataset.expanded='1'; b.textContent='Show less'; }
+    };
+  });
   $('#btnLog').onclick=()=>openStockForm();
 }
 function renderLedger(body){
@@ -4981,13 +4995,12 @@ function updateAuthUI(){
     document.body.classList.add('viewer-mode');
   }
 
-  // Confidentiality: hide revenue nav for viewers
+  // Confidentiality: hide revenue & staff nav for viewers per Ruli policy
   try{
     const revNav = document.querySelector('[data-tab="revenue"]');
-    if(revNav){
-      if(isViewer()) revNav.style.display='none';
-      else revNav.style.display='';
-    }
+    const staffNav = document.querySelector('[data-tab="staff"]');
+    if(revNav){ revNav.style.display = isViewer() ? 'none' : ''; }
+    if(staffNav){ staffNav.style.display = isViewer() ? 'none' : ''; }
     // Hide patient name columns in viewer mode via CSS injection
     if(isViewer()){
       document.querySelectorAll('th').forEach(th=>{
@@ -4996,14 +5009,8 @@ function updateAuthUI(){
     }
   }catch(e){}
 
-  // inject viewer banner in each module if viewer
+  // Hide viewer banner completely per user request - admin login button already in topbar
   document.querySelectorAll('.viewer-banner').forEach(b=>b.remove());
-  if(!isAdmin()){
-    const banner = `<div class="viewer-banner"><div class="ic"></div><div><b>Viewer mode — read-only</b><br><span style="font-weight:500;color:#5d6b82">You can view & download Working Plan & Roster (PNG/PDF/Excel/Print), but cannot generate or edit. Login as Admin to make changes.</span></div><button class="btn primary sm" onclick="openAuth('pass')" style="margin-left:auto"> Admin Login</button></div>`;
-    document.querySelectorAll('.module.active').forEach(m=>{
-      m.insertAdjacentHTML('afterbegin', banner);
-    });
-  }
 }
 function openAuth(tab){
   const ov = document.getElementById('authOverlay');
@@ -5332,7 +5339,7 @@ function renderEQA(){
   <div class="grid g-auto" style="gap:16px; margin-bottom:20px">
     ${kpiCard('Total PT', total, 'all programs', {tone:'blue', ic:''})}
     ${kpiCard('Pass rate', passRate+'%', passed+' passed, '+failed+' failed', {tone:passRate>=80?'green':'red', ic:'', bar:passRate})}
-    ${kpiCard('Pending', pending, 'awaiting scores', {tone:'amber', ic:'⏳'})}
+    ${kpiCard('Pending', pending, 'awaiting scores', {tone:'amber', ic:''})}
     ${kpiCard('Programs', programs.length, 'Hem, Biochem, TB, HIV, Serology', {tone:'teal', ic:''})}
   </div>
 
@@ -5400,7 +5407,6 @@ function renderEQA(){
         const hiv = ptList.filter(p=>p.program==='HIV'&&p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered)).map((p,i)=>({x:i,y:p.scorePercent||0}));
         const tb = ptList.filter(p=>p.program==='TB'&&p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered)).map((p,i)=>({x:i,y:p.scorePercent||0}));
         const s = [{label:'HIV %', color:'#0e9f8a', values:hiv},{label:'TB %', color:'#c94c5a', values:tb}].filter(x=>x.values.length);
-        const xLabels = mArr || ptList.filter(p=>p.scorePublished).map(p=>p.code);
         return svgLineChart(s, {xLabels: ptList.filter(p=>p.scorePublished).map(p=>p.code||p.delivered.slice(0,7))});
       })()}</div>
       <p class="hint">HIV & TB scored in %, Pass >=80%</p>
