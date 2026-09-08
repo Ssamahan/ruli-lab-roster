@@ -1,9 +1,12 @@
 # 🧪 Ruli District Hospital — Lab Systems v4 (Premium Command Center)
 
+![Logo](assets/logo-square.png)
+**Logo:** Gold blood drop #C9A84C falling from micropipette deep navy #0B1C3D — premium luxury, favicon in tab, animated boot (dropFall + glowPulse)
+
 **🔗 Live App:** https://ssamahan.github.io/ruli-lab-roster/
 **📂 Repo:** https://github.com/Ssamahan/ruli-lab-roster
 
-Premium, luxurious, professional laboratory command-center — single-file HTML app (`index.html`), zero-cost, works on phone & PC, offline-first (localStorage).
+Premium, luxurious, professional laboratory command-center — single-file HTML app (`index.html`), zero-cost, works on phone & PC, offline-first (localStorage) + optional live Firebase Realtime DB (free) + EmailJS real OTP email (free) — zero-cost.
 
 Built for **Lab Manager: Kelvin SAMAHANI** | Email: registered Admin email
 Verified by **Dr. Judson B. MUMBERE** (Clinical Director) | Approved by **Jean de Dieu SIBOMANA** (HR Officer)
@@ -12,9 +15,9 @@ Verified by **Dr. Judson B. MUMBERE** (Clinical Director) | Approved by **Jean d
 
 ### ✨ Design System (Premium Luxurious)
 
-- **Colors:** Deep Navy #0B1C3D (primary), Soft Gold #C9A84C (accent — active nav, primary buttons, KPI numbers, chart highlights), Light bg #F7F8FC / White cards, Dark bg #0A1628 / Cards #111E36
+- **Colors:** Deep Navy #0B1C3D (primary), Soft Gold #C9A84C (accent — active nav, primary buttons, KPI numbers, chart highlights), Light bg #F7F8FC / White cards, Dark bg #000000 full black / Cards #111111, text #f2f2f2 readable
 - **Status refined muted:** Warning soft amber, Critical refined rose, Success muted teal — excellent contrast both modes
-- **Light/Dark Mode:** Toggle 🌙/☀️ in top header with gold glow, 250ms smooth transitions, every module fully supports both
+- **Light/Dark Mode:** Toggle SVG moon/sun (Lucide stroke 1.8) with gold glow in top header with gold glow, 250ms smooth transitions, every module fully supports both
 - **Spacing:** Strict 8px scale (4,8,12,16,20,24,32), Grid `repeat(auto-fit, minmax(min(100%, 280px), 1fr))`, gaps 16-20px, no random blanks, cards stretch equally
 - **Typography:** Space Grotesk (kept), KPI 28-36px responsive 900 weight, chart labels ≥12-13px readable
 - **Cards:** Soft multi-layer shadows, radius 12-16px, gold left accent on important, hover lift + gold glow
@@ -161,3 +164,10 @@ High-end hospital laboratory command center — refined, modern, trustworthy, pr
 
 Lab Manager: Kelvin SAMAHANI — registered Admin email — 0787055121
 Ruli District Hospital — Laboratory Department — rulidhlab@gmail.com — 0787-055-121
+
+
+### 🛠 Recent Fixes
+- Fix x-axis black text unreadable in night mode: charts now theme-aware var(--text) var(--muted) var(--surface) instead of hardcoded #000000
+- Fix admin login showing nothing: toasts z-index 200→10001 above overlay 9998
+- Fix admin login button disabled in viewer-mode CSS
+- Add live Firebase + EmailJS UI
