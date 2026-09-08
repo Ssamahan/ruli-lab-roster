@@ -5000,16 +5000,29 @@ const SESSION_KEY='labSystems.session.v1';
 const OTP_KEY='labSystems.otp.v1';
 
 function getAuthRec(){
-  // patched to include TOTP
-
   try{
     let rec = JSON.parse(localStorage.getItem(AUTH_KEY));
     if(!rec){
-      rec = {username:'admin', password:'••••••••', email:'registered admin email', created:new Date().toISOString()};
+      rec = {username:'admin', password:'RuliLab@2026', email:'smhnklvn@gmail.com', created:new Date().toISOString(), twoFAEnabled:false, totpEnabled:false, totpSecret:null, backupCodes:[]};
       localStorage.setItem(AUTH_KEY, JSON.stringify(rec));
     }
+    // Migration from placeholder •••••••• to real defaults (keeps existing if user changed)
+    if(!rec.password || rec.password.includes('•') || rec.password==='••••••••' || rec.password==='registered admin email' || rec.password.length<4){
+      rec.password='RuliLab@2026';
+    }
+    if(!rec.email || rec.email==='registered admin email' || rec.email.toLowerCase().includes('registered')){
+      rec.email='smhnklvn@gmail.com';
+    }
+    if(!rec.username) rec.username='admin';
+    if(rec.totpEnabled==null) rec.totpEnabled=false;
+    if(rec.twoFAEnabled==null) rec.twoFAEnabled=false;
+    if(!Array.isArray(rec.backupCodes)) rec.backupCodes=[];
+    // Save migrated
+    try{ localStorage.setItem(AUTH_KEY, JSON.stringify(rec)); }catch(e){}
     return rec;
-  }catch(e){ return {username:'admin', password:'••••••••', email:'registered admin email'}; }
+  }catch(e){
+    return {username:'admin', password:'RuliLab@2026', email:'smhnklvn@gmail.com', twoFAEnabled:false, totpEnabled:false, totpSecret:null, backupCodes:[]};
+  }
 }
 function saveAuthRec(r){ localStorage.setItem(AUTH_KEY, JSON.stringify(r)); }
 
@@ -5248,24 +5261,60 @@ function wireAuth(){
     b.onclick = ()=>openAuth(b.dataset.authTab);
   });
 
-  document.getElementById('authLoginBtn').onclick = ()=>{
-    const u = document.getElementById('authUser').value.trim();
-    const p = document.getElementById('authPass').value;
-    const rec = getAuthRec();
-    if(u===rec.username && p===rec.password){
-      setSession(); closeAuth(); updateAuthUI(); toast(' Welcome Admin — editing enabled','ok');
-    }else{
-      toast(' Wrong username or password — admin credentials','err');
-    }
-  };
+  const authLoginBtnEl = document.getElementById('authLoginBtn');
+  if(authLoginBtnEl){
+    authLoginBtnEl.onclick = ()=>{
+      const uEl=document.getElementById('authUser');
+      const pEl=document.getElementById('authPass');
+      const u = uEl ? uEl.value.trim() : '';
+      const p = pEl ? pEl.value : '';
+      const rec = getAuthRec();
+      // Allow backup codes as password
+      if(rec.backupCodes && rec.backupCodes.includes(p)){
+        rec.backupCodes = rec.backupCodes.filter(c=>c!==p);
+        try{ saveAuthRec(rec); }catch(e){}
+        setSession(); closeAuth(); updateAuthUI(); toast(' Backup code used — Admin access granted','ok');
+        window._pending2FA=false; window._pendingTOTP=false;
+        return;
+      }
+      if(u===rec.username && p===rec.password){
+        // Check 2FA
+        if(rec.totpEnabled && rec.totpSecret){
+          toast(' Password OK — enter Authenticator App code (Google Authenticator/Authy) in OTP tab','ok');
+          openAuth('otp');
+          window._pendingTOTP=true;
+          const otpInfoEl=document.getElementById('otpInfo');
+          if(otpInfoEl) otpInfoEl.textContent='Enter 6-digit code from authenticator app';
+          return;
+        }
+        if(rec.twoFAEnabled){
+          const code=sendOTP(rec.email,'login');
+          const otpInfoEl=document.getElementById('otpInfo');
+          if(otpInfoEl) otpInfoEl.textContent='OTP: '+code+' (5 min)';
+          toast(' Password OK — OTP '+code+' sent to '+rec.email+' (demo shows here)','ok');
+          openAuth('otp');
+          window._pending2FA=true;
+          try{
+            const subj=encodeURIComponent('Ruli Lab — Your OTP Code');
+            const body=encodeURIComponent('Your OTP for Lab Systems admin login is: '+code+'\nValid 5 minutes.');
+            window.open('mailto:'+rec.email+'?subject='+subj+'&body='+body,'_blank');
+          }catch(e){}
+          return;
+        }
+        setSession(); closeAuth(); updateAuthUI(); toast(' Welcome Admin — editing enabled','ok');
+      }else{
+        toast(' Wrong username or password — try admin / RuliLab@2026 (or your changed password)','err');
+      }
+    };
+  }
 
-  document.getElementById('sendOtpBtn').onclick = ()=>{
+  const sendOtpBtnEl=document.getElementById('sendOtpBtn'); if(sendOtpBtnEl) sendOtpBtnEl.onclick = ()=>{
     const email = document.getElementById('otpEmail').value.trim();
     const rec = getAuthRec();
     if(!email || !email.includes('@')) return toast('Enter valid email','warn');
     if(email.toLowerCase() !== rec.email.toLowerCase()) return toast('Email not registered as admin email ('+rec.email+')','err');
     const code = sendOTP(email, 'login');
-    document.getElementById('otpInfo').textContent = 'OTP: '+code+' (valid 5 min)';
+    const otpInfoEl2=document.getElementById('otpInfo'); if(otpInfoEl2) otpInfoEl2.textContent = 'OTP: '+code+' (valid 5 min)';
     toast(' OTP generated: '+code+' — demo shows it here. Check your email app if mailto opened.','ok');
     // mailto fallback
     try{
@@ -5274,7 +5323,7 @@ function wireAuth(){
       window.open('mailto:'+email+'?subject='+subj+'&body='+body, '_blank');
     }catch(e){}
   };
-  document.getElementById('verifyOtpBtn').onclick = async()=>{
+  const verifyOtpBtnEl=document.getElementById('verifyOtpBtn'); if(verifyOtpBtnEl) verifyOtpBtnEl.onclick = async()=>{
     const email = document.getElementById('otpEmail').value.trim();
     const code = document.getElementById('otpCode').value.trim();
     const rec=getAuthRec();
@@ -5301,12 +5350,12 @@ function wireAuth(){
     window._pending2FA=false; window._pendingTOTP=false;
   };
 
-  document.getElementById('sendResetOtpBtn').onclick = ()=>{
+  const sendResetOtpBtnEl=document.getElementById('sendResetOtpBtn'); if(sendResetOtpBtnEl) sendResetOtpBtnEl.onclick = ()=>{
     const email = document.getElementById('resetEmail').value.trim();
     const rec = getAuthRec();
     if(email.toLowerCase() !== rec.email.toLowerCase()) return toast('Email not matching registered admin email','err');
     const code = sendOTP(email, 'reset');
-    document.getElementById('resetInfo').textContent = 'Reset OTP: '+code;
+    const resetInfoEl=document.getElementById('resetInfo'); if(resetInfoEl) resetInfoEl.textContent = 'Reset OTP: '+code;
     toast(' Reset OTP: '+code+' (5 min) — shown here for demo','ok');
     try{
       const subj = encodeURIComponent('Ruli Lab — Password Reset OTP');
@@ -5314,7 +5363,7 @@ function wireAuth(){
       window.open('mailto:'+email+'?subject='+subj+'&body='+body, '_blank');
     }catch(e){}
   };
-  document.getElementById('resetPassBtn').onclick = ()=>{
+  const resetPassBtnEl=document.getElementById('resetPassBtn'); if(resetPassBtnEl) resetPassBtnEl.onclick = ()=>{
     const email = document.getElementById('resetEmail').value.trim();
     const code = document.getElementById('resetOtp').value.trim();
     const np = document.getElementById('newPass').value;
@@ -5329,7 +5378,7 @@ function wireAuth(){
   };
 
   // close on overlay click outside card
-  document.getElementById('authOverlay').addEventListener('click', e=>{
+  const authOverlayEl=document.getElementById('authOverlay'); if(authOverlayEl) authOverlayEl.addEventListener('click', e=>{
     if(e.target.id==='authOverlay') closeAuth();
   });
 }
