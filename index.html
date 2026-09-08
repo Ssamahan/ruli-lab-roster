@@ -1113,15 +1113,14 @@ function svgDonut(items,opts){ if(!items||!items.length) return '<div class="emp
     segs+=`<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} A${r} ${r} 0 ${large} 1 ${x1.toFixed(1)} ${y1.toFixed(1)} L${cx} ${cy} Z" fill="${col}" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.08))"><title>${esc(it.label)}: ${it.value}</title></path>`;
     acc+=frac;
   });
-  const centerColor = (typeof document!=='undefined' && document.documentElement.getAttribute('data-theme')==='dark') ? '#111E36' : '#fff';
-  return `<svg viewBox="0 0 ${size} ${size}" width="${opts.width||140}" height="${opts.height||140}" role="img" style="overflow:visible"><g>${segs}</g><circle cx="${cx}" cy="${cy}" r="${ir}" fill="${centerColor}" stroke="var(--edge)" stroke-width="1"/><text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="${tier==='xs'?14:16}" font-weight="900" fill="var(--text)">${opts.center||''}</text></svg>`;
+  return `<svg viewBox="0 0 ${size} ${size}" width="${opts.width||140}" height="${opts.height||140}" role="img" style="overflow:visible"><g>${segs}</g><circle cx="${cx}" cy="${cy}" r="${ir}" fill="var(--surface)" stroke="var(--edge)" stroke-width="1"/><text x="${cx}" y="${cy+6}" text-anchor="middle" font-size="${tier==='xs'?14:16}" font-weight="900" fill="var(--text)">${opts.center||''}</text></svg>`;
 }
 
 
 
 
 
-function svgBar(data,opts){ // extra luxury vertical bars - rounded, gradient, glow
+function svgBar(data,opts){ // extra luxury vertical bars - rounded, gradient, glow - theme aware
   opts=opts||{};
   const tier=getScreenTier();
   const w = tier==='xs' ? 380 : tier==='sm' ? 540 : (opts.w||700);
@@ -1137,10 +1136,9 @@ function svgBar(data,opts){ // extra luxury vertical bars - rounded, gradient, g
   const y0v=pad.t+ (max/range)*ih;
   let defs='', bars='', labels='';
   
-  // Define luxury gradients
   data.forEach((d,i)=>{
     const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
-    const gradId=`gradBar${i}_${Date.now()}`;
+    const gradId=`gradBar${i}_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
     const isGold = col==='#C9A84C' || col.toLowerCase()==='#c9a84c';
     const lightCol = isGold ? '#e8d5a3' : col+'CC';
     defs+=`<linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lightCol}" stop-opacity="0.95"/><stop offset="100%" stop-color="${col}" stop-opacity="1"/></linearGradient>`;
@@ -1152,32 +1150,30 @@ function svgBar(data,opts){ // extra luxury vertical bars - rounded, gradient, g
     const vh=Math.abs(d.value)/range*ih; const y=d.value>=0?y0v-vh:y0v;
     const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
     const grad=d._grad;
-    // Extra luxury: rounded top only, gradient, gold glow if gold
     const isGold = col==='#C9A84C';
     bars+=`<g style="transition:all 250ms ease">
       <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(vh,3).toFixed(1)}" rx="12" ry="12" fill="url(#${grad})" style="filter:drop-shadow(0 4px 12px rgba(11,28,61,0.12))${isGold?'; filter:drop-shadow(0 0 0 1px rgba(201,168,76,0.22)) drop-shadow(0 6px 20px rgba(201,168,76,0.22))':''}"><title>${esc(d.label)}: ${d.value}</title></rect>
-      <!-- highlight line on top edge -->
       <line x1="${(x+4).toFixed(1)}" y1="${(y+3).toFixed(1)}" x2="${(x+bw-4).toFixed(1)}" y2="${(y+3).toFixed(1)}" stroke="rgba(255,255,255,0.55)" stroke-width="1.5" stroke-linecap="round"/>
     </g>`;
-    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(y-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs,12)}" font-weight="900" fill="#000000" style="paint-order:stroke; stroke:#fff; stroke-width:4px; stroke-linejoin:round; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.08))">${d.value}</text>`;
+    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${(y-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs,12)}" font-weight="900" fill="var(--text)" style="paint-order:stroke; stroke:var(--surface); stroke-width:4px; stroke-linejoin:round; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.08))">${d.value}</text>`;
     if(opts.labels!==false){
       const lab = String(d.label).slice(0, tier==='xs'?9:15);
-      labels+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,11)}" fill="#000000" font-weight="700">${esc(lab)}</text>`;
+      labels+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,11)}" fill="var(--muted)" font-weight="700">${esc(lab)}</text>`;
     }
   });
 
   let gl='';
-  gl+=`<line x1="${pad.l}" y1="${y0v.toFixed(1)}" x2="${w-pad.r}" y2="${y0v.toFixed(1)}" stroke="#d4d9e6" stroke-width="1.4"/>`;
+  gl+=`<line x1="${pad.l}" y1="${y0v.toFixed(1)}" x2="${w-pad.r}" y2="${y0v.toFixed(1)}" stroke="var(--edge-strong)" stroke-width="1.4"/>`;
   for(let g=0;g<=4;g++){
     const gy=pad.t+(ih*g)/4; const val=Math.round(max-(range*g)/4);
-    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="4 6"/>`;
-    gl+=`<text x="${pad.l-12}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,11)}" fill="#000000" font-weight="600">${val}</text>`;
+    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="var(--edge)" stroke-width="1" stroke-dasharray="4 6"/>`;
+    gl+=`<text x="${pad.l-12}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,11)}" fill="var(--muted)" font-weight="600">${val}</text>`;
   }
 
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px; background:var(--surface); border-radius:14px"><defs>${defs}</defs><g>${gl}</g><g>${bars}</g><g>${labels}</g></svg>`;
 }
 
-function svgHBar(data,opts){ // extra luxury horizontal bars - gradient, pill shape
+function svgHBar(data,opts){ // extra luxury horizontal bars - gradient, pill shape - theme aware
   opts=opts||{};
   const tier=getScreenTier();
   const w = tier==='xs' ? 380 : tier==='sm' ? 540 : (opts.w||700);
@@ -1191,14 +1187,14 @@ function svgHBar(data,opts){ // extra luxury horizontal bars - gradient, pill sh
 
   data.forEach((d,i)=>{
     const col=d.color||CHART_COLORS[i%CHART_COLORS.length];
-    const gradId=`gradH${i}_${Date.now()}`;
+    const gradId=`gradH${i}_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
     defs+=`<linearGradient id="${gradId}" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="${col}CC"/><stop offset="100%" stop-color="${col}"/></linearGradient>`;
     d._grad=gradId;
   });
 
   for(let g=0; g<=4; g++){
     const gx = labW + (iw*g)/4;
-    rows+=`<line x1="${gx}" y1="12" x2="${gx}" y2="${h-12}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="4 6"/>`;
+    rows+=`<line x1="${gx}" y1="12" x2="${gx}" y2="${h-12}" stroke="var(--edge)" stroke-width="1" stroke-dasharray="4 6"/>`;
   }
 
   data.forEach((d,i)=>{
@@ -1208,18 +1204,18 @@ function svgHBar(data,opts){ // extra luxury horizontal bars - gradient, pill sh
     const grad=d._grad;
     const isGold = col==='#C9A84C';
     rows+=`<g>
-      <rect x="0" y="${y}" width="${labW-10}" height="${rowH-10}" rx="10" fill="${i%2===0 ? '#F7F8FC' : '#ffffff'}" stroke="#e6e9f1" stroke-width="0.8"/>
-      <text x="${labW-14}" y="${(y+rowH/2).toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="${Math.max(fs,12)}" fill="#000000" font-weight="800">${esc(String(d.label).slice(0, tier==='xs'?14:22))}</text>
+      <rect x="0" y="${y}" width="${labW-10}" height="${rowH-10}" rx="10" fill="var(--bg2)" stroke="var(--edge)" stroke-width="0.8"/>
+      <text x="${labW-14}" y="${(y+rowH/2).toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="${Math.max(fs,12)}" fill="var(--text)" font-weight="800">${esc(String(d.label).slice(0, tier==='xs'?14:22))}</text>
       <rect x="${labW}" y="${(y+12).toFixed(1)}" width="${Math.max(bw,6).toFixed(1)}" height="20" rx="10" fill="url(#${grad})" style="filter:drop-shadow(0 3px 8px rgba(11,28,61,0.12))${isGold?'; filter:drop-shadow(0 0 0 1px rgba(201,168,76,0.22)) drop-shadow(0 4px 16px rgba(201,168,76,0.22))':''}"><title>${esc(d.label)}: ${d.value}</title></rect>
-      <circle cx="${(labW+bw).toFixed(1)}" cy="${(y+22).toFixed(1)}" r="5" fill="#fff" stroke="${col}" stroke-width="2.5" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.12))"/>
-      <text x="${(labW+bw+18).toFixed(1)}" y="${(y+rowH/2).toFixed(1)}" dominant-baseline="middle" font-size="${Math.max(fs,12)}" font-weight="900" fill="#000000">${d.value}</text>
+      <circle cx="${(labW+bw).toFixed(1)}" cy="${(y+22).toFixed(1)}" r="5" fill="var(--surface)" stroke="${col}" stroke-width="2.5" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.12))"/>
+      <text x="${(labW+bw+18).toFixed(1)}" y="${(y+rowH/2).toFixed(1)}" dominant-baseline="middle" font-size="${Math.max(fs,12)}" font-weight="900" fill="var(--text)">${d.value}</text>
     </g>`;
   });
 
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${Math.min(h, 700)}px; background:var(--surface); border-radius:14px"><defs>${defs}</defs><g>${rows}</g></svg>`;
 }
 
-function svgStackBar(layers,opts){ // extra luxury stacked bars - rounded, gradient, compact
+function svgStackBar(layers,opts){ // extra luxury stacked bars - rounded, gradient, compact - theme aware
   opts=opts||{}; const tier=getScreenTier();
   const n=layers[0]?layers[0].values.length:0; if(!n) return '';
   const isCompact = n<=6;
@@ -1235,14 +1231,14 @@ function svgStackBar(layers,opts){ // extra luxury stacked bars - rounded, gradi
   let defs='', bars='', xLabs='', grid='';
 
   layers.forEach((l,li)=>{
-    const gradId=`gradStack${li}_${Date.now()}`;
+    const gradId=`gradStack${li}_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
     defs+=`<linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${l.color}DD"/><stop offset="100%" stop-color="${l.color}"/></linearGradient>`;
     l._grad=gradId;
   });
 
   for(let g=0;g<=4;g++){
     const gy=pad.t+(ih*g)/4;
-    grid+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="4 6"/><text x="${pad.l-14}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,11)}" fill="#000000" font-weight="600">${Math.round(max*(4-g)/4)}</text>`;
+    grid+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="var(--edge)" stroke-width="1" stroke-dasharray="4 6"/><text x="${pad.l-14}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,11)}" fill="var(--muted)" font-weight="600">${Math.round(max*(4-g)/4)}</text>`;
   }
 
   for(let i=0;i<n;i++){
@@ -1250,14 +1246,13 @@ function svgStackBar(layers,opts){ // extra luxury stacked bars - rounded, gradi
     let y=pad.t+ih;
     let stack=[];
     for(let l of layers){ const v=l.values[i]||0; if(v<=0) continue; const bh=(v/max)*ih; y-=bh; stack.push({y,bh,color:l.color,grad:l._grad,label:l.label,value:v}); }
-    // Draw from bottom up with rounded corners - only top segment rounded
     stack.forEach((seg, idx)=>{
       const isTop = idx===stack.length-1;
       const rx = isTop ? 10 : 2;
       bars+=`<rect x="${x.toFixed(1)}" y="${seg.y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(seg.bh,2).toFixed(1)}" rx="${rx}" fill="url(#${seg.grad})" style="filter:drop-shadow(0 2px 6px rgba(11,28,61,0.10))"><title>${esc(seg.label)}: ${seg.value}</title></rect>`;
     });
     const xlab = opts.xLabels?opts.xLabels[i]:'W'+(i+1);
-    xLabs+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,11)}" fill="#000000" font-weight="700">${esc(String(xlab).slice(0,12))}</text>`;
+    xLabs+=`<text x="${(x+bw/2).toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,11)}" fill="var(--muted)" font-weight="700">${esc(String(xlab).slice(0,12))}</text>`;
   }
 
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" style="overflow:visible; max-height:${h}px; background:var(--surface); border-radius:14px"><defs>${defs}</defs><g>${grid}</g><g>${bars}</g><g>${xLabs}</g></svg>`;
@@ -1292,11 +1287,10 @@ function svgLineChart(series, opts){
   let gl='';
   for(let g=0;g<=4;g++){
     const gy=pad.t+(ih*g)/4; const val = (maxY - (rangeY*g)/4);
-    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="#eef1f6" stroke-width="1" stroke-dasharray="3 4"/>`;
-    gl+=`<text x="${pad.l-10}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,10)}" fill="#9aa7ba" font-weight="600">${typeof val==='number'?val.toFixed(val>=10?0:1):val}</text>`;
+    gl+=`<line x1="${pad.l}" y1="${gy}" x2="${w-pad.r}" y2="${gy}" stroke="var(--edge)" stroke-width="1" stroke-dasharray="3 4"/>`;
+    gl+=`<text x="${pad.l-10}" y="${gy+4}" text-anchor="end" font-size="${Math.max(fs-1,10)}" fill="var(--muted)" font-weight="600">${typeof val==='number'?val.toFixed(val>=10?0:1):val}</text>`;
   }
 
-  // Helper to create smooth curved path from points
   function smoothPath(points, tension=0.4){
     if(points.length<2) return '';
     if(points.length===2){
@@ -1308,13 +1302,10 @@ function svgLineChart(series, opts){
       const p1 = points[i];
       const p2 = points[i+1];
       const p3 = i+2 < points.length ? points[i+2] : p2;
-      
-      // Catmull-Rom to Bezier with tension
       const cp1x = p1.x + (p2.x - p0.x) * tension / 6;
       const cp1y = p1.y + (p2.y - p0.y) * tension / 6;
       const cp2x = p2.x - (p3.x - p1.x) * tension / 6;
       const cp2y = p2.y - (p3.y - p1.y) * tension / 6;
-      
       path+=` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
     }
     return path;
@@ -1329,9 +1320,7 @@ function svgLineChart(series, opts){
       return {x, y, orig:pt};
     });
 
-    // Curved line path
     const pathD = smoothPath(points, 0.5);
-    // Curved area path (fill under curve)
     let areaD = pathD;
     if(points.length>1){
       areaD+=` L${points[points.length-1].x.toFixed(1)},${(pad.t+ih).toFixed(1)} L${points[0].x.toFixed(1)},${(pad.t+ih).toFixed(1)} Z`;
@@ -1339,19 +1328,22 @@ function svgLineChart(series, opts){
     areas+=`<path d="${areaD}" fill="${col}" opacity="0.10" style="transition:all 250ms ease"/>`;
     lines+=`<path d="${pathD}" fill="none" stroke="${col}" stroke-width="${tier==='xs'?2.6:3}" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 3px 6px rgba(0,0,0,0.10)); transition:all 250ms ease"><title>${esc(s.label)}</title></path>`;
 
-    // Dots on curve
     points.forEach(pt=>{
-      dots+=`<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${tier==='xs'?4:5}" fill="${col}" stroke="#fff" stroke-width="2.2" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.14)); transition:all 250ms ease"><title>${esc(s.label)}: ${pt.orig.y} at ${pt.orig.x}</title></circle>`;
+      dots+=`<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${tier==='xs'?4:5}" fill="${col}" stroke="var(--surface)" stroke-width="2.2" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.14)); transition:all 250ms ease"><title>${esc(s.label)}: ${pt.orig.y} at ${pt.orig.x}</title></circle>`;
       if(pt.orig.y!==0 && pt.orig.y!=null){
-        dots+=`<text x="${pt.x.toFixed(1)}" y="${(pt.y-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-2,10)}" font-weight="800" fill="#0B1C3D" style="paint-order:stroke; stroke:#fff; stroke-width:3px; stroke-linejoin:round">${typeof pt.orig.y==='number' ? (Math.abs(pt.orig.y)>=100?Math.round(pt.orig.y):pt.orig.y.toFixed(1)) : ''}</text>`;
+        dots+=`<text x="${pt.x.toFixed(1)}" y="${(pt.y-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-2,10)}" font-weight="800" fill="var(--text)" style="paint-order:stroke; stroke:var(--surface); stroke-width:3px; stroke-linejoin:round">${typeof pt.orig.y==='number' ? (Math.abs(pt.orig.y)>=100?Math.round(pt.orig.y):pt.orig.y.toFixed(1)) : ''}</text>`;
       }
     });
   });
 
   if(opts.xLabels){
+    // Intelligent skipping to avoid overlap - use same logic as bar charts
+    const minLabelSpace=56;
+    const showEvery=Math.max(1, Math.ceil(opts.xLabels.length * minLabelSpace / iw));
     opts.xLabels.forEach((lab,i)=>{
+      if(i%showEvery!==0 && i!==opts.xLabels.length-1) return;
       const x = pad.l + (i/(Math.max(opts.xLabels.length-1,1)))*iw;
-      xLabels+=`<text x="${x.toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,10)}" fill="#5d6b82" font-weight="600">${esc(String(lab).slice(0,12))}</text>`;
+      xLabels+=`<text x="${x.toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,10)}" fill="var(--muted)" font-weight="600">${esc(String(lab).slice(0,12))}</text>`;
     });
   }
 
