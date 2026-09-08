@@ -5808,13 +5808,23 @@ function renderEQA(){
     chartData[prog] = pts.map((p,i)=>({x:i, y: typeof p.score==='number'?p.score: (p.scoring==='%'?p.scorePercent||0:0)}));
   });
 
-  // Timeline flow for PT (premium like training)
+  // Premium PT Journey timeline - no emojis, clean SVG, gold fading line, beautiful
+  const checkSVG='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10-10"/></svg>';
+  const crossSVG='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  const progIcon={
+    'Hematology': '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/></svg>',
+    'Biochemistry': '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/></svg>',
+    'TB': '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>',
+    'HIV': '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-6.5-4.5-9-8.5A5 5 0 0 1 12 7a5 5 0 0 1 9 5.5c-2.5 4-9 8.5-9 8.5z"/></svg>',
+    'Serology': '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>'
+  };
   const timelineSteps = ptList.slice(0,8).map((p,i)=>{
-    const icons = {Hematology:'', Biochemistry:'', TB:'', HIV:'', Serology:''};
+    const isPass = p.overall==='Pass';
+    const dotIcon = isPass ? checkSVG : (p.overall==='Fail' ? crossSVG : (progIcon[p.program]||checkSVG));
     return `<div class="timeline-step">
-      <div class="timeline-year">${esc(p.code||quarterLabel(p.delivered))}</div>
-      <div class="timeline-dot ${p.overall==='Pass'?'':'next'}" style="${p.overall==='Pass'?'border-color:var(--teal)':'border-color:var(--rose)'}">${icons[p.program]||''}</div>
-      <div class="timeline-content"><b>${esc(p.program)} · ${esc(p.overall||'Pending')}</b><small>${fmtDate(p.delivered)} → Score: ${p.score!=null?p.score:(p.scorePercent!=null?p.scorePercent+'%':'—')}</small></div>
+      <div class="timeline-year" style="${isPass?'background:var(--teal-soft); border-color:var(--teal-border); color:var(--teal)':'background:var(--rose-soft); border-color:var(--rose-border); color:var(--rose)'}">${esc(p.code||quarterLabel(p.delivered))}</div>
+      <div class="timeline-dot ${isPass?'':'next'}" style="${isPass?'border-color:var(--teal); background:var(--teal-soft); color:var(--teal)':'border-color:var(--rose); background:var(--rose-soft); color:var(--rose)'}">${dotIcon}</div>
+      <div class="timeline-content"><b>${esc(p.program)} · ${esc(p.overall||'Pending')}</b><small>${fmtDate(p.delivered)} → Score: ${p.score!=null?p.score+' SD':(p.scorePercent!=null?p.scorePercent+'%':'—')}</small></div>
     </div>`;
   }).join('');
 
