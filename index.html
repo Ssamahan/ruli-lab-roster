@@ -417,16 +417,23 @@ body.viewer-mode [data-confidential]{display:none !important}
 .timeline-flow-track{transition:all 250ms ease}
 
 
-/* Viewer: edit disabled, downloads allowed, banner hidden */
-body.viewer-mode .btn.primary:not(.download-allowed),
-body.viewer-mode .btn.teal:not(.download-allowed),
-body.viewer-mode .btn.danger:not(.download-allowed),
+/* Viewer: edit disabled, downloads allowed, admin login always enabled */
+body.viewer-mode .requires-admin,
 body.viewer-mode #btnRegister,
 body.viewer-mode #btnManifest,
-body.viewer-mode #addStaffBtn {
+body.viewer-mode #addStaffBtn,
+body.viewer-mode .btn.danger:not(.download-allowed) {
   opacity:0.35; pointer-events:none; filter:grayscale(0.2);
 }
-body.viewer-mode .download-allowed { opacity:1 !important; pointer-events:auto !important; }
+body.viewer-mode #btnAuth,
+body.viewer-mode .download-allowed,
+body.viewer-mode [onclick*="openAuth"] {
+  opacity:1 !important; pointer-events:auto !important; filter:none !important;
+}
+body.viewer-mode #btnAuth {
+  background:var(--gold) !important; color:#0B1C3D !important; border-color:var(--gold) !important;
+  box-shadow:var(--shadow-gold) !important; font-weight:800 !important;
+}
 
 </style>
 </head>
@@ -3506,16 +3513,23 @@ body.viewer-mode [data-confidential]{display:none !important}
 .timeline-flow-track{transition:all 250ms ease}
 
 
-/* Viewer: edit disabled, downloads allowed, banner hidden */
-body.viewer-mode .btn.primary:not(.download-allowed),
-body.viewer-mode .btn.teal:not(.download-allowed),
-body.viewer-mode .btn.danger:not(.download-allowed),
+/* Viewer: edit disabled, downloads allowed, admin login always enabled */
+body.viewer-mode .requires-admin,
 body.viewer-mode #btnRegister,
 body.viewer-mode #btnManifest,
-body.viewer-mode #addStaffBtn {
+body.viewer-mode #addStaffBtn,
+body.viewer-mode .btn.danger:not(.download-allowed) {
   opacity:0.35; pointer-events:none; filter:grayscale(0.2);
 }
-body.viewer-mode .download-allowed { opacity:1 !important; pointer-events:auto !important; }
+body.viewer-mode #btnAuth,
+body.viewer-mode .download-allowed,
+body.viewer-mode [onclick*="openAuth"] {
+  opacity:1 !important; pointer-events:auto !important; filter:none !important;
+}
+body.viewer-mode #btnAuth {
+  background:var(--gold) !important; color:#0B1C3D !important; border-color:var(--gold) !important;
+  box-shadow:var(--shadow-gold) !important; font-weight:800 !important;
+}
 
 </style></head><body>
   <div class="head" style="text-align:center; padding:12px 0 14px; background:#F7F8FC; border-radius:12px; border:1px solid #e6e9f1; border-left:4px solid #C9A84C; margin-bottom:12px"><h1 style="margin:0; font-size:20px; color:#0B1C3D; font-family:'Space Grotesk',sans-serif; font-weight:900">${ex.hospital}</h1><div style="font-size:13px; color:#0B1C3D; font-weight:700; margin-top:2px">${ex.dept}</div><div class="sub" style="font-size:11px; color:#5a6b8c; margin-top:6px">${ex.email} · ${ex.phone}</div><div style="font-size:14px; font-weight:800; color:#0B1C3D; margin-top:10px">${ex.title}</div><div style="font-size:10.5px; color:#5a6b8c; margin-top:4px">Date: ${ex.date} · FY: ${ex.fy}</div></div>
