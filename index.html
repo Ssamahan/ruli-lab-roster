@@ -8,22 +8,103 @@
 <style>
 
 @font-face{font-family:'Space Grotesk';font-style:normal;font-weight:400 700;font-display:swap;src:url(data:font/woff2;base64,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) format('woff2');}
-:root{
+
+:root {
+  /* Core Colors */
+  --bg-page-light: #F7F8FC;
+  --bg-card-light: #FFFFFF;
+  --bg-card-hover-light: #FAFAFD;
+  --text-primary-light: #0B1C3D;
+  --text-secondary-light: #5A6A85;
+  --border-light: #E2E8F0;
+
+  --bg-page-dark: #0A1628;
+  --bg-card-dark: #111E36;
+  --bg-card-hover-dark: #162644;
+  --text-primary-dark: #F1F5F9;
+  --text-secondary-dark: #94A3B8;
+  --border-dark: #1E2D4A;
+
+  /* Accent & Status Tokens */
+  --accent-gold: #C9A84C;
+  --accent-gold-hover: #B5953C;
+  --accent-gold-subtle: rgba(201, 168, 76, 0.12);
+  --accent-gold-glow: rgba(201, 168, 76, 0.25);
+
+  --status-success-bg: rgba(20, 184, 166, 0.12);
+  --status-success-text: #0D9488;
+  --status-warning-bg: rgba(245, 158, 11, 0.12);
+  --status-warning-text: #D97706;
+  --status-danger-bg: rgba(244, 63, 94, 0.12);
+  --status-danger-text: #E11D48;
+
+  /* Geometry & Shadows */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-light: 0 4px 20px -2px rgba(11, 28, 61, 0.05);
+  --shadow-dark: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
+  --transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Legacy mapping for compatibility */
   --primary:#0B1C3D; --primary-2:#162a52; --primary-3:#1e3a6b;
-  --gold:#C9A84C; --gold-2:#b8963f; --gold-soft:rgba(201,168,76,0.12); --gold-strong:rgba(201,168,76,0.26); --gold-glow:rgba(201,168,76,0.38);
-  --bg:#F7F8FC; --bg2:#eef1f6; --surface:#ffffff; --surface-2:#fbfcff; --surface-hover:#f5f7fb;
-  --edge:#e6e9f1; --edge-strong:#d4d9e6;
-  --text:#0B1C3D; --muted:#5a6b8c; --faint:#8a9ab5;
-  --amber:#e8a33d; --amber-soft:rgba(232,163,61,0.14); --amber-border:rgba(232,163,61,0.32);
-  --rose:#c94c5a; --rose-soft:rgba(201,76,90,0.10); --rose-border:rgba(201,76,90,0.28);
-  --teal:#0e9f8a; --teal-soft:rgba(14,159,138,0.12); --teal-border:rgba(14,159,138,0.28);
-  --shadow:0 1px 3px rgba(11,28,61,0.06), 0 4px 16px rgba(11,28,61,0.05), 0 8px 32px rgba(11,28,61,0.03);
-  --shadow-hover:0 4px 12px rgba(11,28,61,0.08), 0 12px 32px rgba(11,28,61,0.07), 0 0 0 1px rgba(201,168,76,0.18);
-  --shadow-gold:0 0 0 1px rgba(201,168,76,0.22), 0 4px 20px rgba(201,168,76,0.18);
-  --r:14px; --r-sm:10px; --r-lg:18px; --r-xl:22px;
+  --gold: var(--accent-gold); --gold-2: var(--accent-gold-hover); --gold-soft: var(--accent-gold-subtle); --gold-strong: rgba(201,168,76,0.26); --gold-glow: var(--accent-gold-glow);
+  --bg: var(--bg-page-light); --bg2: #eef1f6; --surface: var(--bg-card-light); --surface-2: #fbfcff; --surface-hover: var(--bg-card-hover-light);
+  --edge: var(--border-light); --edge-strong: #d4d9e6;
+  --text: var(--text-primary-light); --muted: var(--text-secondary-light); --faint: #8a9ab5;
+  --amber: #e8a33d; --amber-soft: var(--status-warning-bg); --amber-border: rgba(245,158,11,0.32);
+  --rose: #c94c5a; --rose-soft: var(--status-danger-bg); --rose-border: rgba(244,63,94,0.28);
+  --teal: #0e9f8a; --teal-soft: var(--status-success-bg); --teal-border: rgba(20,184,166,0.28);
+  --shadow: var(--shadow-light); --shadow-hover: 0 8px 32px -4px rgba(11,28,61,0.08), 0 0 0 1px var(--accent-gold-subtle);
+  --shadow-gold: 0 0 0 1px rgba(201,168,76,0.22), 0 4px 20px var(--accent-gold-glow);
+  --r: var(--radius-md); --r-sm: var(--radius-sm); --r-lg: var(--radius-lg); --r-xl: 22px;
   --topbar-h:64px; --sidebar-w:268px;
   --font:'Space Grotesk','Segoe UI',-apple-system,BlinkMacSystemFont,'Inter',Tahoma,Verdana,Arial,sans-serif;
 }
+[data-theme="dark"] {
+  --bg-page: var(--bg-page-dark);
+  --bg-card: var(--bg-card-dark);
+  --bg-card-hover: var(--bg-card-hover-dark);
+  --text-primary: var(--text-primary-dark);
+  --text-secondary: var(--text-secondary-dark);
+  --border-color: var(--border-dark);
+  --shadow-main: var(--shadow-dark);
+  --bg: var(--bg-page-dark);
+  --surface: var(--bg-card-dark);
+  --surface-2: #162543;
+  --surface-hover: var(--bg-card-hover-dark);
+  --edge: var(--border-dark);
+  --edge-strong: #2a4a7a;
+  --text: var(--text-primary-dark);
+  --muted: var(--text-secondary-dark);
+  --faint: #5a7396;
+  --shadow: var(--shadow-dark);
+}
+[data-theme="light"] {
+  --bg-page: var(--bg-page-light);
+  --bg-card: var(--bg-card-light);
+  --bg-card-hover: var(--bg-card-hover-light);
+  --text-primary: var(--text-primary-light);
+  --text-secondary: var(--text-secondary-light);
+  --border-color: var(--border-light);
+  --shadow-main: var(--shadow-light);
+  --bg: var(--bg-page-light);
+  --surface: var(--bg-card-light);
+  --surface-2: #fbfcff;
+  --surface-hover: var(--bg-card-hover-light);
+  --edge: var(--border-light);
+  --text: var(--text-primary-light);
+  --muted: var(--text-secondary-light);
+  --shadow: var(--shadow-light);
+}
+
+/* Icon badge container - soft gold subtle */
+.icon-badge{display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:10px; background:var(--accent-gold-subtle); color:var(--accent-gold); border:1px solid rgba(201,168,76,0.18); flex:none}
+.icon-badge.sm{width:28px; height:28px; border-radius:8px}
+.icon-badge.lg{width:44px; height:44px; border-radius:12px}
+.icon-badge svg{width:18px; height:18px; stroke-width:1.75}
+.icon-badge.lg svg{width:22px; height:22px}
+
 [data-theme="dark"]{
   --bg:#0A1628; --bg2:#0f1e36; --surface:#111E36; --surface-2:#162543; --surface-hover:#1a2d4d;
   --edge:#1e335a; --edge-strong:#2a4a7a;
@@ -286,7 +367,7 @@ table.wp{border-collapse:separate; border-spacing:0; background:var(--surface); 
 .viewer-banner{background:linear-gradient(90deg,var(--bg2),var(--surface)); border:1px solid var(--edge); border-left:3px solid var(--gold); border-radius:12px; padding:14px 16px; margin-bottom:20px; display:flex; align-items:center; gap:14px; color:var(--text); font-size:13px; font-weight:600; box-shadow:var(--shadow); transition:all 250ms ease}
 .viewer-banner .ic{width:36px; height:36px; border-radius:10px; background:var(--gold-soft); color:var(--gold); display:flex; align-items:center; justify-content:center; flex:none; border:1px solid var(--gold-strong)}
 body.viewer-mode .requires-admin{opacity:.42; pointer-events:none; position:relative}
-body.viewer-mode .requires-admin::after{content:'🔒 Admin'; position:absolute; top:-8px; right:-8px; font-size:9.5px; background:var(--bg2); color:var(--muted); padding:3px 8px; border-radius:99px; font-weight:800; border:1px solid var(--edge)}
+body.viewer-mode .requires-admin::after{content:' Admin'; position:absolute; top:-8px; right:-8px; font-size:9.5px; background:var(--bg2); color:var(--muted); padding:3px 8px; border-radius:99px; font-weight:800; border:1px solid var(--edge)}
 body.viewer-mode td.cell{cursor:not-allowed !important}
 body.viewer-mode [data-confidential]{display:none !important}
 
@@ -441,7 +522,7 @@ body.viewer-mode [data-confidential]{display:none !important}
       <div class="nav-section">Admin</div>
       <button class="nav-item" data-tab="staff"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span>Staff &amp; Settings</button>
 </nav>
-    <div class="side-foot" id="sideFoot"><span id="loadedBadge" style="display:none;color:var(--green);font-weight:800;font-size:12px"> App loaded &amp; running</span><br>Lab Systems v4.0 · Local data · auto-saved<br><span id="saveState" style="color:var(--green)">● saved</span></div>
+    <div class="side-foot" id="sideFoot"><span id="loadedBadge" style="display:none;color:var(--green);font-weight:800;font-size:12px"> App loaded &amp; running</span><br>Lab Systems v4.0 · Local data · auto-saved<br><span id="saveState" style="color:var(--green)"> saved</span></div>
   </aside>
 
   <div id="mainWrap" style="min-width:0; display:flex; flex-direction:column; grid-column:2">
@@ -455,8 +536,8 @@ body.viewer-mode [data-confidential]{display:none !important}
     <span class="chip" id="fyChip">FY 2026/2027</span>
     <span class="chip" id="dateChip"></span>
     <span class="chip" id="authChip" style="display:none"></span>
-    <button id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle theme">🌙</button>
-    <button class="btn primary sm" id="btnAuth" style="background:#2c6fbb">🔐 Admin Login</button>
+    <button id="themeToggle" title="Toggle light/dark mode" aria-label="Toggle theme"></button>
+    <button class="btn primary sm" id="btnAuth" style="background:#2c6fbb"> Admin Login</button>
     <button class="btn sm" id="btnLogout" style="display:none">Logout</button>
   </header>
 
@@ -476,7 +557,7 @@ body.viewer-mode [data-confidential]{display:none !important}
 
 <div id="authOverlay">
   <div class="auth-card">
-    <h2>🔐 Lab Systems — Admin Access</h2>
+    <h2> Lab Systems — Admin Access</h2>
     <p class="hint">Only the Lab Manager can generate & edit. Staff can view & download rosters in read-only mode. Admin access — private credentials</p>
     <div class="auth-tabs">
       <button class="on" data-auth-tab="pass">Password</button>
@@ -491,21 +572,21 @@ body.viewer-mode [data-confidential]{display:none !important}
     </div>
     <div id="authTab-otp" style="display:none">
       <div class="auth-field"><label>Admin Email</label><input id="otpEmail" placeholder="your email"></div>
-      <div class="row" style="margin-bottom:10px"><button class="btn teal sm" id="sendOtpBtn">📧 Send OTP</button><span class="hint" id="otpInfo"></span></div>
+      <div class="row" style="margin-bottom:10px"><button class="btn teal sm" id="sendOtpBtn"> Send OTP</button><span class="hint" id="otpInfo"></span></div>
       <div class="auth-field"><label>6-digit OTP (valid 5 min)</label><div class="otp-box"><input id="otpCode" maxlength="6" placeholder="123456"></div></div>
       <div class="row" style="margin-top:14px"><button class="btn primary" id="verifyOtpBtn" style="flex:1;justify-content:center">Verify OTP & Login</button><button class="btn" onclick="closeAuth()">Cancel</button></div>
       <p class="hint" style="margin-top:8px">Demo mode: OTP is shown on screen and can be sent via mailto. In production, integrate EmailJS.</p>
     </div>
     <div id="authTab-reset" style="display:none">
       <div class="auth-field"><label>Registered Admin Email</label><input id="resetEmail" placeholder="registered admin email"></div>
-      <div class="row" style="margin-bottom:10px"><button class="btn teal sm" id="sendResetOtpBtn">📧 Send Reset OTP</button><span class="hint" id="resetInfo"></span></div>
+      <div class="row" style="margin-bottom:10px"><button class="btn teal sm" id="sendResetOtpBtn"> Send Reset OTP</button><span class="hint" id="resetInfo"></span></div>
       <div class="auth-field"><label>Reset OTP</label><input id="resetOtp" maxlength="6" placeholder="6-digit code"></div>
       <div class="auth-field"><label>New Password</label><input id="newPass" type="password" placeholder="New strong password"></div>
       <div class="auth-field"><label>Confirm New Password</label><input id="newPass2" type="password" placeholder="Repeat"></div>
       <div class="row" style="margin-top:14px"><button class="btn primary" id="resetPassBtn" style="flex:1;justify-content:center">Reset Password</button><button class="btn" onclick="closeAuth()">Cancel</button></div>
     </div>
     <hr style="margin:14px 0">
-    <p class="hint">🔒 Security: Session expires in 24h. OTP expires in 5 min. All data stays in your browser (localStorage) — no server. For true email delivery, add EmailJS in Settings → Data & Backup.</p>
+    <p class="hint"> Security: Session expires in 24h. OTP expires in 5 min. All data stays in your browser (localStorage) — no server. For true email delivery, add EmailJS in Settings → Data & Backup.</p>
   </div>
 </div>
 
@@ -731,7 +812,7 @@ function buildSeed(){
       // Patrick ISHIMWE - EXACT per manager: 30d previous FY + 15d current FY = 45d total, then CLOSE (back Oct1)
       {id:'l11', staffId:'s5', type:'AL', from:'2026-08-17', to:'2026-09-15', backOn:'2026-09-16', status:'Planned', fy:'2025/2026', note:'Previous FY 2025/26 — 30d carry-over (Aug17-Sep15) — Patrick in AL, not in roster'},
       {id:'l9', staffId:'s5', type:'AL', from:'2026-09-16', to:'2026-09-30', backOn:'2026-10-01', status:'Planned', fy:'2026/2027', note:'Current FY 2026/27 — 15d after current 30d, 1st installment of 30d (Sep16-30) — closes Sep, back Oct1'},
-      {id:'l10', staffId:'s5', type:'W', from:'2026-08-29', to:'2026-08-29', backOn:'2026-08-30', status:'Planned', fy:'2026/2027', note:'Wedding day — overlaps AL, W priority, 💍'},
+      {id:'l10', staffId:'s5', type:'W', from:'2026-08-29', to:'2026-08-29', backOn:'2026-08-30', status:'Planned', fy:'2026/2027', note:'Wedding day — overlaps AL, W priority, '},
       // Other staff - NO overlapping AL with Patrick (per Ruli policy: no 2 AL same time)
       {id:'l1', staffId:'s9', type:'AL', from:'2027-06-01', to:'2027-06-15', backOn:'2027-06-16', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — Part 2 of 2'},
       {id:'l2', staffId:'s6', type:'AL', from:'2027-04-26', to:'2027-05-25', backOn:'2027-05-26', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027'},
@@ -883,7 +964,7 @@ let DB=null;
 function saveDB(){ DB.meta.lastSave=new Date().toISOString(); 
   try{ localStorage.setItem(DB_KEY,JSON.stringify(DB)); setSaveState(true); }
   catch(e){ console.warn('Storage save failed (quota/private mode):',e.message); setSaveState(false); } }
-function setSaveState(ok){ const el=$('#saveState'); if(!el) return; el.textContent=ok?'● saved':'● not persisted'; el.style.color=ok?'var(--green)':'var(--amber)'; }
+function setSaveState(ok){ const el=$('#saveState'); if(!el) return; el.textContent=ok?' saved':' not persisted'; el.style.color=ok?'var(--green)':'var(--amber)'; }
 function migrateDB(d){
   try{
     if(d.workingPlans) for(const k of Object.keys(d.workingPlans)){
@@ -1991,10 +2072,14 @@ function parseXLSX(fileBuf){
 
 /* ================= DASHBOARD (all KPIs except personal revenue tracker) ================= */
 'use strict';
-function kpiCard(label,val,foot,opts){ opts=opts||{}; const tone=opts.tone||'blue'; const hasIc = opts.ic && String(opts.ic).trim()!=='';
+function kpiCard(label,val,foot,opts){
+  opts=opts||{}; const tone=opts.tone||'blue';
+  const hasIc = opts.ic && String(opts.ic).trim()!=='';
+  const iconBadge = hasIc ? `<span class="icon-badge sm" style="position:absolute; right:14px; top:14px; background:var(--accent-gold-subtle); color:var(--accent-gold)">${opts.ic}</span>` : '';
   return `<div class="kpi tone-${tone} ${hasIc?'':'no-icon'} ${opts.tone==='gold'?'gold':''}"><div class="k-label">${label}</div><div class="k-val">${val}</div>
-  ${foot?`<div class="k-foot">${foot}</div>`:''}${hasIc?`<span class="k-ic">${opts.ic}</span>`:''}
-  ${opts.bar?`<div class="k-bar"><i style="width:${opts.bar}%;background:linear-gradient(90deg,var(--primary),var(--gold))"></i></div>`:''}</div>`; }
+  ${foot?`<div class="k-foot">${foot}</div>`:''}${iconBadge}
+  ${opts.bar?`<div class="k-bar"><i style="width:${opts.bar}%;background:linear-gradient(90deg,var(--primary),var(--accent-gold))"></i></div>`:''}</div>`;
+}
 
 function dashAlerts(){
   const A=[];
@@ -2061,9 +2146,9 @@ function renderDash(){
 
   // Stexo-inspired premium dashboard - main KPIs focused, charts well arranged, no blanks
   el.innerHTML=`
-  <div class="section-title">📊 Lab Command Center <small>${todayISO()} · ${samples.length} samples · ${act.length} active staff · FY ${fyInfo(today).label}</small></div>
+  <div class="section-title"> Lab Command Center <small>${todayISO()} · ${samples.length} samples · ${act.length} active staff · FY ${fyInfo(today).label}</small></div>
 
-  ${alerts.length?`<div class="card gold-accent" style="padding:16px 18px; margin-bottom:20px"><h3 style="margin-bottom:10px">🔔 Alerts & Insights <span class="sub">${alerts.length} active</span></h3><div class="alerts-grid">${alerts.slice(0,6).map(a=>`<div class="alert ${a.t}">${a.m}</div>`).join('')}</div></div>`:''}
+  ${alerts.length?`<div class="card gold-accent" style="padding:16px 18px; margin-bottom:20px"><h3 style="margin-bottom:10px"> Alerts & Insights <span class="sub">${alerts.length} active</span></h3><div class="alerts-grid">${alerts.slice(0,6).map(a=>`<div class="alert ${a.t}">${a.m}</div>`).join('')}</div></div>`:''}
 
   <!-- Main KPI Row - 4 premium cards like Stexo, big numbers, gold accent -->
   <div class="grid g-4" style="gap:16px; margin-bottom:20px">
@@ -2071,47 +2156,47 @@ function renderDash(){
       <div class="k-label">Total Referred Samples</div>
       <div class="k-val" style="font-size:36px">${samples.length}</div>
       <div class="k-foot">${(DB.catalog.tests||[]).length} test types · ${pend.length} pending · ${over.length} overdue</div>
-      <span class="k-ic">🧪</span>
+      <span class="k-ic"></span>
       <div class="k-bar"><i style="width:100%; background:var(--gold)"></i></div>
     </div>
     <div class="kpi" style="min-height:122px; border-left:4px solid var(--teal)">
       <div class="k-label">Training Coverage</div>
       <div class="k-val" style="font-size:36px">${cov}%</div>
       <div class="k-foot">${act.filter(s=>DB.trainings.some(t=>t.status==='completed'&&t.attendees.includes(s.id))).length}/${act.length} staff trained · ${avgWait}d avg wait</div>
-      <span class="k-ic" style="background:var(--teal-soft); color:var(--teal)">🎓</span>
+      <span class="k-ic" style="background:var(--teal-soft); color:var(--teal)"></span>
       <div class="k-bar"><i style="width:${cov}%; background:var(--teal)"></i></div>
     </div>
     <div class="kpi" style="min-height:122px; border-left:4px solid var(--primary)">
       <div class="k-label">Night Coverage · ${nowKey}</div>
       <div class="k-val" style="font-size:36px">${nightCov==null?'—':nightCov+'%'}</div>
       <div class="k-foot">${act.length} active · ${onLeaveNow.length} on leave now · Next hol ${nextHol?fmtDate(nextHol.date).slice(0,6):'—'}</div>
-      <span class="k-ic">🌙</span>
+      <span class="k-ic"></span>
       <div class="k-bar"><i style="width:${nightCov||0}%; background:var(--primary)"></i></div>
     </div>
     <div class="kpi" style="min-height:122px; border-left:4px solid var(--amber)">
       <div class="k-label">Stock Status</div>
       <div class="k-val" style="font-size:36px">${stTotal.total+vtm.total}</div>
       <div class="k-foot">Hemoculture ${stTotal.total} · VTM ${vtm.total} ${stockStatus('c2')==='low'?'<span style="color:var(--amber)">low</span>':''} · ${DB.catalog.consumables.length} consumables</div>
-      <span class="k-ic" style="background:var(--amber-soft); color:var(--amber)">📦</span>
+      <span class="k-ic" style="background:var(--amber-soft); color:var(--amber)"></span>
       <div class="k-bar"><i style="width:${Math.min(100, (stTotal.total+vtm.total)/2)}%; background:var(--amber)"></i></div>
     </div>
   </div>
 
   <!-- Secondary KPI Row - compact but visual -->
   <div class="grid g-4" style="gap:12px; margin-bottom:20px">
-    ${kpiCard('Positivity Rate', posRate+'%', pos+' positive of '+tested.length+' tested', {tone:'green', ic:'✅'})}
+    ${kpiCard('Positivity Rate', posRate+'%', pos+' positive of '+tested.length+' tested', {tone:'green', ic:''})}
     ${kpiCard('Pending Samples', pend.length, over.length+' overdue · '+rejRate+'% rejection', {tone:over.length?'red':'amber', ic:'⏳'})}
-    ${kpiCard('Active Staff', act.length, 'avg age '+avgAge+'y · exp '+avgExp+'y · '+onLeaveNow.length+' on leave', {tone:'blue', ic:'👥'})}
-    ${kpiCard('Upcoming / Completed', upcoming+' / '+completed, 'trainings · FIFO '+ (fq[0]?fq[0].s.name.split(' ')[0]+' next':'—'), {tone:'teal', ic:'📚'})}
+    ${kpiCard('Active Staff', act.length, 'avg age '+avgAge+'y · exp '+avgExp+'y · '+onLeaveNow.length+' on leave', {tone:'blue', ic:''})}
+    ${kpiCard('Upcoming / Completed', upcoming+' / '+completed, 'trainings · FIFO '+ (fq[0]?fq[0].s.name.split(' ')[0]+' next':'—'), {tone:'teal', ic:''})}
   </div>
 
   <!-- Main Charts Row - Stexo style: Line chart main + Donut side -->
   <div class="grid" style="grid-template-columns: 2fr 1fr; gap:16px; margin-bottom:20px">
-    <div class="card gold-accent"><h3>📈 Monthly Referral Trend — Line Chart (Main KPI)</h3>
+    <div class="card gold-accent"><h3> Monthly Referral Trend — Line Chart (Main KPI)</h3>
       <div class="chart-box">${smMonArr.length?svgLineChart([{label:'Referrals', color:'#C9A84C', values: smMonArr.map((d,i)=>({x:i, y:d.value}))}], {xLabels: smMonArr.map(d=>d.label)}):'<div class="empty">No referral trend data yet</div>'}</div>
       <div class="chart-legend"><span><i style="background:var(--gold)"></i>Referrals per month — main KPI</span></div>
     </div>
-    <div class="card"><h3>📊 Sample Status Distribution — Donut</h3>
+    <div class="card"><h3> Sample Status Distribution — Donut</h3>
       <div class="chart-box" style="min-height:200px">${smStatus.length?svgDonut(smStatus,{center:String(samples.length), width:160, height:160}):'<div class="empty">No samples</div>'}</div>
       <div class="chart-legend">${smStatus.map(s=>`<span><i style="background:${s.color}"></i>${s.label} ${s.value}</span>`).join('')}</div>
     </div>
@@ -2119,10 +2204,10 @@ function renderDash(){
 
   <!-- Second Charts Row - HBar and Bar well arranged -->
   <div class="grid g-2" style="gap:16px; margin-bottom:20px">
-    <div class="card"><h3>👥 Trainings per Staff — Performance</h3><div class="chart-box">${svgHBar(perStaff)}</div></div>
-    <div class="card"><h3>🏥 Referral Volume per Hospital</h3><div class="chart-box">${svgHBar(hospArr)}</div></div>
-    <div class="card"><h3>🧪 Most Referred Sample Types</h3><div class="chart-box">${svgHBar(mostTests)}</div></div>
-    <div class="card"><h3>💉 VTM Distributed per Health Center</h3><div class="chart-box">${svgHBar(vtmArr)}</div></div>
+    <div class="card"><h3> Trainings per Staff — Performance</h3><div class="chart-box">${svgHBar(perStaff)}</div></div>
+    <div class="card"><h3> Referral Volume per Hospital</h3><div class="chart-box">${svgHBar(hospArr)}</div></div>
+    <div class="card"><h3> Most Referred Sample Types</h3><div class="chart-box">${svgHBar(mostTests)}</div></div>
+    <div class="card"><h3> VTM Distributed per Health Center</h3><div class="chart-box">${svgHBar(vtmArr)}</div></div>
     <div class="card"><h3>⏱ TAT — Average vs Expected (Days) — Line + Bar</h3>
       <div class="chart-box">${(function(){
         const data=tats.map(t=>({label:t.test, value:t.avg, color:'#C9A84C'}));
@@ -2132,11 +2217,11 @@ function renderDash(){
       })()}</div>
       <div class="chart-legend"><span><i style="background:var(--gold)"></i>Avg TAT</span><span><i style="background:var(--primary)"></i>Expected</span></div>
     </div>
-    <div class="card"><h3>👶 Age Distribution (Active Staff) — Bar</h3><div class="chart-box">${svgBar(ageArr)}</div></div>
+    <div class="card"><h3> Age Distribution (Active Staff) — Bar</h3><div class="chart-box">${svgBar(ageArr)}</div></div>
   </div>
 
   <!-- Daily Staffing Trend - compact premium, not too big -->
-  <div class="card gold-accent" style="margin-bottom:20px; padding:16px 18px"><h3 style="margin-bottom:8px">📅 Daily Staffing Trend — ${monthLabel(nowKey)} <span class="sub">aggregated by week (Day · Night · Off · Leave/Absent) — line + stacked</span></h3>
+  <div class="card gold-accent" style="margin-bottom:20px; padding:16px 18px"><h3 style="margin-bottom:8px"> Daily Staffing Trend — ${monthLabel(nowKey)} <span class="sub">aggregated by week (Day · Night · Off · Leave/Absent) — line + stacked</span></h3>
     <div class="chart-box" style="max-height:200px">${stack}</div>
     <div class="chart-legend"><span><i style="background:#dbe7fb"></i>Day</span><span><i style="background:#0B1C3D"></i>Night</span><span><i style="background:#f1f3f8"></i>Off</span><span><i style="background:#fdeccd"></i>Leave/Absent</span></div>
   </div>
@@ -2146,8 +2231,8 @@ function renderDash(){
       ${pend.length?`<div class="tbl-wrap"><table class="tbl"><tr><th>Patient</th><th>Test</th><th>Hospital</th><th>Sent</th><th>Elapsed</th><th>Status</th></tr>
       ${pend.map(s=>`<tr><td>${esc(maskName(s.patientName))}</td><td>${esc(s.test)}</td><td>${esc(s.hospital)}</td><td>${fmtDate(s.sentDate||s.collectionDate)}</td>
       <td class="num">${daysBetween(s.sentDate||s.collectionDate,todayISO())}d</td><td>${daysBetween(s.sentDate||s.collectionDate,todayISO())>7?'<span class="tag red">Overdue</span>':'<span class="tag amber">Pending</span>'}</td></tr>`).join('')}</table></div>`
-      :'<div class="empty"><div class="big">✅</div>Nothing pending right now.</div>'}</div>
-    <div class="card"><h3>👥 Team Profile & Records <span class="sub">${act.length} active</span></h3>
+      :'<div class="empty"><div class="big"></div>Nothing pending right now.</div>'}</div>
+    <div class="card"><h3> Team Profile & Records <span class="sub">${act.length} active</span></h3>
       <div class="grid" style="grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px">
       ${act.map(s=>`<div class="list-row" style="margin:0; padding:12px"><span class="avatar" style="background:${staffColor(s.id)}">${esc(s.name.split(' ').map(w=>w[0]).slice(0,2).join(''))}</span>
         <div class="grow"><div class="t">${esc(s.name)}</div><div class="s">${esc(s.role)} · ${ageOf(s)}y · ${daysSinceLastTraining(s.id)==null?'<span class="tag amber">never trained</span>':'last '+daysSinceLastTraining(s.id)+'d ago'}</div></div></div>`).join('')}
@@ -2287,19 +2372,19 @@ function renderSmBody(){
   const actionRow = `
   <div class="card gold-accent" style="margin-bottom:16px; background:linear-gradient(135deg,var(--surface),var(--surface-2))">
     <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between">
-      <div><h3 style="margin:0">🧪 Referred Sample Actions</h3><p class="hint" style="margin-top:4px">Dashboard · All orders · Pending · Register · Manifest · Results</p></div>
+      <div><h3 style="margin:0"> Referred Sample Actions</h3><p class="hint" style="margin-top:4px">Dashboard · All orders · Pending · Register · Manifest · Results</p></div>
       <div class="row" style="gap:10px">
         <button class="btn primary" id="btnRegister">+ Register sample</button>
-        <button class="btn teal" id="btnManifest">📦 Generate manifest</button>
-        <button class="btn" id="btnViewResults">👁️ View results</button>
+        <button class="btn teal" id="btnManifest"> Generate manifest</button>
+        <button class="btn" id="btnViewResults"> View results</button>
       </div>
     </div>
     <div class="grid g-auto" style="gap:12px; margin-top:16px">
-      ${kpiCard('All orders', allSamples.length, 'total referred', {tone:'blue', ic:'📦'})}
+      ${kpiCard('All orders', allSamples.length, 'total referred', {tone:'blue', ic:''})}
       ${kpiCard('Pending orders', pend.length, over.length+' overdue', {tone:over.length?'red':'amber', ic:'⏳'})}
-      ${kpiCard('Positive', pos, 'results', {tone:'green', ic:'✅'})}
-      ${kpiCard('Negative', neg, 'results', {tone:'teal', ic:'🔬'})}
-      ${kpiCard('Done', done, 'completed', {tone:'blue', ic:'✔️'})}
+      ${kpiCard('Positive', pos, 'results', {tone:'green', ic:''})}
+      ${kpiCard('Negative', neg, 'results', {tone:'teal', ic:''})}
+      ${kpiCard('Done', done, 'completed', {tone:'blue', ic:''})}
     </div>
   </div>`;
 
@@ -2487,14 +2572,14 @@ function renderManifestCard(m){
     <hr><div class="hint"> Generated ${fmtDate(m.createdAt)}</div>
     <div class="row" style="margin-top:12px">
       <button class="btn sm" data-mact="view" data-id="${m.id}"> View</button>
-      <div class="dropdown" style="display:inline-block"><button class="btn sm primary" data-mact="exp" data-id="${m.id}"> Export as ▾</button></div>
+      <div class="dropdown" style="display:inline-block"><button class="btn sm primary" data-mact="exp" data-id="${m.id}"> Export as </button></div>
       <span class="spacer" style="flex:1"></span>
       <button class="btn sm danger" data-mact="del" data-id="${m.id}"></button></div></div>`;
 }
 function openManifestExportMenu(manId){
   const man=DB.manifests.find(m=>m.id===manId); if(!man) return;
   const d=document.createElement('div'); d.className='dropdown'; d.style.position='relative';
-  const btn=document.createElement('button'); btn.className='btn sm primary'; btn.innerHTML=' Export as ▾';
+  const btn=document.createElement('button'); btn.className='btn sm primary'; btn.innerHTML=' Export as ';
   const menu=document.createElement('div'); menu.className='menu'; menu.innerHTML=
     '<button data-x="preview"> Preview</button><button data-x="png"> PNG image</button><button data-x="pdf"> PDF document</button><button data-x="xlsx"> Excel (.xlsx)</button>';
   d.appendChild(btn); d.appendChild(menu);
@@ -2620,7 +2705,7 @@ function openStockForm(cid){
 function renderCatalog(body){
   body.innerHTML=`
   <div class="grid g-2" style="gap:16px">
-    <div class="card"><h3>🏥 Referral hospitals</h3>
+    <div class="card"><h3> Referral hospitals</h3>
       ${(DB.catalog.hospitals||[]).map(h=>`<div class="list-row" style="margin-bottom:8px; display:flex; align-items:center; justify-content:space-between"><div class="grow"><div class="t">${esc(h.name)}</div><div class="s">${esc(h.type||'')}</div></div>
       <div class="row" style="gap:6px"><button class="btn xs" data-hedit="${h.id}">Edit</button><button class="btn xs danger" data-hdel="${h.id}">Del</button></div></div>`).join('')}
       <div class="row" style="margin-top:12px"><button class="btn sm primary" id="addHosp">+ Add hospital</button></div></div>
@@ -2629,10 +2714,10 @@ function renderCatalog(body){
     <button class="btn xs" data-tedit2="${t.id}">Edit</button>
     <button class="btn xs danger" data-tdel="${t.id}">Del</button></div>`).join('')}
       <div class="row" style="margin-top:10px"><button class="btn sm" id="addTest"> Add test</button></div></div>
-    <div class="card"><h3>🏥 Health centers (VTM distribution)</h3>
+    <div class="card"><h3> Health centers (VTM distribution)</h3>
       <div class="grid g-2" style="gap:8px">${(DB.catalog.healthCenters||[]).map(h=>`<div class="list-row" style="margin:0; display:flex; justify-content:space-between; align-items:center"><div class="grow"><div class="t" style="font-size:12.5px">${esc(h.name)}</div></div><div class="row" style="gap:6px"><button class="btn xs" data-hcedit="${h.id}">Edit</button><button class="btn xs danger" data-hcdel="${h.id}">Del</button></div></div>`).join('')}</div>
       <div class="row" style="margin-top:12px"><button class="btn sm primary" id="addHC">+ Add health center</button></div></div>
-        <div class="card"><h3>📦 Consumables &amp; thresholds</h3>
+        <div class="card"><h3> Consumables &amp; thresholds</h3>
       ${(DB.catalog.consumables||[]).map(c=>`<div class="list-row" style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center"><div class="grow"><div class="t">${esc(c.name)}</div><div class="s">threshold <b>${c.threshold}</b> ${c.ageGroup?'· tracks age groups':''} · <span class="tag ${stockStatus(c.id)==='out'?'red':stockStatus(c.id)==='low'?'amber':'teal'}">${stockStatus(c.id)}</span></div></div><div class="row" style="gap:6px"><button class="btn xs" data-cedit="${c.id}">Edit</button><button class="btn xs danger" data-cdel="${c.id}">Del</button></div></div>`).join('')}
       <div class="row" style="margin-top:12px"><button class="btn sm primary" id="addCons">+ Add consumable</button></div></div>
   </div>`;
@@ -2686,7 +2771,7 @@ function editTest(id){
 function addConsumable(id){
   if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin();
   const c=id?DB.catalog.consumables.find(x=>x.id===id):null;
-  openModal(`<h2>${c?'✏️ Edit consumable':'📦 Add consumable'}</h2>
+  openModal(`<h2>${c?' Edit consumable':' Add consumable'}</h2>
   <div class="alert info gold-accent" style="margin-bottom:16px">Premium consumable registry — thresholds editable, tracks age groups, links to samples. Gold = primary actions.</div>
   <form id="ac"><div class="form-grid fg-2">
     <div style="grid-column:1/-1"><label>Consumable name</label><input id="ac1" value="${c?esc(c.name):''}" placeholder="e.g. Blood Culture Bottles, VTM, Malaria RDT kits" required style="font-weight:700"></div>
@@ -2695,13 +2780,13 @@ function addConsumable(id){
     <div><label>Tracks Pediatric/Neonatal vs Adult separately?</label><select id="ac4"><option value="0">No</option><option value="1">Yes</option></select><div class="hint">Yes for Blood Culture Bottles</div></div>
     <div><label>Can usage be linked to a referred sample?</label><select id="ac5"><option value="1">Yes — auto-consume on registration</option><option value="0">No</option></select></div>
     <div><label>Category / Notes</label><input id="ac6" value="${c?esc(c.note||''):''}" placeholder="e.g. Critical, GeneXpert"></div>
-  </div><div class="row" style="margin-top:18px"><button class="btn primary" type="submit">${c?'💾 Save changes':'➕ Add consumable'}</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
+  </div><div class="row" style="margin-top:18px"><button class="btn primary" type="submit">${c?' Save changes':' Add consumable'}</button><button class="btn" type="button" onclick="closeModal()">Cancel</button></div></form>`);
   if(c){ $('#ac4').value=c.ageGroup?'1':'0'; $('#ac5').value=c.linked?'1':'0'; }
   $('#ac').addEventListener('submit',ev=>{ ev.preventDefault();
     const data={name:$('#ac1').value.trim(),unit:$('#ac2').value.trim()||'units',threshold:Math.max(0,+$('#ac3').value||10),ageGroup:$('#ac4').value==='1',linked:$('#ac5').value==='1',note:$('#ac6').value.trim()};
     if(!data.name) return toast('Name required','warn');
-    if(c){ Object.assign(c,data); toast('✅ Consumable updated — threshold '+data.threshold); }
-    else { DB.catalog.consumables.push({id:uid('c'),...data}); toast('✅ Consumable added — threshold editable'); }
+    if(c){ Object.assign(c,data); toast(' Consumable updated — threshold '+data.threshold); }
+    else { DB.catalog.consumables.push({id:uid('c'),...data}); toast(' Consumable added — threshold editable'); }
     saveDB(); closeModal(); renderStock();
   });
 }
@@ -2765,7 +2850,7 @@ function renderTrDash(body){
 
   // Premium 7-step timeline for trainings (like your attached image)
   const trainingsSorted = DB.trainings.slice().sort((a,b)=>a.start.localeCompare(b.start)).slice(-12); // last 12 trainings as flow
-  const icons = ['📊','🔬','🧬','⚗️','🩸','🦠','💉','🧫','📚','🎯','🔍','💡'];
+  const icons = ['','','','','','','','','','','',''];
   const timelineSteps = trainingsSorted.map((t,i)=>{
     const yr = t.start.slice(0,4);
     const isNextTraining = false; // upcoming would be next
@@ -2782,7 +2867,7 @@ function renderTrDash(body){
     const yr = t.start.slice(0,4);
     return `<div class="timeline-step">
       <div class="timeline-year" style="background:var(--gold-soft); border-color:var(--gold-strong); color:var(--gold)">${yr} · upcoming</div>
-      <div class="timeline-dot next">📅</div>
+      <div class="timeline-dot next"></div>
       <div class="timeline-content"><b>${esc(t.title.slice(0,28))}</b><small>${fmtDate(t.start)}</small></div>
       ${i<upcoming.length-1?'<div class="timeline-arc"></div>':''}
     </div>`;
@@ -2796,7 +2881,7 @@ function renderTrDash(body){
       <div class="spotlight-meta">${nextStaff?esc(nextStaff.role):''}${next?(' · '+(next.wait==null?'New here — induction last (learn what we do & how)':'Waiting <b>'+next.wait+' days</b> since last training — most overdue')):''}</div>
       <div class="spotlight-meta" style="margin-top:6px; font-size:11.5px">Recent trainees (Beatrice & Aurelie Jun 2026) are now at the <b>end</b> of queue — fair FIFO.</div>
       <div class="spotlight-actions">
-        <span class="tag gold">🔥 ${next?next.wait+'d wait':'—'} · Next</span>
+        <span class="tag gold"> ${next?next.wait+'d wait':'—'} · Next</span>
         <button class="btn primary sm requires-admin" id="fifoInvite">Invite to next training</button>
         ${!isAdmin()?'<span class="hint">Login as admin to invite</span>':''}
       </div>
@@ -2806,9 +2891,9 @@ function renderTrDash(body){
     </div>
   </div>
 
-  ${trainingsSorted.length?`<div class="timeline-flow"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px"><h3 style="margin:0">📅 Training Journey — Timeline Flow</h3><span class="hint">Premium 7-step flow · blinking next · ${trainingsSorted.length} recent trainings</span></div><div class="timeline-flow-track"><div class="timeline-flow-line"></div>${timelineSteps}</div></div>`:''}
+  ${trainingsSorted.length?`<div class="timeline-flow"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px"><h3 style="margin:0"> Training Journey — Timeline Flow</h3><span class="hint">Premium 7-step flow · blinking next · ${trainingsSorted.length} recent trainings</span></div><div class="timeline-flow-track"><div class="timeline-flow-line"></div>${timelineSteps}</div></div>`:''}
 
-  ${upcoming.length?`<div class="timeline-flow" style="border-left:3px solid var(--gold)"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px"><h3 style="margin:0">🚀 Upcoming Trainings — FIFO Scheduled</h3><span class="tag gold">Blinking = next to attend</span></div><div class="timeline-flow-track"><div class="timeline-flow-line"></div>${upcomingTimeline}</div></div>`:''}
+  ${upcoming.length?`<div class="timeline-flow" style="border-left:3px solid var(--gold)"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px"><h3 style="margin:0"> Upcoming Trainings — FIFO Scheduled</h3><span class="tag gold">Blinking = next to attend</span></div><div class="timeline-flow-track"><div class="timeline-flow-line"></div>${upcomingTimeline}</div></div>`:''}
 
   <div class="grid g-auto" style="margin-bottom:20px; gap:16px">
     ${kpiCard('Training coverage', cov+'%', 'active staff trained at least once', {tone:'green', bar:cov})}
@@ -2940,7 +3025,7 @@ const EXP_CATS=['Transport / Travel','Food','Lodging','Drinks','Other'];
 function renderRevenue(){
   const el=$('#mod-revenue');
   if(typeof isViewer==='function' && isViewer()){
-    el.innerHTML=`<div class="viewer-banner"><div class="ic">🔒</div><div><b>Training Revenue — Confidential — Admin Only</b><br><span style="font-weight:500">Personal financial data visible only to Admin. Login to view.</span></div><button class="btn primary sm" onclick="openAuth('pass')" style="margin-left:auto">🔐 Admin Login</button></div>`;
+    el.innerHTML=`<div class="viewer-banner"><div class="ic"></div><div><b>Training Revenue — Confidential — Admin Only</b><br><span style="font-weight:500">Personal financial data visible only to Admin. Login to view.</span></div><button class="btn primary sm" onclick="openAuth('pass')" style="margin-left:auto"> Admin Login</button></div>`;
     return;
   }
   const t=expTotals();
@@ -2959,7 +3044,7 @@ function renderRevenue(){
 
   // Stexo-inspired premium revenue dashboard - main KPIs focused, line charts
   el.innerHTML=`
-  <div class="section-title">💰 Training Revenue — Command Center <small>expenses · income · profit · month-over-month · premium Stexo style</small></div>
+  <div class="section-title"> Training Revenue — Command Center <small>expenses · income · profit · month-over-month · premium Stexo style</small></div>
 
   <!-- Main KPI Row - 4 premium like Stexo -->
   <div class="grid g-4" style="gap:16px; margin-bottom:20px">
@@ -2967,35 +3052,35 @@ function renderRevenue(){
       <div class="k-label">Net Balance</div>
       <div class="k-val" style="font-size:36px; color:${t.net<0?'var(--rose)':'var(--teal)'}">${fmtRWF(t.net)}</div>
       <div class="k-foot">${t.net<0?'Loss — spent more than reimbursed':'Profit — benefited from trainings'} · ${t.count} sessions</div>
-      <span class="k-ic" style="background:var(--gold-soft); color:var(--gold)">💰</span>
+      <span class="k-ic" style="background:var(--gold-soft); color:var(--gold)"></span>
       <div class="k-bar"><i style="width:${Math.min(100, Math.abs(t.net)/1000)}%; background:${t.net<0?'var(--rose)':'var(--teal)'}"></i></div>
     </div>
     <div class="kpi" style="min-height:122px; border-left:4px solid var(--amber)">
       <div class="k-label">Total Expenses</div>
       <div class="k-val" style="font-size:36px">${fmtRWF(t.expenses)}</div>
       <div class="k-foot">Food · Transport · Lodging · Drinks · Other · Avg ${t.count?fmtRWF(Math.round(t.expenses/t.count)):'—'}/trip</div>
-      <span class="k-ic" style="background:var(--amber-soft); color:var(--amber)">💸</span>
+      <span class="k-ic" style="background:var(--amber-soft); color:var(--amber)"></span>
       <div class="k-bar"><i style="width:${Math.min(100, t.expenses/2000)}%; background:var(--amber)"></i></div>
     </div>
     <div class="kpi" style="min-height:122px; border-left:4px solid var(--teal)">
       <div class="k-label">Reimbursed (Income)</div>
       <div class="k-val" style="font-size:36px">${fmtRWF(t.reimbursed)}</div>
       <div class="k-foot">Income recovered from organizers · ${mArr.length} months tracked</div>
-      <span class="k-ic" style="background:var(--teal-soft); color:var(--teal)">💵</span>
+      <span class="k-ic" style="background:var(--teal-soft); color:var(--teal)"></span>
       <div class="k-bar"><i style="width:${t.expenses?Math.round(t.reimbursed/t.expenses*100):0}%; background:var(--teal)"></i></div>
     </div>
     <div class="kpi" style="min-height:122px; border-left:4px solid var(--primary)">
       <div class="k-label">Sessions Logged</div>
       <div class="k-val" style="font-size:36px">${t.count}</div>
       <div class="k-foot">${catArr.length} categories · Most: ${catArr[0]?catArr[0].label+' '+fmtRWF(catArr[0].value):'—'}</div>
-      <span class="k-ic">📚</span>
+      <span class="k-ic"></span>
       <div class="k-bar"><i style="width:${Math.min(100, t.count*20)}%; background:var(--primary)"></i></div>
     </div>
   </div>
 
   <!-- Main Charts Row - 2fr + 1fr like Stexo dashboard -->
   <div class="grid" style="grid-template-columns: 2fr 1fr; gap:16px; margin-bottom:20px">
-    <div class="card gold-accent"><h3>📈 Month-over-Month — Expenses vs Income — Line Chart (Main KPI)</h3>
+    <div class="card gold-accent"><h3> Month-over-Month — Expenses vs Income — Line Chart (Main KPI)</h3>
       <div class="chart-box">${mArr.length?svgLineChart([
         {label:'Expenses',color:'#e8a33d',values:trendExp.map((v,i)=>({x:i,y:v}))},
         {label:'Income',color:'#0e9f8a',values:trendReim.map((v,i)=>({x:i,y:v}))}],{xLabels:trendX}):'<div class="empty">No monthly data — log sessions to see MoM line trend</div>'}
@@ -3003,7 +3088,7 @@ function renderRevenue(){
       <div class="chart-legend"><span><i style="background:#e8a33d"></i>Expenses</span><span><i style="background:#0e9f8a"></i>Income (Reimbursements)</span><span><i style="background:var(--gold)"></i>Gold = premium</span></div>
       <p class="hint" style="margin-top:8px">Main KPI: Comparative MoM line — see spend vs recovery trend over months. Premium line with dots and area fill.</p>
     </div>
-    <div class="card"><h3>💹 Monthly Profit / Loss — MoM Bar + Line</h3>
+    <div class="card"><h3> Monthly Profit / Loss — MoM Bar + Line</h3>
       <div class="chart-box">${monthlyProfit.length?svgLineChart([{label:'Profit', color:'#0B1C3D', values: monthlyProfit.map((d,i)=>({x:i, y:d.value}))}], {xLabels: trendX}):'<div class="empty">No profit data</div>'}</div>
       <div class="chart-legend"><span><i style="background:#0e9f8a"></i>Profit</span><span><i style="background:#c94c5a"></i>Loss</span></div>
       <p class="hint" style="margin-top:8px">Net = Income - Expenses per month — green profit, rose loss.</p>
@@ -3012,11 +3097,11 @@ function renderRevenue(){
 
   <!-- Second Charts Row - HBar and Bar well arranged -->
   <div class="grid g-2" style="gap:16px; margin-bottom:20px">
-    <div class="card"><h3>📊 Net Gain/Loss per Training Session — Bar</h3>
+    <div class="card"><h3> Net Gain/Loss per Training Session — Bar</h3>
       <div class="chart-box">${net.length?svgBar(net):'<div class="empty">No sessions yet</div>'}</div>
       <p class="hint" style="margin-top:8px">Per-session profit — which trainings most profitable. Visualizes net balance block.</p>
     </div>
-    <div class="card"><h3>🍽️ Expense Breakdown — Food · Transport · Lodging · Drinks · Other — HBar + Donut</h3>
+    <div class="card"><h3> Expense Breakdown — Food · Transport · Lodging · Drinks · Other — HBar + Donut</h3>
       ${catArr.length?`<div class="grid" style="grid-template-columns:1.2fr 0.8fr; gap:12px; align-items:center">
         <div class="chart-box" style="border:none; padding:0">${svgHBar(catArr.map((c,i)=>({label:c.label,value:c.value,color:['#C9A84C','#0B1C3D','#0e9f8a','#e8a33d','#c94c5a'][i%5]})))}</div>
         <div class="chart-box" style="border:none; min-height:160px">${svgDonut(catArr.map((c,i)=>({label:c.label,value:c.value,color:['#C9A84C','#0B1C3D','#0e9f8a','#e8a33d','#c94c5a'][i%5]})),{center:catArr.length+' cats'})}</div>
@@ -3026,10 +3111,10 @@ function renderRevenue(){
     </div>
   </div>
 
-  <div class="card"><h3>📋 Logged Training Sessions — Detailed</h3>
+  <div class="card"><h3> Logged Training Sessions — Detailed</h3>
     <div class="toolbar" style="margin-bottom:12px"><span class="chip"><b>${sessions.length}</b> sessions · ${catArr.length} categories · MoM ${mArr.length} months</span><span class="spacer"></span>
       <button class="btn primary" id="logSession">+ Log new training</button></div>
-    ${sessions.length?`<div class="grid g-2" style="gap:16px">${sessions.map(s=>revCard(s)).join('')}</div>`:'<div class="empty"><div class="big">📚</div>No sessions yet — log your first training trip to see premium charts.</div>'}</div>`;
+    ${sessions.length?`<div class="grid g-2" style="gap:16px">${sessions.map(s=>revCard(s)).join('')}</div>`:'<div class="empty"><div class="big"></div>No sessions yet — log your first training trip to see premium charts.</div>'}</div>`;
   const btn=document.getElementById('logSession'); if(btn) btn.onclick=()=>openRevSessionForm();
 }
 
@@ -3144,7 +3229,7 @@ function renderPlanView(body){
     <button class="btn primary" id="wpGen"> Generate fair plan</button>
     <button class="btn teal" id="wpRev"> Mark as revised</button>
     <span class="spacer"></span>
-    <div class="dropdown" id="wpExpWrap"><button class="btn" id="wpExp"> Export as ▾</button></div>
+    <div class="dropdown" id="wpExpWrap"><button class="btn" id="wpExp"> Export as </button></div>
     <button class="btn" id="wpImp"> Import</button>
   </div>
   <div id="wpAlerts"></div>
@@ -3290,7 +3375,7 @@ function printPlanWindow(key){
 .viewer-banner{background:linear-gradient(90deg,#e8f0fb,#f2f6fb);border:1px solid #c2d2e8;border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;color:#1e3a5f;font-size:13px;font-weight:600}
 .viewer-banner .ic{width:32px;height:32px;border-radius:8px;background:#2c6fbb;color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
 body.viewer-mode .requires-admin{opacity:.45;pointer-events:none;position:relative}
-body.viewer-mode .requires-admin::after{content:'🔒 Admin';position:absolute;top:-6px;right:-6px;font-size:9px;background:#e4e9f0;color:#5d6b82;padding:2px 7px;border-radius:99px;font-weight:800;border:1px solid #d0d9e6}
+body.viewer-mode .requires-admin::after{content:' Admin';position:absolute;top:-6px;right:-6px;font-size:9px;background:#e4e9f0;color:#5d6b82;padding:2px 7px;border-radius:99px;font-weight:800;border:1px solid #d0d9e6}
 body.viewer-mode td.cell{cursor:not-allowed !important}
 #authChip{background:#e8f0fb;border-color:#b8cce6;color:#21568f}
 #authChip.admin{background:#dcf3e8;border-color:#a8d9bd;color:#16603e}
@@ -4015,7 +4100,7 @@ function computePlan(input){
       if(hasWeekendCoverageIssue){
         // Cancel Aurelie Oct AL
         DB.leaves = DB.leaves.filter(l=> !(l.staffId==='s4' && l.from<='2026-10-31' && l.to>='2026-10-01' && l.type==='AL'));
-        alerts.push('⚠️ Aurelie AL in Oct cancelled due to staff shortage (Faustin & Diane exited) - administration must provide replacement');
+        alerts.push(' Aurelie AL in Oct cancelled due to staff shortage (Faustin & Diane exited) - administration must provide replacement');
         // Need to regenerate? For now just alert, user can regenerate
       }
     }
@@ -4147,7 +4232,7 @@ function renderLvPlan(body){
       if(overlap){
         const ov = DB.leaves.find(l=>l.type==='AL' && l.from<=to && l.to>=from && l.staffId!==st.id);
         const who = ov ? staffName(ov.staffId) : 'another staff';
-        return toast('⚠️ Impossible: '+who+' already in Annual Leave '+ov.from+'→'+ov.to+'. No 2 staff can be in AL at same time per Ruli policy. Choose different dates.','err');
+        return toast(' Impossible: '+who+' already in Annual Leave '+ov.from+'→'+ov.to+'. No 2 staff can be in AL at same time per Ruli policy. Choose different dates.','err');
       }
     }
     DB.leaves.unshift({id:uid('l'),staffId:st.id,type:type,from,to,backOn:addDays(to,1),note:$('#lv_note').value.trim(),status:'Planned',fy:fyOf(from)});
@@ -4224,7 +4309,7 @@ function openQuickLeave(){
     const type=$('#q_type').value;
     if(type==='AL'){
       const overlap = DB.leaves.some(l=> l.type==='AL' && l.status!=='Ended' && l.status!=='Completed' && l.staffId!==st.id && !(to < l.from || from > l.to));
-      if(overlap) return toast('⚠️ Two staff cannot be in Annual Leave simultaneously — choose different dates','err');
+      if(overlap) return toast(' Two staff cannot be in Annual Leave simultaneously — choose different dates','err');
     }
     DB.leaves.unshift({id:uid('l'),staffId:st.id,type:type,from,to,backOn:addDays(to,1),note:$('#q_note').value.trim(),status:'Planned',fy:fyOf(from)});
     saveDB(); closeModal(); toast('Leave added'); renderLvBody(); });
@@ -4301,7 +4386,7 @@ function renderStaff(){
     <button class="tab active" data-stf="staff"> Staff Registry</button>
     <button class="tab" data-stf="let"> Letterhead &amp; Branding</button>
     <button class="tab" data-stf="data"> Data &amp; Backup</button>
-    <button class="tab" data-stf="sec">🔐 Security</button>
+    <button class="tab" data-stf="sec"> Security</button>
   </div><div id="stfBody"></div>`;
   $('#stfTabs').onclick=e=>{ const b=e.target.closest('.tab'); if(!b) return;
     $$('#stfTabs .tab').forEach(t=>t.classList.toggle('active',t===b)); UI.stfTab=b.dataset.stf; renderStfBody(); };
@@ -4378,10 +4463,10 @@ function openStaffForm(id){
     if(isExited && !data.exitDate) data.exitDate=todayISO();
     if(s){
       Object.assign(s,data);
-      toast(isExited ? '✅ Staff marked as EXITED on '+data.exitDate+' — history kept, excluded from future plans' : '✅ Staff updated to ACTIVE', isExited?'warn':'ok');
+      toast(isExited ? ' Staff marked as EXITED on '+data.exitDate+' — history kept, excluded from future plans' : ' Staff updated to ACTIVE', isExited?'warn':'ok');
     } else {
       DB.staff.push({id:uid('s'),...data});
-      toast(isExited ? '✅ Exited staff recorded — '+data.exitDate : '✅ Staff registered as active', isExited?'warn':'ok');
+      toast(isExited ? ' Exited staff recorded — '+data.exitDate : ' Staff registered as active', isExited?'warn':'ok');
     }
     try{ saveDB(); }catch(e){ toast('Save failed: '+e.message,'err'); console.error(e); }
     closeModal();
@@ -4398,7 +4483,7 @@ function openStaffForm(id){
 
 function renderSecurity(body){
   if(typeof isAdmin==='function' && !isAdmin()){
-    body.innerHTML=`<div class="viewer-banner"><div class="ic">🔒</div><div><b>Security — Admin Only</b><br><span style="font-weight:500">Change password and 2-FA settings are visible only to Admin.</span></div><button class="btn primary sm" onclick="openAuth('pass')" style="margin-left:auto">🔐 Admin Login</button></div>`;
+    body.innerHTML=`<div class="viewer-banner"><div class="ic"></div><div><b>Security — Admin Only</b><br><span style="font-weight:500">Change password and 2-FA settings are visible only to Admin.</span></div><button class="btn primary sm" onclick="openAuth('pass')" style="margin-left:auto"> Admin Login</button></div>`;
     return;
   }
   const auth = getAuthRec();
@@ -4407,32 +4492,32 @@ function renderSecurity(body){
 
   body.innerHTML=`
   <div class="grid g-2" style="gap:16px">
-    <div class="card gold-accent"><h3>🔐 Change Password</h3>
+    <div class="card gold-accent"><h3> Change Password</h3>
       <form id="changePassForm"><div class="form-grid fg-2">
         <div><label>Current Password</label><input type="password" id="cp_old" placeholder="Current" required></div>
         <div><label>New Password (≥8 chars, strong)</label><input type="password" id="cp_new" placeholder="New strong password" required style="border-left:3px solid var(--gold)"></div>
         <div><label>Confirm New Password</label><input type="password" id="cp_new2" placeholder="Repeat new password" required></div>
-        <div style="display:flex; align-items:flex-end"><button class="btn primary" type="submit">💾 Update Password</button></div>
+        <div style="display:flex; align-items:flex-end"><button class="btn primary" type="submit"> Update Password</button></div>
       </div></form>
       <p class="hint" style="margin-top:10px">Password is stored locally (localStorage) for this static site. Use strong password with numbers + symbols. No credential shown publicly.</p>
     </div>
 
-    <div class="card gold-accent"><h3>📱 Authenticator App 2-FA (Google Authenticator / Authy) — Compatible</h3>
+    <div class="card gold-accent"><h3> Authenticator App 2-FA (Google Authenticator / Authy) — Compatible</h3>
       <div class="alert ${auth.totpEnabled?'ok':'info'}" style="margin-bottom:12px">
-        ${auth.totpEnabled?'<b>✅ Authenticator App Enabled</b> — Login requires code from Google Authenticator/Authy. Most secure, works offline.' : '<b>📱 Authenticator App Disabled</b> — Enable to use Google Authenticator, Authy, 1Password etc. (TOTP, 30s).'}
+        ${auth.totpEnabled?'<b> Authenticator App Enabled</b> — Login requires code from Google Authenticator/Authy. Most secure, works offline.' : '<b> Authenticator App Disabled</b> — Enable to use Google Authenticator, Authy, 1Password etc. (TOTP, 30s).'}
       </div>
       <div class="form-grid fg-2">
         <div><label>Authenticator 2-FA</label><select id="totp_toggle"><option value="0">Disabled</option><option value="1">Enabled — Require Authenticator code</option></select></div>
         <div><label>TOTP Secret (Base32, private)</label><div class="row" style="gap:8px"><input id="totp_secret" value="${esc(auth.totpSecret||'')}" placeholder="Auto-generated on enable" style="flex:1; font-family:monospace"><button class="btn sm" type="button" id="totp_gen">Generate</button></div></div>
         <div style="grid-column:1/-1"><div id="totp_qr" style="display:flex; justify-content:center; padding:12px; background:#fff; border-radius:12px; border:1px solid var(--edge); min-height:0"></div><p class="hint" style="margin-top:8px">Scan QR with Google Authenticator, Authy, 1Password, etc. Or enter secret manually. QR uses otpauth:// URI compatible with all authenticator apps.</p></div>
         <div><label>Verify Code from App (6-digit)</label><div class="row" style="gap:8px"><input id="totp_verify" maxlength="6" placeholder="123456" style="flex:1; letter-spacing:4px; text-align:center; font-weight:800"><button class="btn teal sm" type="button" id="totp_verifyBtn">Verify & Save</button></div></div>
-        <div style="display:flex; align-items:flex-end"><button class="btn primary sm" id="totp_save">💾 Save Authenticator Settings</button></div>
+        <div style="display:flex; align-items:flex-end"><button class="btn primary sm" id="totp_save"> Save Authenticator Settings</button></div>
       </div>
     </div>
 
-    <div class="card gold-accent"><h3>🛡️ Email OTP 2-FA (Backup)</h3>
+    <div class="card gold-accent"><h3> Email OTP 2-FA (Backup)</h3>
       <div class="alert ${twoFA?'ok':'warn'}" style="margin-bottom:12px">
-        ${twoFA?'<b>✅ 2-FA Enabled</b> — Login requires Password + OTP (6-digit, 5 min). Extra security against hijacking.' : '<b>⚠️ 2-FA Disabled</b> — Enable for best security. Login will require Password + OTP.'}
+        ${twoFA?'<b> 2-FA Enabled</b> — Login requires Password + OTP (6-digit, 5 min). Extra security against hijacking.' : '<b> 2-FA Disabled</b> — Enable for best security. Login will require Password + OTP.'}
       </div>
       <div class="form-grid fg-2">
         <div><label>2-FA Status</label>
@@ -4441,9 +4526,9 @@ function renderSecurity(body){
         <div><label>Registered Email for OTP</label><input id="twofa_email" value="${esc(auth.email||'')}" placeholder="registered admin email"></div>
         <div style="grid-column:1/-1">
           <div class="row" style="gap:10px; margin-top:8px">
-            <button class="btn primary sm" id="twofa_enable">💾 Save 2-FA Settings</button>
-            <button class="btn teal sm" id="twofa_genCodes">🎲 Generate Backup Codes</button>
-            <button class="btn sm" id="twofa_test">📧 Send Test OTP</button>
+            <button class="btn primary sm" id="twofa_enable"> Save 2-FA Settings</button>
+            <button class="btn teal sm" id="twofa_genCodes"> Generate Backup Codes</button>
+            <button class="btn sm" id="twofa_test"> Send Test OTP</button>
           </div>
         </div>
         ${backupCodes.length?`<div style="grid-column:1/-1"><label>Backup Codes (one-time use, store safely)</label><div class="grid g-3" style="gap:8px">${backupCodes.map(c=>`<span class="chip" style="font-family:monospace; font-weight:800; border-left:3px solid var(--gold)">${esc(c)}</span>`).join('')}</div><p class="hint">Each backup code can be used once if you lose email access. Regenerate to invalidate old ones.</p></div>`:''}
@@ -4459,7 +4544,7 @@ function renderSecurity(body){
       </ol>
     </div>
 
-    <div class="card"><h3>🔑 Session & Security Info</h3>
+    <div class="card"><h3> Session & Security Info</h3>
       <div class="grid g-2" style="gap:12px">
         <div><label>Current Session</label><div class="chip">${(function(){ const s=getSession(); return s? 'Active — expires '+ new Date(s.exp).toLocaleString() : 'No active session'; })()}</div></div>
         <div><label>Last Password Change</label><div class="chip">${esc(auth.lastPassChange||auth.created||'—')}</div></div>
@@ -4520,8 +4605,8 @@ function renderSecurity(body){
     if(!sec) return toast('Generate secret first','warn');
     if(!code) return toast('Enter 6-digit code from app','warn');
     const ok = await verifyTOTP(code, sec);
-    if(ok) toast('✅ Code valid — authenticator app compatible! Save settings.','ok');
-    else toast('❌ Invalid code — check time sync on phone','err');
+    if(ok) toast(' Code valid — authenticator app compatible! Save settings.','ok');
+    else toast(' Invalid code — check time sync on phone','err');
   };
 
   document.getElementById('totp_save').onclick=()=>{
@@ -4533,7 +4618,7 @@ function renderSecurity(body){
     authRec.totpSecret=enabled?sec:null;
     authRec.lastTOTPChange=new Date().toISOString();
     saveAuthRec(authRec);
-    toast(enabled?'✅ Authenticator App 2-FA Enabled — compatible with Google Authenticator/Authy':'⚠️ Authenticator App Disabled','ok');
+    toast(enabled?' Authenticator App 2-FA Enabled — compatible with Google Authenticator/Authy':' Authenticator App Disabled','ok');
     renderSecurity(body);
   };
 
@@ -4551,7 +4636,7 @@ function renderSecurity(body){
     auth.password=newP;
     auth.lastPassChange=new Date().toISOString();
     saveAuthRec(auth);
-    toast('✅ Password updated — use new password next login','ok');
+    toast(' Password updated — use new password next login','ok');
     document.getElementById('cp_old').value=''; document.getElementById('cp_new').value=''; document.getElementById('cp_new2').value='';
     renderSecurity(body);
   });
@@ -4565,7 +4650,7 @@ function renderSecurity(body){
     auth.email=email;
     auth.last2FAChange=new Date().toISOString();
     saveAuthRec(auth);
-    toast(enabled ? '✅ 2-FA Enabled — Password + OTP required' : '⚠️ 2-FA Disabled', enabled?'ok':'warn');
+    toast(enabled ? ' 2-FA Enabled — Password + OTP required' : ' 2-FA Disabled', enabled?'ok':'warn');
     renderSecurity(body);
   };
 
@@ -4574,7 +4659,7 @@ function renderSecurity(body){
     const auth=getAuthRec();
     auth.backupCodes=codes;
     saveAuthRec(auth);
-    toast('🎲 8 backup codes generated — store safely','ok');
+    toast(' 8 backup codes generated — store safely','ok');
     renderSecurity(body);
   };
 
@@ -4582,7 +4667,7 @@ function renderSecurity(body){
     const auth=getAuthRec();
     const email=auth.email;
     const code=sendOTP(email,'login');
-    toast('📧 Test OTP: '+code+' (5 min) — check mailto and screen','ok');
+    toast(' Test OTP: '+code+' (5 min) — check mailto and screen','ok');
   };
 
   document.getElementById('secLogout').onclick=()=>{
@@ -4721,7 +4806,7 @@ function updateChips(){
   const t=new Date(); $('#dateChip').textContent=t.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
   $('#fyChip').textContent='FY '+fyInfo(todayISO()).label;
   const st=activeStaff().length;
-  $('#sideFoot').innerHTML='<span id="loadedBadge" style="display:none;color:var(--green);font-weight:800;font-size:12px"> App loaded &amp; running</span><br>Lab Systems v4.0 · Local data · auto-saved · <b>'+st+'</b> active staff<br><span id="saveState" style="color:var(--green)">● saved</span>';
+  $('#sideFoot').innerHTML='<span id="loadedBadge" style="display:none;color:var(--green);font-weight:800;font-size:12px"> App loaded &amp; running</span><br>Lab Systems v4.0 · Local data · auto-saved · <b>'+st+'</b> active staff<br><span id="saveState" style="color:var(--green)"> saved</span>';
 }
 function wireNav(){
   const nav=$('#nav');
@@ -4944,12 +5029,12 @@ function updateAuthUI(){
   const btnLogout = document.getElementById('btnLogout');
   if(!chip) return;
   if(isAdmin()){
-    chip.style.display='inline-flex'; chip.classList.add('admin'); chip.textContent='🔓 Admin: '+getAuthRec().username;
+    chip.style.display='inline-flex'; chip.classList.add('admin'); chip.textContent=' Admin: '+getAuthRec().username;
     if(btnLogin) btnLogin.style.display='none';
     if(btnLogout) btnLogout.style.display='inline-flex';
     document.body.classList.remove('viewer-mode');
   }else{
-    chip.style.display='inline-flex'; chip.classList.remove('admin'); chip.textContent='👁️ Viewer — read-only';
+    chip.style.display='inline-flex'; chip.classList.remove('admin'); chip.textContent=' Viewer — read-only';
     if(btnLogin) btnLogin.style.display='inline-flex';
     if(btnLogout) btnLogout.style.display='none';
     document.body.classList.add('viewer-mode');
@@ -4973,7 +5058,7 @@ function updateAuthUI(){
   // inject viewer banner in each module if viewer
   document.querySelectorAll('.viewer-banner').forEach(b=>b.remove());
   if(!isAdmin()){
-    const banner = `<div class="viewer-banner"><div class="ic">👁️</div><div><b>Viewer mode — read-only</b><br><span style="font-weight:500;color:#5d6b82">You can view & download Working Plan & Roster (PNG/PDF/Excel/Print), but cannot generate or edit. Login as Admin to make changes.</span></div><button class="btn primary sm" onclick="openAuth('pass')" style="margin-left:auto">🔐 Admin Login</button></div>`;
+    const banner = `<div class="viewer-banner"><div class="ic"></div><div><b>Viewer mode — read-only</b><br><span style="font-weight:500;color:#5d6b82">You can view & download Working Plan & Roster (PNG/PDF/Excel/Print), but cannot generate or edit. Login as Admin to make changes.</span></div><button class="btn primary sm" onclick="openAuth('pass')" style="margin-left:auto"> Admin Login</button></div>`;
     document.querySelectorAll('.module.active').forEach(m=>{
       m.insertAdjacentHTML('afterbegin', banner);
     });
@@ -5001,7 +5086,7 @@ function closeAuth(){ document.getElementById('authOverlay').classList.remove('o
 
 function requireAdmin(){
   if(isAdmin()) return true;
-  toast('🔒 Admin only — please login first','warn');
+  toast(' Admin only — please login first','warn');
   openAuth('pass');
   return false;
 }
@@ -5083,7 +5168,7 @@ function setTheme(t){
   document.body.setAttribute('data-theme', t);
   localStorage.setItem(THEME_KEY, t);
   const btn=document.getElementById('themeToggle');
-  if(btn){ btn.textContent = t==='dark' ? '☀️' : '🌙'; btn.classList.toggle('active', t==='dark'); btn.title = t==='dark' ? 'Switch to light mode' : 'Switch to dark mode'; }
+  if(btn){ btn.textContent = t==='dark' ? '' : ''; btn.classList.toggle('active', t==='dark'); btn.title = t==='dark' ? 'Switch to light mode' : 'Switch to dark mode'; }
 }
 function toggleTheme(){ setTheme(getTheme()==='dark' ? 'light' : 'dark'); }
 
@@ -5135,9 +5220,9 @@ function wireAuth(){
     const p = document.getElementById('authPass').value;
     const rec = getAuthRec();
     if(u===rec.username && p===rec.password){
-      setSession(); closeAuth(); updateAuthUI(); toast('🔓 Welcome Admin — editing enabled','ok');
+      setSession(); closeAuth(); updateAuthUI(); toast(' Welcome Admin — editing enabled','ok');
     }else{
-      toast('❌ Wrong username or password — admin credentials','err');
+      toast(' Wrong username or password — admin credentials','err');
     }
   };
 
@@ -5148,7 +5233,7 @@ function wireAuth(){
     if(email.toLowerCase() !== rec.email.toLowerCase()) return toast('Email not registered as admin email ('+rec.email+')','err');
     const code = sendOTP(email, 'login');
     document.getElementById('otpInfo').textContent = 'OTP: '+code+' (valid 5 min)';
-    toast('📧 OTP generated: '+code+' — demo shows it here. Check your email app if mailto opened.','ok');
+    toast(' OTP generated: '+code+' — demo shows it here. Check your email app if mailto opened.','ok');
     // mailto fallback
     try{
       const subj = encodeURIComponent('Ruli Lab — Your OTP Code');
@@ -5163,7 +5248,7 @@ function wireAuth(){
     if(rec.backupCodes && rec.backupCodes.includes(code)){
       rec.backupCodes = rec.backupCodes.filter(c=>c!==code);
       saveAuthRec(rec);
-      setSession(); closeAuth(); updateAuthUI(); toast('🔓 Backup code verified — Admin access granted','ok');
+      setSession(); closeAuth(); updateAuthUI(); toast(' Backup code verified — Admin access granted','ok');
       window._pending2FA=false; window._pendingTOTP=false;
       return;
     }
@@ -5171,7 +5256,7 @@ function wireAuth(){
     if(rec.totpEnabled && rec.totpSecret){
       const ok = await verifyTOTP(code, rec.totpSecret);
       if(ok){
-        setSession(); closeAuth(); updateAuthUI(); toast('🔓 Authenticator App code verified — Admin access granted (TOTP)','ok');
+        setSession(); closeAuth(); updateAuthUI(); toast(' Authenticator App code verified — Admin access granted (TOTP)','ok');
         window._pending2FA=false; window._pendingTOTP=false;
         return;
       }
@@ -5179,7 +5264,7 @@ function wireAuth(){
     }
     const v = verifyOTP(code, email, 'login');
     if(!v.ok) return toast(v.msg+' — try authenticator app code if TOTP enabled','err');
-    setSession(); closeAuth(); updateAuthUI(); toast('🔓 OTP verified — Admin access granted'+(window._pending2FA?' (2-FA)':''),'ok');
+    setSession(); closeAuth(); updateAuthUI(); toast(' OTP verified — Admin access granted'+(window._pending2FA?' (2-FA)':''),'ok');
     window._pending2FA=false; window._pendingTOTP=false;
   };
 
@@ -5189,7 +5274,7 @@ function wireAuth(){
     if(email.toLowerCase() !== rec.email.toLowerCase()) return toast('Email not matching registered admin email','err');
     const code = sendOTP(email, 'reset');
     document.getElementById('resetInfo').textContent = 'Reset OTP: '+code;
-    toast('📧 Reset OTP: '+code+' (5 min) — shown here for demo','ok');
+    toast(' Reset OTP: '+code+' (5 min) — shown here for demo','ok');
     try{
       const subj = encodeURIComponent('Ruli Lab — Password Reset OTP');
       const body = encodeURIComponent('Reset OTP: '+code+'\nUse it to set new password.\nValid 5 min.');
@@ -5207,7 +5292,7 @@ function wireAuth(){
     if(!v.ok) return toast(v.msg,'err');
     const rec = getAuthRec(); rec.password = np; saveAuthRec(rec);
     localStorage.removeItem(OTP_KEY);
-    closeAuth(); toast('✅ Password reset — now login with new password','ok'); openAuth('pass');
+    closeAuth(); toast(' Password reset — now login with new password','ok'); openAuth('pass');
   };
 
   // close on overlay click outside card
@@ -5292,28 +5377,28 @@ function renderEQA(){
 
   // Timeline flow for PT (premium like training)
   const timelineSteps = ptList.slice(0,8).map((p,i)=>{
-    const icons = {Hematology:'🩸', Biochemistry:'⚗️', TB:'🧬', HIV:'🦠', Serology:'🧫'};
+    const icons = {Hematology:'', Biochemistry:'', TB:'', HIV:'', Serology:''};
     return `<div class="timeline-step">
       <div class="timeline-year">${esc(p.code||quarterLabel(p.delivered))}</div>
-      <div class="timeline-dot ${p.overall==='Pass'?'':'next'}" style="${p.overall==='Pass'?'border-color:var(--teal)':'border-color:var(--rose)'}">${icons[p.program]||'📋'}</div>
+      <div class="timeline-dot ${p.overall==='Pass'?'':'next'}" style="${p.overall==='Pass'?'border-color:var(--teal)':'border-color:var(--rose)'}">${icons[p.program]||''}</div>
       <div class="timeline-content"><b>${esc(p.program)} · ${esc(p.overall||'Pending')}</b><small>${fmtDate(p.delivered)} → Score: ${p.score!=null?p.score:(p.scorePercent!=null?p.scorePercent+'%':'—')}</small></div>
     </div>`;
   }).join('');
 
   el.innerHTML=`
-  <div class="section-title">🧬 EQA / Proficiency Testing <small>PT scores · quarters Q1 Jul-Sep, Q2 Oct-Dec, Q3 Jan-Mar, Q4 Apr-Jun · Pass +-2SD or >=80%</small></div>
+  <div class="section-title"> EQA / Proficiency Testing <small>PT scores · quarters Q1 Jul-Sep, Q2 Oct-Dec, Q3 Jan-Mar, Q4 Apr-Jun · Pass +-2SD or >=80%</small></div>
 
   <div class="grid g-auto" style="gap:16px; margin-bottom:20px">
-    ${kpiCard('Total PT', total, 'all programs', {tone:'blue', ic:'📋'})}
-    ${kpiCard('Pass rate', passRate+'%', passed+' passed, '+failed+' failed', {tone:passRate>=80?'green':'red', ic:'✅', bar:passRate})}
+    ${kpiCard('Total PT', total, 'all programs', {tone:'blue', ic:''})}
+    ${kpiCard('Pass rate', passRate+'%', passed+' passed, '+failed+' failed', {tone:passRate>=80?'green':'red', ic:'', bar:passRate})}
     ${kpiCard('Pending', pending, 'awaiting scores', {tone:'amber', ic:'⏳'})}
-    ${kpiCard('Programs', programs.length, 'Hem, Biochem, TB, HIV, Serology', {tone:'teal', ic:'🧪'})}
+    ${kpiCard('Programs', programs.length, 'Hem, Biochem, TB, HIV, Serology', {tone:'teal', ic:''})}
   </div>
 
   ${ptList.length?`<div class="timeline-flow"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px"><h3>PT Journey — Timeline Flow</h3><span class="hint">Premium flow · Q1 Jul-Sep = current FY start</span></div><div class="timeline-flow-track"><div class="timeline-flow-line"></div>${timelineSteps}</div></div>`:''}
 
   <div class="grid g-2" style="gap:16px; margin-bottom:20px">
-    <div class="card gold-accent"><h3>📈 PT Scores Over Time — Line Chart (All Programs)</h3>
+    <div class="card gold-accent"><h3> PT Scores Over Time — Line Chart (All Programs)</h3>
       <div class="chart-box">${(function(){
         const series = programs.map((prog,i)=>({
           label: prog,
@@ -5326,7 +5411,7 @@ function renderEQA(){
       })()}</div>
       <div class="chart-legend"><span><i style="background:#C9A84C"></i>Hematology SD</span><span><i style="background:#0B1C3D"></i>Biochemistry SD</span><span><i style="background:#0e9f8a"></i>HIV %</span><span><i style="background:#c94c5a"></i>TB %</span></div>
     </div>
-    <div class="card"><h3>📊 Pass/Fail per Program</h3>
+    <div class="card"><h3> Pass/Fail per Program</h3>
       <div class="chart-box">${(function(){
         const data = programs.map(prog=>{
           const list = ptList.filter(p=>p.program===prog);
@@ -5336,7 +5421,7 @@ function renderEQA(){
         return svgBar(data);
       })()}</div>
     </div>
-    <div class="card"><h3>🧪 Hematology — WBC,RBC,HCT,MCV,PLT,HGB — SD Trend (Line)</h3>
+    <div class="card"><h3> Hematology — WBC,RBC,HCT,MCV,PLT,HGB — SD Trend (Line)</h3>
       <div class="chart-box">${(function(){
         const pts = ptList.filter(p=>p.program==='Hematology' && p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered));
         if(!pts.length) return '<div class="empty">No Hematology PT scored yet</div>';
@@ -5351,7 +5436,7 @@ function renderEQA(){
       })()}</div>
       <p class="hint">Pass if within +-2SD. Each line = analyte.</p>
     </div>
-    <div class="card"><h3>⚗️ Biochemistry — Glucose, Creatinine, ALT — SD Trend</h3>
+    <div class="card"><h3> Biochemistry — Glucose, Creatinine, ALT — SD Trend</h3>
       <div class="chart-box">${(function(){
         const pts = ptList.filter(p=>p.program==='Biochemistry' && p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered));
         if(!pts.length) return '<div class="empty">No Biochemistry PT scored yet</div>';
@@ -5365,7 +5450,7 @@ function renderEQA(){
         return svgLineChart(series, {xLabels});
       })()}</div>
     </div>
-    <div class="card"><h3>🧬 TB & HIV — Percentage Scores (Line)</h3>
+    <div class="card"><h3> TB & HIV — Percentage Scores (Line)</h3>
       <div class="chart-box">${(function(){
         const pts = ptList.filter(p=>(p.program==='TB'||p.program==='HIV') && p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered));
         if(!pts.length) return '<div class="empty">No TB/HIV PT scored yet</div>';
@@ -5379,7 +5464,7 @@ function renderEQA(){
       })()}</div>
       <p class="hint">HIV & TB scored in %, Pass >=80%</p>
     </div>
-    <div class="card"><h3>🧫 Serology — RPR, HCV — SD Trend</h3>
+    <div class="card"><h3> Serology — RPR, HCV — SD Trend</h3>
       <div class="chart-box">${(function(){
         const pts = ptList.filter(p=>p.program==='Serology' && p.scorePublished).sort((a,b)=>a.delivered.localeCompare(b.delivered));
         if(!pts.length) return '<div class="empty">No Serology PT yet — will come soon</div>';
@@ -5390,13 +5475,13 @@ function renderEQA(){
     </div>
   </div>
 
-  <div class="card"><h3>📋 PT Registry — Record Delivery, Testing, Reporting, Scores</h3>
+  <div class="card"><h3> PT Registry — Record Delivery, Testing, Reporting, Scores</h3>
     <div class="toolbar" style="margin-bottom:14px">
       <span class="chip"><b>${ptList.length}</b> PT records</span>
       <span class="chip">Q1 Jul-Sep · Q2 Oct-Dec · Q3 Jan-Mar · Q4 Apr-Jun</span>
       <span class="spacer"></span>
       <button class="btn primary" id="addPT">+ Add PT</button>
-      <button class="btn" id="addPTHist">📚 Add History</button>
+      <button class="btn" id="addPTHist"> Add History</button>
     </div>
     ${ptList.length?`<div class="tbl-wrap"><table class="tbl"><tr><th>Quarter Code</th><th>Program</th><th>Delivered</th><th>Tested</th><th>Reported to NRL</th><th>Score Published</th><th>Score</th><th>Overall</th><th>Tests</th><th></th></tr>
     ${ptList.map(p=>`<tr>
@@ -5410,7 +5495,7 @@ function renderEQA(){
       <td><span class="tag ${p.overall==='Pass'?'green':p.overall==='Fail'?'red':'amber'}">${esc(p.overall||'Pending')}</span></td>
       <td class="hint">${esc(Object.keys(p.analytes||{}).slice(0,3).join(', ')||'—')}</td>
       <td><button class="btn xs" data-ptedit="${p.id}">Edit</button><button class="btn xs danger" data-ptdel="${p.id}">Del</button></td>
-    </tr>`).join('')}</table></div>`:'<div class="empty"><div class="big">🧬</div>No PT records yet — add your first proficiency testing.</div>'}
+    </tr>`).join('')}</table></div>`:'<div class="empty"><div class="big"></div>No PT records yet — add your first proficiency testing.</div>'}
   </div>
   `;
 
@@ -5507,7 +5592,7 @@ function openPTForm(id){
 
 function openPTHistoryForm(){
   if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin();
-  openModal(`<h2>📚 Add History of Previous PT</h2>
+  openModal(`<h2> Add History of Previous PT</h2>
   <p class="hint" style="margin-bottom:12px">Paste previous PT scores — e.g. Q1 2024 Hematology 95% Pass, or JSON array. Supports quarters Q1-Q4 (FY starts July).</p>
   <textarea id="pt_hist" rows="12" style="width:100%" placeholder="Q1 2024 | Hematology | WBC:0.5,RBC:0.3,HCT:0.8,MCV:1.1,PLT:0.2,HGB:0.4 | Score:0.6 SD | Pass
 Q2 2024 | Biochemistry | Glucose:1.2,Creatinine:0.8,ALT:0.5 | Score:0.9 SD | Pass
@@ -5542,7 +5627,7 @@ Q3 2024 | HIV | Score:95% | Pass"></textarea>
         count++;
       }
     });
-    saveDB(); closeModal(); toast('📚 Imported '+count+' PT history records'); renderEQA();
+    saveDB(); closeModal(); toast(' Imported '+count+' PT history records'); renderEQA();
   };
 }
 
