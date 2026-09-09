@@ -1734,22 +1734,14 @@ async function exportPlanPNG(key){
   g.fillStyle='#ffffff'; g.textAlign='left'; g.textBaseline='middle'; g.font='800 11px Trebuchet MS'; g.fillText('STAFF', x0+12, y0+10);
   drawCell(x0,y0+20,nameW,26,'#F7F8FC','','#000000');
   g.fillStyle='#000000'; g.textAlign='left'; g.textBaseline='middle'; g.font='700 11px Trebuchet MS'; g.fillText('Name', x0+12, y0+33);
-  // Day headers - centered
+  // Day headers - centered V+H
   for(let i=0;i<cols;i++){
     const c=ex.colInfo[i];
     const fill=c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC');
     drawCell(x0+nameW+i*cellW, y0, cellW, 20, fill, c.dow, '#000000');
     drawCell(x0+nameW+i*cellW, y0+20, cellW, 26, c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6'), String(c.dom), '#000000');
-    // Dashed line for upcoming month
-    if(c.next && i>0 && !ex.colInfo[i-1].next){
-      g.save();
-      g.strokeStyle='#C9A84C'; g.lineWidth=1.5; g.setLineDash([6,4]);
-      g.beginPath(); g.moveTo(x0+nameW+i*cellW, y0); g.lineTo(x0+nameW+i*cellW, y0+tableH); g.stroke();
-      g.setLineDash([]);
-      g.restore();
-    }
   }
-  // Body - single name column
+  // Body - single name column - centered V+H
   for(let r=0;r<nRows;r++){
     const yy=y0+hdrH+r*rowH;
     g.fillStyle=(r%2)?'#fbfcff':'#ffffff'; g.fillRect(x0,yy,nameW,rowH);
@@ -1765,6 +1757,17 @@ async function exportPlanPNG(key){
       else if(code){ fill=CODE_COLORS[code]||'#f7f8fc'; tcol=CODE_TX[code]||'#000'; }
       else { fill=c.holiday?'#fdf0f0':(c.weekend?'#fef9ec':'#ffffff'); }
       drawCell(x0+nameW+i*cellW, yy, cellW, rowH, fill, code, tcol);
+    }
+  }
+  // Dashed line for upcoming month - draw AFTER body so it goes through last staff (not covered)
+  for(let i=0;i<cols;i++){
+    const c=ex.colInfo[i];
+    if(c.next && i>0 && !ex.colInfo[i-1].next){
+      g.save();
+      g.strokeStyle='#C9A84C'; g.lineWidth=2; g.setLineDash([8,5]);
+      g.beginPath(); g.moveTo(x0+nameW+i*cellW, y0); g.lineTo(x0+nameW+i*cellW, y0+tableH); g.stroke();
+      g.setLineDash([]);
+      g.restore();
     }
   }
   // Keys
@@ -1842,25 +1845,16 @@ function exportPlanPDF(key){
     d.text(c.dow,x+cellW/2,y0+6,{size:7,bold:true,color:'0 0 0 rg', align:'center'});
     d.rect(x,y0+18,cellW,26,{fill:c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6')});
     d.text(String(c.dom),x+cellW/2,y0+26,{size:8,bold:true,color:'0 0 0 rg', align:'center'});
-    // Dashed line for upcoming month
-    if(c.next && i>0 && !ex.colInfo[i-1].next){
-      // Draw vertical dashed separator between current and next month
-      d.line(x, y0, x, y0+hdrH+nRows*rowH, {width:1.2, color:'#C9A84C'});
-      // Simulate dashed by small gaps - draw 4px on 4px off
-      for(let yy=y0; yy<y0+hdrH+nRows*rowH; yy+=12){
-        d.line(x, yy, x, Math.min(yy+6, y0+hdrH+nRows*rowH), {width:1.2, color:'#C9A84C'});
-      }
-    }
   }
   // Single STAFF/Name column - left aligned
   d.rect(24,y0,nameW,44,{fill:'#0B1C3D'});
   d.text('STAFF',28,y0+8,{size:8,bold:true,color:'1 1 1 rg'});
   d.text('Name',28,y0+24,{size:8,bold:true,color:'1 1 1 rg'});
-  // body - with names, dates, days
+  // body - with names, dates, days - centered V+H
   for(let r=0;r<nRows;r++){
     const yy=y0+hdrH+r*rowH;
     d.rect(24,yy,nameW,rowH,{fill:(r%2)?'#fbfcff':'#ffffff'});
-    d.text(ex.staff[r],26,yy+6,{size:8,bold:true,color:'0 0 0 rg'});
+    d.text(ex.staff[r],26,yy+8,{size:8,bold:true,color:'0 0 0 rg'});
     for(let i=0;i<cols;i++){
       const code=(ex.codes[r]||[])[i]||''; const c=ex.colInfo[i];
       let fill='#ffffff';
@@ -1873,9 +1867,20 @@ function exportPlanPDF(key){
       d.rect(24+nameW+i*cellW,yy,cellW,rowH,{fill});
       if(code){
         const col = (code==='N'||code==='DN') ? '1 1 1 rg' : '0 0 0 rg';
-        d.text(code,24+nameW+i*cellW+cellW/2,yy+6,{size:7.5,bold:true,color:col});
+        d.text(code,24+nameW+i*cellW+cellW/2,yy+8,{size:7.5,bold:true,color:col, align:'center'});
       }
       d.rectBorder(24+nameW+i*cellW,yy,cellW,rowH,{width:0.3,color:'#d4d9e6'});
+    }
+  }
+  // Dashed line for upcoming month - AFTER body through last staff
+  for(let i=0;i<cols;i++){
+    const c=ex.colInfo[i];
+    if(c.next && i>0 && !ex.colInfo[i-1].next){
+      const x=24+nameW+i*cellW;
+      // Draw vertical dashed gold line through full table
+      for(let yy=y0; yy<y0+hdrH+nRows*rowH; yy+=10){
+        d.line(x, yy, x, Math.min(yy+5, y0+hdrH+nRows*rowH), {width:1.5, color:'#C9A84C'});
+      }
     }
   }
   let ly=y0+hdrH+nRows*rowH+16;
