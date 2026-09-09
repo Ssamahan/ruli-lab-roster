@@ -420,7 +420,13 @@ body.viewer-mode [data-confidential]{display:none !important}
   .timeline-content{margin:0; text-align:left; max-width:none; flex:1}
   .timeline-arc{display:none}
 }
-.timeline-flow-track{transition:all 250ms ease}
+.timeline-flow-track{transition:all 250ms ease; scroll-behavior:smooth}
+.timeline-step{opacity:0; transform:translateY(20px); animation:timelineIn 0.6s ease forwards}
+.timeline-step:nth-child(1){animation-delay:0.05s} .timeline-step:nth-child(2){animation-delay:0.1s} .timeline-step:nth-child(3){animation-delay:0.15s} .timeline-step:nth-child(4){animation-delay:0.2s} .timeline-step:nth-child(5){animation-delay:0.25s} .timeline-step:nth-child(6){animation-delay:0.3s} .timeline-step:nth-child(7){animation-delay:0.35s} .timeline-step:nth-child(8){animation-delay:0.4s}
+@keyframes timelineIn { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(var(--ty,0))} }
+.timeline-flow{position:relative}
+.timeline-flow::after{content:''; position:absolute; top:0; right:0; bottom:0; width:80px; background:linear-gradient(90deg,transparent,var(--surface)); pointer-events:none; z-index:3}
+
 
 
 /* Viewer: edit disabled, downloads allowed, admin login always enabled */
@@ -2889,8 +2895,8 @@ function renderTrDash(body){
     </div>${i<fq.length-1?'<div class="queue-connector" style="opacity:${(1 - i/fq.length*0.7).toFixed(2)}"></div>':''}`;
   }).join('');
 
-  // Premium timeline - no emojis, clean SVG, gold fading line
-  const trainingsSorted = DB.trainings.slice().sort((a,b)=>a.start.localeCompare(b.start)).slice(-12);
+  // Premium timeline reversed - latest on LEFT, scroll right reveals older (Webflow how-it-works scroll-into-view)
+  const trainingsSorted = DB.trainings.slice().sort((a,b)=>b.start.localeCompare(a.start)).slice(0,12);
   const checkSVG='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10-10"/></svg>';
   const timelineSteps = trainingsSorted.map((t,i)=>{
     const yr = t.start.slice(0,4);
@@ -2927,7 +2933,7 @@ function renderTrDash(body){
     </div>
     <div class="spotlight-right">
       <div class="queue-rail">${queueNodes}</div>
-      <div class="hint" style="margin-top:8px; text-align:center; font-size:11px">Gold line fades towards last attendee · blinking ring = next · recent at end</div>
+
     </div>
   </div>
 
@@ -4630,27 +4636,42 @@ function renderSecurity(body){
     const sec=totpSecretInp.value.trim();
     if(!sec){ totpQR.innerHTML='<span class="hint">Generate secret first</span>'; return; }
     const uri=getTOTPAuthURI(sec, auth.username||'admin', 'Ruli DH Lab');
-    totpQR.innerHTML='';
+    totpQR.innerHTML='<div style="display:flex; flex-direction:column; align-items:center; gap:10px"><div class="hint">Generating QR...</div></div>';
     try{
-      // Try QRCode library if available
-      if(window.QRCode){
-        // Use qrcode library to generate data URL
-        const canvas=document.createElement('canvas');
-        // Fallback to simple text + link if library not loaded yet
-        totpQR.innerHTML=`<div style="text-align:center"><div style="font-family:monospace; font-size:11px; word-break:break-all; background:#F7F8FC; padding:8px; border-radius:8px; margin-bottom:10px">${esc(uri)}</div><a href="${esc(uri)}" target="_blank" class="btn sm primary">Open in Authenticator App</a><p class="hint" style="margin-top:8px">If QR not showing, copy URI above into your authenticator app manually.</p></div>`;
-        // Try to generate QR via QRCode.toCanvas if available
-        if(window.QRCode.toCanvas){
+      // Method 1: Try QRCode lib toCanvas (most reliable, offline)
+      if(window.QRCode && window.QRCode.toCanvas){
+        try{
           const c=document.createElement('canvas');
-          await window.QRCode.toCanvas(c, uri, {width:200, margin:1});
-          totpQR.innerHTML=''; totpQR.appendChild(c);
-          const p=document.createElement('p'); p.className='hint'; p.textContent='Scan this QR with Google Authenticator / Authy'; totpQR.appendChild(p);
-        }
-      } else {
-        // Fallback: use Google Charts QR API (HD)
-        const qrUrl = 'https://chart.googleapis.com/chart?chs=240x240&chld=M|0&cht=qr&chl='+encodeURIComponent(uri);
-        totpQR.innerHTML=`<img src="${qrUrl}" alt="QR Code" style="width:200px;height:200px; border:1px solid #e6e9f1; border-radius:12px"><div style="font-family:monospace; font-size:10px; word-break:break-all; margin-top:8px; background:#F7F8FC; padding:6px; border-radius:6px">${esc(uri)}</div>`;
+          c.style.cssText='width:200px;height:200px; border:1px solid var(--edge); border-radius:12px; background:#fff; padding:8px';
+          await window.QRCode.toCanvas(c, uri, {width:200, margin:1, errorCorrectionLevel:'M'});
+          totpQR.innerHTML='';
+          totpQR.appendChild(c);
+          const uriDiv=document.createElement('div');
+          uriDiv.style.cssText='font-family:monospace; font-size:10px; word-break:break-all; background:var(--bg2); padding:8px; border-radius:8px; max-width:320px; border:1px solid var(--edge)';
+          uriDiv.textContent=uri;
+          totpQR.appendChild(uriDiv);
+          const hint=document.createElement('p');
+          hint.className='hint';
+          hint.style.marginTop='6px';
+          hint.textContent='Scan with Google Authenticator / Authy / 1Password';
+          totpQR.appendChild(hint);
+          return;
+        }catch(e){ console.warn('QRCode toCanvas failed', e.message); }
       }
-    }catch(e){ totpQR.innerHTML='<span class="hint">QR error: '+esc(e.message)+'</span><br><span style="font-family:monospace; font-size:10px">'+esc(uri)+'</span>'; }
+      // Method 2: Try QRCode toDataURL
+      if(window.QRCode && window.QRCode.toDataURL){
+        try{
+          const url = await window.QRCode.toDataURL(uri, {width:200, margin:1});
+          totpQR.innerHTML=`<img src="${url}" alt="QR Code" style="width:200px;height:200px; border:1px solid var(--edge); border-radius:12px; background:#fff; padding:8px"><div style="font-family:monospace; font-size:10px; word-break:break-all; margin-top:8px; background:var(--bg2); padding:8px; border-radius:8px; max-width:320px; border:1px solid var(--edge)">${esc(uri)}</div><p class="hint" style="margin-top:6px">Scan with authenticator app</p>`;
+          return;
+        }catch(e){ console.warn('QRCode toDataURL failed', e.message); }
+      }
+      // Method 3: Use qrserver.com API (more reliable than Google Charts)
+      const qrServerUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(uri);
+      totpQR.innerHTML=`<img src="${qrServerUrl}" alt="QR Code" style="width:200px;height:200px; border:1px solid var(--edge); border-radius:12px; background:#fff; padding:8px" onerror="this.onerror=null; this.src='https://chart.googleapis.com/chart?chs=240x240&chld=M|0&cht=qr&chl='+encodeURIComponent('${esc(uri)}')"><div style="font-family:monospace; font-size:10px; word-break:break-all; margin-top:8px; background:var(--bg2); padding:8px; border-radius:8px; max-width:320px; border:1px solid var(--edge)">${esc(uri)}</div><p class="hint" style="margin-top:6px">If QR fails, copy URI into authenticator app manually. Compatible with Google Authenticator/Authy/1Password.</p>`;
+    }catch(e){
+      totpQR.innerHTML='<span class="hint">QR error: '+esc(e.message)+'</span><br><div style="font-family:monospace; font-size:10px; word-break:break-all; background:var(--bg2); padding:8px; border-radius:8px; border:1px solid var(--edge)">'+esc(uri)+'</div><p class="hint">Copy this URI manually into your authenticator app.</p>';
+    }
   }
   document.getElementById('totp_gen').onclick=()=>{
     const sec=generateTOTPSecret();
