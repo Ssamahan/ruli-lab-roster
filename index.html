@@ -1372,13 +1372,16 @@ function svgLineChart(series, opts){
   });
 
   if(opts.xLabels){
-    // Intelligent skipping to avoid overlap - use same logic as bar charts
     const minLabelSpace=56;
     const showEvery=Math.max(1, Math.ceil(opts.xLabels.length * minLabelSpace / iw));
     opts.xLabels.forEach((lab,i)=>{
       if(i%showEvery!==0 && i!==opts.xLabels.length-1) return;
+      let labStr = String(lab||'');
+      let words = labStr.split(/\s+/).filter(w=>w);
+      if(words.length>6) labStr = words.slice(0,4).join(' ') + '…';
+      else if(labStr.length>18) labStr = labStr.slice(0,16) + '…';
       const x = pad.l + (i/(Math.max(opts.xLabels.length-1,1)))*iw;
-      xLabels+=`<text x="${x.toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,10)}" fill="var(--muted)" font-weight="600">${esc(String(lab).slice(0,12))}</text>`;
+      xLabels+=`<text x="${x.toFixed(1)}" y="${(h-12).toFixed(1)}" text-anchor="middle" font-size="${Math.max(fs-1,10)}" fill="var(--muted)" font-weight="600">${esc(labStr)}</text>`;
     });
   }
 
