@@ -1580,8 +1580,8 @@ function buildPlanExport(key, version){
   const codes=version.staff.map(r=>r.codes);
   const legends=['D — Day 08:00–17:00','N — Night 17:00–08:00','DN — Day+Night','OFF — Rest day','AL — Annual leave','ML — Maternity leave','SL — Sick leave','CL — Authorized leave','TR — Training','W — Wedding day','ABS — Absent (unattended duty)','H — Public holiday'];
   const phones=(DB.staff||[]).filter(st=>staff.includes(st.name)&&st.phone).map(st=>({name:st.name, phone:st.phone}));
-  return {key, title:'Working Plan — '+periodLabel, // Full September 2026 hospital:s.hospital, dept:s.dept, email:s.email, phone:s.phone,
-    date:(meta.date?String(meta.date):todayISO()), fy:(meta.fy||fyOf(key+'-15')), period:periodLabel,
+  return {key, title:'Working Plan — '+periodLabel, hospital:s.hospital, dept:s.dept, email:s.email, phone:s.phone,
+    date:(meta.date?String(meta.date):todayISO()), fy:(meta.fy||fyOf(key+'-15')), period:periodLabel, // Full September 2026
     colInfo, staff, codes, legends, holidays:holidaysIn, phones,
     sig:[{l:'Prepared by:',n:s.prepared,r:s.preparedRole},{l:'Verified by:',n:s.verified,r:s.verifiedRole},{l:'Approved by:',n:s.approved,r:s.approvedRole}]};
 }
@@ -1744,12 +1744,12 @@ function exportPlanPDF(key){
   const rowH=20, hdrH=44;
   let y=20;
   // Single header light premium - black text, gold line only
-  d.text(ex.hospital, W/2, y+4, {size:14, bold:true, color:'#000000'});
-  d.text(ex.dept+' · '+ex.email+' · '+ex.phone, W/2, y+18, {size:9, color:'#000000'});
+  d.text(ex.hospital, W/2, y+4, {size:14, bold:true, color:'0 0 0 rg'});
+  d.text(ex.dept+' · '+ex.email+' · '+ex.phone, W/2, y+18, {size:9, color:'0 0 0 rg'});
   d.line(24,y+28,W-24,y+28,{width:2,color:'#C9A84C'});
   y+=36;
-  d.text(ex.title, W/2, y+6, {size:13, bold:true, color:'#000000'});
-  d.text('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+20, {size:9, color:'#000000'}); // Period removed
+  d.text(ex.title, W/2, y+6, {size:13, bold:true, color:'0 0 0 rg'});
+  d.text('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+20, {size:9, color:'0 0 0 rg'}); // Period removed
   y+=36;
   const y0=y;
   // header
@@ -1757,9 +1757,9 @@ function exportPlanPDF(key){
     const c=ex.colInfo[i]; const x=24+nameW+i*cellW;
     const fill=c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC');
     d.rect(x,y0,cellW,18,{fill});
-    d.text(c.dow,x+cellW/2,y0+4,{size:7,bold:true,color:'#000000'});
+    d.text(c.dow,x+cellW/2,y0+4,{size:7,bold:true,color:'0 0 0 rg'});
     d.rect(x,y0+18,cellW,26,{fill:c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6')});
-    d.text(String(c.dom),x+cellW/2,y0+22,{size:8,bold:true,color:'#000000'});
+    d.text(String(c.dom),x+cellW/2,y0+22,{size:8,bold:true,color:'0 0 0 rg'});
   }
   // Single STAFF/Name column - left aligned
   d.rect(24,y0,nameW,44,{fill:'#0B1C3D'});
@@ -1769,7 +1769,7 @@ function exportPlanPDF(key){
   for(let r=0;r<nRows;r++){
     const yy=y0+hdrH+r*rowH;
     d.rect(24,yy,nameW,rowH,{fill:(r%2)?'#fbfcff':'#ffffff'});
-    d.text(ex.staff[r],26,yy+6,{size:8,bold:true,color:'#000000'});
+    d.text(ex.staff[r],26,yy+6,{size:8,bold:true,color:'0 0 0 rg'});
     for(let i=0;i<cols;i++){
       const code=(ex.codes[r]||[])[i]||''; const c=ex.colInfo[i];
       let fill='#ffffff';
@@ -1788,34 +1788,34 @@ function exportPlanPDF(key){
     }
   }
   let ly=y0+hdrH+nRows*rowH+16;
-  d.text('Keys:', 24, ly, {size:9, bold:true, color:'#000000'});
+  d.text('Keys:', 24, ly, {size:9, bold:true, color:'0 0 0 rg'});
   ly+=12;
   ex.legends.forEach((lg,idx)=>{
     const col=idx%4, row=Math.floor(idx/4);
-    d.text(lg, 24+col*190, ly+row*12, {size:7, color:'#000000'});
+    d.text(lg, 24+col*190, ly+row*12, {size:7, color:'0 0 0 rg'});
   });
   ly+= Math.ceil(ex.legends.length/4)*12 + 8;
   if(ex.holidays.length){
-    d.text('Holidays: '+ex.holidays.join(' · '), 24, ly, {size:7, color:'#000000'});
+    d.text('Holidays: '+ex.holidays.join(' · '), 24, ly, {size:7, color:'0 0 0 rg'});
     ly+=10;
   }
-  d.text('Staff contacts:', 24, ly, {size:9, bold:true, color:'#000000'});
+  d.text('Staff contacts:', 24, ly, {size:9, bold:true, color:'0 0 0 rg'});
   ly+=12;
   ex.phones.forEach((p,i)=>{
     const col=i%3, row=Math.floor(i/3);
     const x=24+col*250, y=ly+row*14;
     d.rect(x,y,238,12,{fill:'#F7F8FC'});
     d.rect(x,y,2,12,{fill:'#C9A84C'});
-    d.text(p.name+' — '+p.phone, x+8, y+3, {size:7, color:'#000000'});
+    d.text(p.name+' — '+p.phone, x+8, y+3, {size:7, color:'0 0 0 rg'});
   });
   ly+= Math.ceil(ex.phones.length/3)*14 + 16;
   const sy=H-56;
   d.line(24,sy-10,W-24,sy-10,{width:1.2,color:'#C9A84C'});
   for(let i=0;i<3;i++){
     const sx=24+i*(W-48)/3;
-    d.text(ex.sig[i].l, sx+8, sy+2, {size:8, bold:true, color:'#000000'});
-    d.text(ex.sig[i].n, sx+8, sy+14, {size:10, bold:true, color:'#000000'});
-    d.text(ex.sig[i].r, sx+8, sy+24, {size:8, color:'#000000'});
+    d.text(ex.sig[i].l, sx+8, sy+2, {size:8, bold:true, color:'0 0 0 rg'});
+    d.text(ex.sig[i].n, sx+8, sy+14, {size:10, bold:true, color:'0 0 0 rg'});
+    d.text(ex.sig[i].r, sx+8, sy+24, {size:8, color:'0 0 0 rg'});
     // No line below - signing next to names per request
   }
   download(new Blob([d.save()],{type:'application/pdf'}),'Working-Plan-'+ex.key+'.pdf');
