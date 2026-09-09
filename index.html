@@ -1474,7 +1474,16 @@ const PDF=(()=>{
       let font=o.bold?'F2':'F1';
       if(o.serif) font=o.bold?'F4':'F3';
       const col=o.color||'0 0 0 rg';
-      this._op(`BT ${col} /${font} ${size} Tf 1 0 0 1 ${x.toFixed(2)} ${this._Y(y).toFixed(2)} Tm (${escPDF(str)}) Tj ET`); }
+      let tx=x;
+      if(o.align==='center'){
+        // Estimate width: Helvetica average 0.55*size per char
+        const est = String(str).length * size * 0.55;
+        tx = x - est/2;
+      } else if(o.align==='right'){
+        const est = String(str).length * size * 0.55;
+        tx = x - est;
+      }
+      this._op(`BT ${col} /${font} ${size} Tf 1 0 0 1 ${tx.toFixed(2)} ${this._Y(y).toFixed(2)} Tm (${escPDF(str)}) Tj ET`); }
     line(x1,y1,x2,y2,o){ o=o||{}; this._op(`${(o.width||0.5).toFixed(2)} w ${this._rg(o.color||'#c6cede')} RG ${x1.toFixed(2)} ${this._Y(y1).toFixed(2)} m ${x2.toFixed(2)} ${this._Y(y2).toFixed(2)} l S`); }
     rect(x,y,w,h,o){ o=o||{}; const fill=o.fill?'f':'S'; if(o.fill){ this.setFill(o.fill); }
       this._op(`${x.toFixed(2)} ${this._Y(y+h).toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re ${fill}`); }
@@ -1720,17 +1729,25 @@ async function exportPlanPNG(key){
     }
     g.strokeStyle='#e6e9f1'; g.lineWidth=0.6; g.strokeRect(x,y,w,h);
   };
-  // Single Staff/Name column - left aligned, no duplicate
+  // Header: Days first row, Dates second row, Staff Name left - premium centered V+H, no duplicate, no blank
   drawCell(x0,y0,nameW,20,'#0B1C3D','','#ffffff');
   g.fillStyle='#ffffff'; g.textAlign='left'; g.textBaseline='middle'; g.font='800 11px Trebuchet MS'; g.fillText('STAFF', x0+12, y0+10);
   drawCell(x0,y0+20,nameW,26,'#F7F8FC','','#000000');
   g.fillStyle='#000000'; g.textAlign='left'; g.textBaseline='middle'; g.font='700 11px Trebuchet MS'; g.fillText('Name', x0+12, y0+33);
-  // Day headers
+  // Day headers - centered
   for(let i=0;i<cols;i++){
     const c=ex.colInfo[i];
     const fill=c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC');
     drawCell(x0+nameW+i*cellW, y0, cellW, 20, fill, c.dow, '#000000');
     drawCell(x0+nameW+i*cellW, y0+20, cellW, 26, c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6'), String(c.dom), '#000000');
+    // Dashed line for upcoming month
+    if(c.next && i>0 && !ex.colInfo[i-1].next){
+      g.save();
+      g.strokeStyle='#C9A84C'; g.lineWidth=1.5; g.setLineDash([6,4]);
+      g.beginPath(); g.moveTo(x0+nameW+i*cellW, y0); g.lineTo(x0+nameW+i*cellW, y0+tableH); g.stroke();
+      g.setLineDash([]);
+      g.restore();
+    }
   }
   // Body - single name column
   for(let r=0;r<nRows;r++){
@@ -1809,22 +1826,31 @@ function exportPlanPDF(key){
   const rowH=20, hdrH=44;
   let y=20;
   // Single header light premium - black text, gold line only
-  d.text(ex.hospital, W/2, y+4, {size:14, bold:true, color:'0 0 0 rg'});
-  d.text(ex.dept+' · '+ex.email+' · '+ex.phone, W/2, y+18, {size:9, color:'0 0 0 rg'});
+  d.text(ex.hospital, W/2, y+4, {size:14, bold:true, color:'0 0 0 rg', align:'center'});
+  d.text(ex.dept+' · '+ex.email+' · '+ex.phone, W/2, y+18, {size:9, color:'0 0 0 rg', align:'center'});
   d.line(24,y+28,W-24,y+28,{width:2,color:'#C9A84C'});
   y+=36;
-  d.text(ex.title, W/2, y+6, {size:13, bold:true, color:'0 0 0 rg'});
-  d.text('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+20, {size:9, color:'0 0 0 rg'}); // Period removed
+  d.text(ex.title, W/2, y+6, {size:13, bold:true, color:'0 0 0 rg', align:'center'});
+  d.text('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+20, {size:9, color:'0 0 0 rg', align:'center'}); // Period removed
   y+=36;
   const y0=y;
-  // header
+  // header - Days first row, Dates second row, centered both H and V
   for(let i=0;i<cols;i++){
     const c=ex.colInfo[i]; const x=24+nameW+i*cellW;
     const fill=c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC');
     d.rect(x,y0,cellW,18,{fill});
-    d.text(c.dow,x+cellW/2,y0+4,{size:7,bold:true,color:'0 0 0 rg'});
+    d.text(c.dow,x+cellW/2,y0+6,{size:7,bold:true,color:'0 0 0 rg', align:'center'});
     d.rect(x,y0+18,cellW,26,{fill:c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6')});
-    d.text(String(c.dom),x+cellW/2,y0+22,{size:8,bold:true,color:'0 0 0 rg'});
+    d.text(String(c.dom),x+cellW/2,y0+26,{size:8,bold:true,color:'0 0 0 rg', align:'center'});
+    // Dashed line for upcoming month
+    if(c.next && i>0 && !ex.colInfo[i-1].next){
+      // Draw vertical dashed separator between current and next month
+      d.line(x, y0, x, y0+hdrH+nRows*rowH, {width:1.2, color:'#C9A84C'});
+      // Simulate dashed by small gaps - draw 4px on 4px off
+      for(let yy=y0; yy<y0+hdrH+nRows*rowH; yy+=12){
+        d.line(x, yy, x, Math.min(yy+6, y0+hdrH+nRows*rowH), {width:1.2, color:'#C9A84C'});
+      }
+    }
   }
   // Single STAFF/Name column - left aligned
   d.rect(24,y0,nameW,44,{fill:'#0B1C3D'});
