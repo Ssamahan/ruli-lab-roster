@@ -437,12 +437,6 @@ body.viewer-mode [data-confidential]{display:none !important}
 .v-card{background:var(--surface); border:1px solid var(--edge); border-left:3px solid var(--teal); border-radius:12px; padding:14px; box-shadow:0 1px 4px rgba(0,0,0,0.04); transition:all 200ms ease}
 .v-card:hover{transform:translateY(-2px); box-shadow:var(--shadow-hover); border-left-color:var(--gold)}
 
-.timeline-step{opacity:0; transform:translateY(20px); animation:timelineIn 0.6s ease forwards}
-.timeline-step:nth-child(1){animation-delay:0.05s} .timeline-step:nth-child(2){animation-delay:0.1s} .timeline-step:nth-child(3){animation-delay:0.15s} .timeline-step:nth-child(4){animation-delay:0.2s} .timeline-step:nth-child(5){animation-delay:0.25s} .timeline-step:nth-child(6){animation-delay:0.3s} .timeline-step:nth-child(7){animation-delay:0.35s} .timeline-step:nth-child(8){animation-delay:0.4s}
-@keyframes timelineIn { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(var(--ty,0))} }
-.timeline-flow{position:relative}
-.timeline-flow::after{content:''; position:absolute; top:0; right:0; bottom:0; width:80px; background:linear-gradient(90deg,transparent,var(--surface)); pointer-events:none; z-index:3}
-
 
 
 /* Viewer: edit disabled, downloads allowed, admin login always enabled */
@@ -1591,27 +1585,98 @@ const CODE_TX={D:'#2a56c4',N:'#dfe8ff',DN:'#16233f',OFF:'#b9c2d4',AL:'#9a6b10',M
 function previewPlanHTML(key){
   const ver=(DB.workingPlans[key]||{}).primary; if(!ver) return toast('Generate the plan first','warn');
   const ex=buildPlanExport(key,ver);
-  let h=`<div class="wp-preview" style="font-family:'Trebuchet MS',sans-serif;font-size:11px;line-height:1.5">
-    <div style="text-align:center;border-bottom:2px solid #C9A84C;padding-bottom:10px;margin-bottom:10px">
-      <div style="font-weight:800;font-size:16px; color:#0B1C3D; font-family:Space Grotesk">${ex.hospital} — ${ex.dept}</div>
-      <div style="font-size:11px">${ex.email} · ${ex.phone}</div>
-      <div style="font-weight:800;font-size:13px;margin-top:4px">${ex.title}</div>
-      <div style="font-size:10px">Date: ${ex.date} &nbsp; FY: ${ex.fy} &nbsp; Period: ${ex.period}</div></div>
-    <table border="1" cellspacing="0" cellpadding="3" style="border-collapse:collapse;width:100%">
-      <thead><tr><th style="background:#eee;text-align:left">Staff</th>`;
-  ex.colInfo.forEach(c=>{ h+=`<th style="background:${c.holiday?'#f2d0d0':(c.weekend?'#efe2c8':'#eee')}">${c.dow}<br>${c.dom}</th>`; });
-  h+=`</tr></thead><tbody>`;
-  ex.staff.forEach((name,ri)=>{ h+=`<tr><td style="font-weight:700">${name}</td>`;
-    ex.colInfo.forEach((c,ci)=>{ const code=(ex.codes[ri]||[])[ci]||''; h+=`<td align="center" style="background:${code==='N'||code==='DN'?'#ddd':'#fff'}">${code}</td>`; });
-    h+=`</tr>`; });
-  h+=`</tbody></table>
-    <div style="margin-top:6px;font-size:10px"><b>Keys:</b> ${ex.legends.join(' | ')}</div>
-    ${ex.holidays.length?`<div style="font-size:10px;color:#8a2c2c"><b>Holidays:</b> ${ex.holidays.join('; ')}</div>`:''}
-    <div style="font-size:10px;margin-top:4px"><b>Staff contacts:</b> ${ex.phones.map(p=>p.name+' — '+p.phone).join(' · ')}</div>
-    <div style="display:flex;justify-content:space-between;margin-top:18px;font-size:10px">${ex.sig.map(s=>`<div style="text-align:center;width:30%"><div style="border-top:1px solid #666;padding-top:2px">${s.l}</div><b>${s.n}</b><br><span style="font-size:9px">${s.r}</span></div>`).join('')}</div>
-  </div>`;
-  openModal(`<h2>Preview — ${ex.title}</h2><div style="max-height:70vh;overflow:auto;border:1px solid var(--edge);border-radius:12px;padding:14px;background:#fff">${h}</div>
-  <div class="row" style="margin-top:12px"><button class="btn primary" id="pvPng">Save as PNG</button><button class="btn" id="pvPdf">Export PDF</button><button class="btn" id="pvXlsx">Export Excel</button><button class="btn" id="pvPrint">Print</button><span class="spacer"></span><button class="btn" onclick="closeModal()">Close</button></div>`);
+  // WYSIWYG premium preview - exactly how PNG/PDF will look - Trebuchet MS, centered texts, gold line, blocks
+  const tableHtml = `
+    <div style="font-family:'Trebuchet MS', sans-serif; background:#fff; color:#000; padding:16px; border-radius:12px">
+      <div style="text-align:center; padding-bottom:12px; margin-bottom:14px; border-bottom:3px solid #C9A84C">
+        <div style="font-weight:900; font-size:20px; color:#0B1C3D">${esc(ex.hospital)}</div>
+        <div style="font-weight:700; font-size:12px; color:#0B1C3D; margin-top:2px">${esc(ex.dept)}</div>
+        <div style="font-size:10.5px; color:#5a6b8c; margin-top:4px">${esc(ex.email)} · ${esc(ex.phone)}</div>
+        <div style="font-weight:800; font-size:15px; margin-top:12px; color:#0B1C3D">${esc(ex.title)}</div>
+        <div style="font-size:10px; color:#000; margin-top:4px">Date: ${esc(ex.date)} &nbsp; FY: ${esc(ex.fy)}</div>
+      </div>
+      <div style="overflow-x:auto; border:1px solid #e6e9f1; border-radius:12px">
+        <table style="border-collapse:collapse; width:100%; font-family:'Trebuchet MS', sans-serif; font-size:11px">
+          <thead>
+            <tr>
+              <th style="background:#0B1C3D; color:#fff; text-align:left; padding:8px 12px; min-width:160px; font-weight:800; border:1px solid #0B1C3D">STAFF<br><span style="font-weight:600; font-size:10px">Name</span></th>
+              ${ex.colInfo.map(c=>`<th style="background:${c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC')}; color:#000; text-align:center; padding:6px 2px; min-width:30px; border:1px solid #e6e9f1; font-weight:700">${c.dow}<br><span style="font-size:10px">${c.dom}</span></th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${ex.staff.map((name,ri)=>`<tr>
+              <td style="text-align:left; padding:6px 12px; font-weight:700; background:${ri%2?'#fbfcff':'#fff'}; border:1px solid #e6e9f1; color:#000">${esc(name)}</td>
+              ${ex.colInfo.map((c,ci)=>{
+                const code=(ex.codes[ri]||[])[ci]||'';
+                let bg='#fff', col='#000';
+                if(code==='D'){ bg='#e8eefb'; col='#2a56c4'; }
+                else if(code==='N'){ bg='#0B1C3D'; col='#dfe8ff'; }
+                else if(code==='DN'){ bg='#c2d4ef'; col='#000'; }
+                else if(code==='OFF'){ bg='#f7f8fc'; col='#b9c2d4'; }
+                else if(code==='AL'){ bg='#fdf3d7'; col='#9a6b10'; }
+                else { bg=c.holiday?'#fdf0f0':(c.weekend?'#fef9ec':'#fff'); }
+                return `<td style="text-align:center; padding:6px 2px; background:${bg}; color:${col}; border:1px solid #e6e9f1; font-weight:700; min-width:30px">${code}</td>`;
+              }).join('')}
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:16px">
+        <div style="font-weight:800; font-size:12px; color:#000; margin-bottom:8px">Keys:</div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px">
+          ${ex.legends.map(lg=>{
+            const code=lg.split(' — ')[0].trim();
+            const bg={'D':'#e8eefb','N':'#0B1C3D','DN':'#c2d4ef','OFF':'#f7f8fc','AL':'#fdf3d7'}[code]||'#F7F8FC';
+            return `<span style="display:inline-flex; align-items:center; gap:6px; background:#F7F8FC; border:1px solid #e6e9f1; border-radius:8px; padding:5px 12px; font-size:10px; color:#000"><span style="width:10px;height:10px;border-radius:50%;background:${bg};border:1px solid #e6e9f1;display:inline-block"></span>${esc(lg)}</span>`;
+          }).join('')}
+        </div>
+        ${ex.holidays.length?`<div style="font-size:10px; color:#000; margin-top:12px"><b>Holidays:</b> ${esc(ex.holidays.join(' · '))}</div>`:''}
+        <div style="font-weight:800; font-size:12px; color:#000; margin-top:16px; margin-bottom:8px">Staff contacts:</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:8px">
+          ${ex.phones.map(p=>`<span style="background:#F7F8FC; border:1px solid #e6e9f1; border-left:3px solid #C9A84C; border-radius:10px; padding:8px 12px; font-size:10.5px; color:#000; display:flex; flex-direction:column"><b>${esc(p.name)}</b><span style="font-size:9.5px">${esc(p.phone)}</span></span>`).join('')}
+        </div>
+        <div style="border-top:1.2px solid #C9A84C; margin-top:16px; padding-top:12px; display:flex; justify-content:space-between; gap:12px; font-size:10px">
+          ${ex.sig.map(s=>`<div style="text-align:left"><div style="font-size:9px; color:#5a6b8c; font-weight:700">${esc(s.l)}</div><div style="font-weight:800; font-size:11px; color:#000; margin-top:2px">${esc(s.n)}</div><div style="font-size:9px; color:#5a6b8c; margin-top:1px">${esc(s.r)}</div></div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  openModal(`<h2>Preview — ${ex.title} — WYSIWYG</h2>
+    <div style="display:flex; gap:8px; margin-bottom:12px">
+      <button class="btn xs primary" id="previewModeTable">Table Preview</button>
+      <button class="btn xs" id="previewModeImage">Image Preview (PNG)</button>
+      <button class="btn xs" id="previewModePdf">PDF Preview</button>
+    </div>
+    <div id="previewContainer" style="max-height:70vh; overflow:auto; border:1px solid var(--edge); border-radius:14px; background:#fff">${tableHtml}</div>
+    <div class="row" style="margin-top:14px"><button class="btn primary" id="pvPng">Save as PNG (Image)</button><button class="btn" id="pvPdf">Export PDF</button><button class="btn" id="pvXlsx">Export Excel</button><button class="btn" id="pvPrint">Print</button><span class="spacer"></span><button class="btn" onclick="closeModal()">Close</button></div>
+    <p class="hint" style="margin-top:8px">WYSIWYG — this preview reads exactly how export will look (Trebuchet MS, centered, gold line, blocks). Modify roster before final export.</p>`);
+
+  // Preview mode toggles
+  const container = document.getElementById('previewContainer');
+  document.getElementById('previewModeTable').onclick=()=>{ container.innerHTML=tableHtml; };
+  document.getElementById('previewModeImage').onclick=async()=>{
+    container.innerHTML='<div class="hint" style="padding:20px; text-align:center">Generating image preview...</div>';
+    try{
+      const W=1600; const scale=1;
+      const cols=ex.colInfo.length; const nRows=ex.staff.length;
+      const nameW=160; const cellW=Math.max(28, Math.floor((W-48-nameW)/cols));
+      const rowH=30, hdrH=46;
+      const tableH=hdrH+nRows*rowH;
+      const H= 20 + 90 + 50 + tableH + 100;
+      const cv=document.createElement('canvas'); cv.width=W*scale; cv.height=H*scale;
+      const g=cv.getContext('2d'); g.scale(scale,scale);
+      g.fillStyle='#fff'; g.fillRect(0,0,W,H);
+      g.fillStyle='#000'; g.font='900 20px Trebuchet MS'; g.textAlign='center'; g.fillText(ex.hospital, W/2, 30);
+      g.font='700 12px Trebuchet MS'; g.fillText(ex.dept, W/2, 48);
+      g.font='800 14px Trebuchet MS'; g.fillText(ex.title, W/2, 80);
+      const dataUrl=cv.toDataURL('image/png');
+      container.innerHTML=`<img src="${dataUrl}" style="width:100%; border:1px solid #e6e9f1; border-radius:12px">`;
+    }catch(e){ container.innerHTML='<div class="hint">Image preview failed: '+esc(e.message)+'</div>'; }
+  };
+  document.getElementById('previewModePdf').onclick=()=>{
+    container.innerHTML='<div class="hint" style="padding:20px; text-align:center">PDF preview — click Export PDF to download exact file. Preview table above matches PDF layout exactly (Trebuchet MS, centered, gold line).</div>'+tableHtml;
+  };
+
   $('#pvPng').onclick=()=>exportPlanPNG(key); $('#pvPdf').onclick=()=>exportPlanPDF(key);
   $('#pvXlsx').onclick=()=>exportPlanXLSX(key); $('#pvPrint').onclick=()=>printPlanWindow(key);
 }
@@ -1620,7 +1685,7 @@ async function exportPlanPNG(key){
   const ex=buildPlanExport(key,ver);
   if(!ex || !ex.staff || !ex.staff.length) return toast('No staff in plan','err');
   const logo=await imgOr(DB.settings.logo||null,'hospital');
-  const W=1400; const scale=2;
+  const W=1600; const scale=2; // wider for better fit
   const cols=ex.colInfo.length; const nRows=ex.staff.length;
   const _tmpCv=document.createElement('canvas'); const _tg=_tmpCv.getContext('2d'); _tg.font='700 12px Space Grotesk';
   const maxName=Math.max(170, ...ex.staff.map(nm=>Math.round(_tg.measureText(nm).width+44)));
@@ -1638,28 +1703,28 @@ async function exportPlanPNG(key){
   // Single header - light premium, black texts, gold line
   let y=20;
   if(logo){ try{ g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(logo, W-96, 12, 72, 72); }catch(e){} }
-  g.fillStyle='#000000'; g.font='900 26px Space Grotesk'; g.textAlign='center'; g.fillText(ex.hospital, W/2, y+22);
-  g.fillStyle='#000000'; g.font='700 13px Space Grotesk'; g.fillText(ex.dept, W/2, y+42);
-  g.fillStyle='#000000'; g.font='500 11px Space Grotesk'; g.fillText(ex.email+' · '+ex.phone, W/2, y+60);
+  g.fillStyle='#000000'; g.font='900 26px Trebuchet MS'; g.textAlign='center'; g.fillText(ex.hospital, W/2, y+22);
+  g.fillStyle='#000000'; g.font='700 13px Trebuchet MS'; g.fillText(ex.dept, W/2, y+42);
+  g.fillStyle='#000000'; g.font='500 11px Trebuchet MS'; g.fillText(ex.email+' · '+ex.phone, W/2, y+60);
   g.strokeStyle='#C9A84C'; g.lineWidth=3; g.beginPath(); g.moveTo(28,y+74); g.lineTo(W-28,y+74); g.stroke();
   y+=90;
-  g.fillStyle='#000000'; g.font='800 18px Space Grotesk'; g.textAlign='center'; g.fillText(ex.title, W/2, y+10);
-  g.fillStyle='#000000'; g.font='600 11px Space Grotesk'; g.fillText('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+28);
+  g.fillStyle='#000000'; g.font='800 18px Trebuchet MS'; g.textAlign='center'; g.fillText(ex.title, W/2, y+10);
+  g.fillStyle='#000000'; g.font='600 11px Trebuchet MS'; g.fillText('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+28);
   y+=50;
   let x0=24, y0=y;
   const drawCell=(x,y,w,h,fill,text,tcolor)=>{
     g.fillStyle=fill; g.fillRect(x,y,w,h);
     if(text!=null && text!==''){
-      g.fillStyle=tcolor||'#000'; g.textAlign='center'; g.textBaseline='middle'; g.font='700 11px Space Grotesk';
+      g.fillStyle=tcolor||'#000'; g.textAlign='center'; g.textBaseline='middle'; g.font='700 11px Trebuchet MS';
       g.fillText(text,x+w/2,y+h/2+1);
     }
     g.strokeStyle='#e6e9f1'; g.lineWidth=0.6; g.strokeRect(x,y,w,h);
   };
   // Single Staff/Name column - left aligned, no duplicate
   drawCell(x0,y0,nameW,20,'#0B1C3D','','#ffffff');
-  g.fillStyle='#ffffff'; g.textAlign='left'; g.textBaseline='middle'; g.font='800 11px Space Grotesk'; g.fillText('STAFF', x0+12, y0+10);
+  g.fillStyle='#ffffff'; g.textAlign='left'; g.textBaseline='middle'; g.font='800 11px Trebuchet MS'; g.fillText('STAFF', x0+12, y0+10);
   drawCell(x0,y0+20,nameW,26,'#F7F8FC','','#000000');
-  g.fillStyle='#000000'; g.textAlign='left'; g.textBaseline='middle'; g.font='700 11px Space Grotesk'; g.fillText('Name', x0+12, y0+33);
+  g.fillStyle='#000000'; g.textAlign='left'; g.textBaseline='middle'; g.font='700 11px Trebuchet MS'; g.fillText('Name', x0+12, y0+33);
   // Day headers
   for(let i=0;i<cols;i++){
     const c=ex.colInfo[i];
@@ -1671,7 +1736,7 @@ async function exportPlanPNG(key){
   for(let r=0;r<nRows;r++){
     const yy=y0+hdrH+r*rowH;
     g.fillStyle=(r%2)?'#fbfcff':'#ffffff'; g.fillRect(x0,yy,nameW,rowH);
-    g.fillStyle='#000000'; g.textAlign='left'; g.textBaseline='middle'; g.font='700 11px Space Grotesk'; g.fillText(ex.staff[r], x0+12, yy+rowH/2+1);
+    g.fillStyle='#000000'; g.textAlign='left'; g.textBaseline='middle'; g.font='700 11px Trebuchet MS'; g.fillText(ex.staff[r], x0+12, yy+rowH/2+1);
     for(let i=0;i<cols;i++){
       const code=(ex.codes[r]||[])[i]||''; const c=ex.colInfo[i];
       let fill='#ffffff', tcol='#000000';
@@ -1687,7 +1752,7 @@ async function exportPlanPNG(key){
   }
   // Keys
   let ly=y0+tableH+28;
-  g.fillStyle='#000000'; g.font='800 12px Space Grotesk'; g.textAlign='left'; g.fillText('Keys:', x0, ly);
+  g.fillStyle='#000000'; g.font='800 12px Trebuchet MS'; g.textAlign='left'; g.fillText('Keys:', x0, ly);
   ly+=20;
   let kx=x0, ky=ly;
   const keyW=300, keyH=26, gap=12;
@@ -1698,15 +1763,15 @@ async function exportPlanPNG(key){
     g.fillStyle='#F7F8FC'; g.beginPath(); if(g.roundRect) g.roundRect(kx,ky,keyW,keyH,8); else g.rect(kx,ky,keyW,keyH); g.fill();
     g.strokeStyle='#e6e9f1'; g.lineWidth=0.8; if(g.roundRect) g.roundRect(kx,ky,keyW,keyH,8); else g.rect(kx,ky,keyW,keyH); g.stroke();
     g.fillStyle=col; g.beginPath(); g.arc(kx+14, ky+keyH/2, 5, 0, Math.PI*2); g.fill();
-    g.fillStyle='#000000'; g.font='600 10px Space Grotesk'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(lg, kx+26, ky+keyH/2+1);
+    g.fillStyle='#000000'; g.font='600 10px Trebuchet MS'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(lg, kx+26, ky+keyH/2+1);
     kx+=keyW+gap;
   });
   ly=ky+keyH+20;
   if(ex.holidays.length){
-    g.fillStyle='#000000'; g.font='600 10px Space Grotesk'; g.textAlign='left'; g.fillText('Holidays: '+ex.holidays.join(' · '), x0, ly);
+    g.fillStyle='#000000'; g.font='600 10px Trebuchet MS'; g.textAlign='left'; g.fillText('Holidays: '+ex.holidays.join(' · '), x0, ly);
     ly+=18;
   }
-  g.fillStyle='#000000'; g.font='800 12px Space Grotesk'; g.fillText('Staff contacts:', x0, ly);
+  g.fillStyle='#000000'; g.font='800 12px Trebuchet MS'; g.fillText('Staff contacts:', x0, ly);
   ly+=20;
   let pcx=x0, pcy=ly;
   const cW=Math.floor((W-48)/3), cH=32, cGap=10;
@@ -1715,18 +1780,18 @@ async function exportPlanPNG(key){
     g.fillStyle='#F7F8FC'; g.beginPath(); if(g.roundRect) g.roundRect(pcx,pcy,cW-6,cH,10); else g.rect(pcx,pcy,cW-6,cH); g.fill();
     g.strokeStyle='#e6e9f1'; g.lineWidth=0.8; if(g.roundRect) g.roundRect(pcx,pcy,cW-6,cH,10); else g.rect(pcx,pcy,cW-6,cH); g.stroke();
     g.fillStyle='#C9A84C'; g.fillRect(pcx,pcy,3,cH);
-    g.fillStyle='#000000'; g.font='700 10.5px Space Grotesk'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(p.name, pcx+14, pcy+10);
-    g.fillStyle='#000000'; g.font='500 9.5px Space Grotesk'; g.fillText(p.phone, pcx+14, pcy+21);
+    g.fillStyle='#000000'; g.font='700 10.5px Trebuchet MS'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(p.name, pcx+14, pcy+10);
+    g.fillStyle='#000000'; g.font='500 9.5px Trebuchet MS'; g.fillText(p.phone, pcx+14, pcy+21);
     pcx+=cW;
   });
-  ly=pcy+cH+32;
-  const sy=ly;
+  ly=pcy+cH+12;
+  const sy=ly; // footer closer
   g.strokeStyle='#C9A84C'; g.lineWidth=1.2; g.beginPath(); g.moveTo(24,sy-10); g.lineTo(W-24,sy-10); g.stroke();
   for(let i=0;i<3;i++){
     const sx=24+i*(W-48)/3;
-    g.fillStyle='#000000'; g.font='700 10px Space Grotesk'; g.textAlign='left'; g.fillText(ex.sig[i].l, sx+10, sy+8);
-    g.fillStyle='#000000'; g.font='800 11px Space Grotesk'; g.fillText(ex.sig[i].n, sx+10, sy+22);
-    g.fillStyle='#000000'; g.font='500 10px Space Grotesk'; g.fillText(ex.sig[i].r, sx+10, sy+36);
+    g.fillStyle='#000000'; g.font='700 10px Trebuchet MS'; g.textAlign='left'; g.fillText(ex.sig[i].l, sx+10, sy+8);
+    g.fillStyle='#000000'; g.font='800 11px Trebuchet MS'; g.fillText(ex.sig[i].n, sx+10, sy+22);
+    g.fillStyle='#000000'; g.font='500 10px Trebuchet MS'; g.fillText(ex.sig[i].r, sx+10, sy+36);
   }
   cv.toBlob(b=>{ if(b) download(b,'Working-Plan-'+ex.key+'.png'); else toast('PNG export failed','err'); });
 }
@@ -1740,7 +1805,7 @@ function exportPlanPDF(key){
   const d=new PDF.Doc(); const W=842, H=595;
   d.addPage(W,H);
   const cols=ex.colInfo.length, nRows=ex.staff.length;
-  const nameW=160; const cellW=Math.max(12, Math.floor((W-48-nameW)/cols));
+  const nameW=120; const cellW=Math.max(14, Math.floor((W-36-nameW)/cols)); // narrower for better fit centered
   const rowH=20, hdrH=44;
   let y=20;
   // Single header light premium - black text, gold line only
@@ -1808,8 +1873,8 @@ function exportPlanPDF(key){
     d.rect(x,y,2,12,{fill:'#C9A84C'});
     d.text(p.name+' — '+p.phone, x+8, y+3, {size:7, color:'0 0 0 rg'});
   });
-  ly+= Math.ceil(ex.phones.length/3)*14 + 16;
-  const sy=H-56;
+  ly+= Math.ceil(ex.phones.length/3)*14 + 10;
+  const sy=ly+8; // footer closer
   d.line(24,sy-10,W-24,sy-10,{width:1.2,color:'#C9A84C'});
   for(let i=0;i<3;i++){
     const sx=24+i*(W-48)/3;
@@ -2912,49 +2977,33 @@ function renderTrDash(body){
   }).join('');
 
   // Premium vertical timeline mimicking Webflow how-it-works-scroll-into-view - dot for year, training marked on month, skip empty, till oldest
-  // Group trainings by year, then by month, latest first (2026 left/top), skip years/months without training
+  // Group trainings by year, then by month, latest first (2026 top), skip years/months without training
   const allTrainingsSorted = DB.trainings.slice().sort((a,b)=>b.start.localeCompare(a.start)); // latest first
   const byYear = {};
   allTrainingsSorted.forEach(t=>{
     const y = t.start.slice(0,4);
-    const m = t.start.slice(0,7); // YYYY-MM
+    const m = t.start.slice(0,7);
     if(!byYear[y]) byYear[y]= {};
     if(!byYear[y][m]) byYear[y][m]= [];
     byYear[y][m].push(t);
   });
-  const yearsOrdered = Object.keys(byYear).sort((a,b)=>b.localeCompare(a)); // latest year first, e.g., 2026, 2025...
-
+  const yearsOrdered = Object.keys(byYear).sort((a,b)=>b.localeCompare(a));
   const checkSVG='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10-10"/></svg>';
-  // Build vertical timeline HTML
   let vTimelineHTML = '';
-  yearsOrdered.forEach((year, yIdx)=>{
-    const months = Object.keys(byYear[year]).sort((a,b)=>b.localeCompare(a)); // latest month first within year
-    // Skip if no trainings? byYear only has months with trainings, so already skipped empty
+  yearsOrdered.forEach((year)=>{
+    const months = Object.keys(byYear[year]).sort((a,b)=>b.localeCompare(a));
     let monthBlocks = '';
-    months.forEach((ym, mIdx)=>{
+    months.forEach((ym)=>{
       const trainingsInMonth = byYear[year][ym];
-      const monthLabel = new Date(ym+'-01T12:00:00').toLocaleDateString('en-GB',{month:'short', year:'numeric'});
+      const monthLabel = new Date(ym+'-01T12:00:00').toLocaleDateString('en-GB',{month:'long', year:'numeric'});
       const cards = trainingsInMonth.map(t=>{
         const att = t.attendees.map(id=>staffById(id)).filter(Boolean).map(s=>s.name.split(' ')[0]).slice(0,3).join(', ');
-        return `<div class="v-card" style="margin-bottom:10px">
-          <div style="font-weight:800; font-size:13px; color:var(--text)">${esc(t.title)}</div>
-          <div style="font-size:11.5px; color:var(--muted); margin-top:3px">${fmtDate(t.start)}${t.end && t.end!==t.start ? ' → '+fmtDate(t.end) : ''} ${att?'· '+esc(att):''}</div>
-          ${t.organizer?`<div style="font-size:11px; color:var(--faint); margin-top:2px">${esc(t.organizer)} · ${esc(t.location||'')}</div>`:''}
-          <span class="tag ${t.status==='upcoming'?'gold':'teal'}" style="margin-top:6px">${t.status}</span>
-        </div>`;
+        return `<div class="v-card" style="margin-bottom:10px"><div style="font-weight:800; font-size:13px; color:var(--text)">${esc(t.title)}</div><div style="font-size:11.5px; color:var(--muted); margin-top:3px">${fmtDate(t.start)}${t.end && t.end!==t.start ? ' → '+fmtDate(t.end) : ''} ${att?'· '+esc(att):''}</div>${t.organizer?`<div style="font-size:11px; color:var(--faint); margin-top:2px">${esc(t.organizer)} · ${esc(t.location||'')}</div>`:''}<span class="tag ${t.status==='upcoming'?'gold':'teal'}" style="margin-top:6px">${t.status}</span></div>`;
       }).join('');
-      monthBlocks += `<div class="v-month-group">
-        <div class="v-month-label"><span class="v-month-dot"></span>${esc(monthLabel)} <span class="tag gray" style="margin-left:8px">${trainingsInMonth.length} training${trainingsInMonth.length!==1?'s':''}</span></div>
-        <div class="v-trainings">${cards}</div>
-      </div>`;
+      monthBlocks += `<div class="v-month-group"><div class="v-month-label"><span class="v-month-dot"></span>${esc(monthLabel)} <span class="tag gray" style="margin-left:8px">${trainingsInMonth.length} training${trainingsInMonth.length!==1?'s':''}</span></div><div class="v-trainings">${cards}</div></div>`;
     });
-    vTimelineHTML += `<div class="v-year-group">
-      <div class="v-year-dot-wrap"><div class="v-year-dot">${esc(year)}</div></div>
-      <div class="v-year-content">${monthBlocks}</div>
-    </div>`;
+    vTimelineHTML += `<div class="v-year-group"><div class="v-year-dot-wrap"><div class="v-year-dot">${esc(year)}</div></div><div class="v-year-content">${monthBlocks}</div></div>`;
   });
-
-  // Upcoming timeline similar but with gold
   let vUpcomingHTML = '';
   if(upcoming.length){
     const upByYear = {};
@@ -2971,13 +3020,14 @@ function renderTrDash(body){
       let monthBlocks='';
       months.forEach(ym=>{
         const list=upByYear[year][ym];
-        const monthLabel=new Date(ym+'-01T12:00:00').toLocaleDateString('en-GB',{month:'short', year:'numeric'});
+        const monthLabel=new Date(ym+'-01T12:00:00').toLocaleDateString('en-GB',{month:'long', year:'numeric'});
         const cards=list.map(t=>`<div class="v-card" style="border-left:3px solid var(--gold)"><div style="font-weight:800">${esc(t.title)}</div><div class="hint">${fmtDate(t.start)}</div></div>`).join('');
         monthBlocks+=`<div class="v-month-group"><div class="v-month-label"><span class="v-month-dot" style="background:var(--gold)"></span>${esc(monthLabel)}</div><div class="v-trainings">${cards}</div></div>`;
       });
       vUpcomingHTML+=`<div class="v-year-group"><div class="v-year-dot-wrap"><div class="v-year-dot" style="background:var(--gold); color:#000">${esc(year)} · upcoming</div></div><div class="v-year-content">${monthBlocks}</div></div>`;
     });
   }
+  const trainingsSorted = allTrainingsSorted.slice(0,12);
 
   body.innerHTML=`
   <div class="glass-panel spotlight gold-accent" style="margin-bottom:20px">
@@ -2993,13 +3043,13 @@ function renderTrDash(body){
     </div>
     <div class="spotlight-right">
       <div class="queue-rail">${queueNodes}</div>
-
+      <div class="hint" style="margin-top:8px; text-align:center; font-size:11px">Gold line fades towards last attendee · blinking ring = next · recent at end</div>
     </div>
   </div>
 
   <div class="card gold-accent" style="margin-bottom:20px; padding:0; overflow:hidden">
     <div style="padding:18px 20px 12px; border-bottom:1px solid var(--edge); display:flex; justify-content:space-between; align-items:center">
-      <h3 style="margin:0"> Training Journey — Timeline Flow <span class="sub">dot = year, marked on month attended, skip empty months, till oldest record</span></h3>
+      <h3 style="margin:0"> Training Journey — Timeline Flow <span class="sub">dot = year, marked on month attended, skip empty, till oldest record</span></h3>
       <span class="tag gold">${allTrainingsSorted.length} trainings · ${yearsOrdered.length} years</span>
     </div>
     <div class="v-timeline" id="vTimeline" style="padding:20px 20px 20px 24px; max-height:720px; overflow-y:auto">
@@ -4710,7 +4760,6 @@ function renderSecurity(body){
     const uri=getTOTPAuthURI(sec, auth.username||'admin', 'Ruli DH Lab');
     totpQR.innerHTML='<div style="display:flex; flex-direction:column; align-items:center; gap:10px"><div class="hint">Generating QR...</div></div>';
     try{
-      // Method 1: Try QRCode lib toCanvas (most reliable, offline)
       if(window.QRCode && window.QRCode.toCanvas){
         try{
           const c=document.createElement('canvas');
@@ -4730,7 +4779,6 @@ function renderSecurity(body){
           return;
         }catch(e){ console.warn('QRCode toCanvas failed', e.message); }
       }
-      // Method 2: Try QRCode toDataURL
       if(window.QRCode && window.QRCode.toDataURL){
         try{
           const url = await window.QRCode.toDataURL(uri, {width:200, margin:1});
@@ -4738,11 +4786,10 @@ function renderSecurity(body){
           return;
         }catch(e){ console.warn('QRCode toDataURL failed', e.message); }
       }
-      // Method 3: Use qrserver.com API (more reliable than Google Charts)
       const qrServerUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(uri);
-      totpQR.innerHTML=`<img src="${qrServerUrl}" alt="QR Code" style="width:200px;height:200px; border:1px solid var(--edge); border-radius:12px; background:#fff; padding:8px" onerror="this.onerror=null; this.src='https://chart.googleapis.com/chart?chs=240x240&chld=M|0&cht=qr&chl='+encodeURIComponent('${esc(uri)}')"><div style="font-family:monospace; font-size:10px; word-break:break-all; margin-top:8px; background:var(--bg2); padding:8px; border-radius:8px; max-width:320px; border:1px solid var(--edge)">${esc(uri)}</div><p class="hint" style="margin-top:6px">If QR fails, copy URI into authenticator app manually. Compatible with Google Authenticator/Authy/1Password.</p>`;
+      totpQR.innerHTML=`<img src="${qrServerUrl}" alt="QR Code" style="width:200px;height:200px; border:1px solid var(--edge); border-radius:12px; background:#fff; padding:8px" onerror="this.onerror=null; this.src='https://chart.googleapis.com/chart?chs=240x240&chld=M|0&cht=qr&chl='+encodeURIComponent('${esc(uri)}')"><div style="font-family:monospace; font-size:10px; word-break:break-all; margin-top:8px; background:var(--bg2); padding:8px; border-radius:8px; max-width:320px; border:1px solid var(--edge)">${esc(uri)}</div><p class="hint" style="margin-top:6px">If QR fails, copy URI into authenticator app manually.</p>`;
     }catch(e){
-      totpQR.innerHTML='<span class="hint">QR error: '+esc(e.message)+'</span><br><div style="font-family:monospace; font-size:10px; word-break:break-all; background:var(--bg2); padding:8px; border-radius:8px; border:1px solid var(--edge)">'+esc(uri)+'</div><p class="hint">Copy this URI manually into your authenticator app.</p>';
+      totpQR.innerHTML='<span class="hint">QR error: '+esc(e.message)+'</span><br><div style="font-family:monospace; font-size:10px; word-break:break-all; background:var(--bg2); padding:8px; border-radius:8px; border:1px solid var(--edge)">'+esc(uri)+'</div>';
     }
   }
   document.getElementById('totp_gen').onclick=()=>{
@@ -5903,23 +5950,13 @@ function renderEQA(){
     chartData[prog] = pts.map((p,i)=>({x:i, y: typeof p.score==='number'?p.score: (p.scoring==='%'?p.scorePercent||0:0)}));
   });
 
-  // Premium PT Journey timeline - no emojis, clean SVG, gold fading line, beautiful
-  const checkSVG='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10-10"/></svg>';
-  const crossSVG='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-  const progIcon={
-    'Hematology': '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"/></svg>',
-    'Biochemistry': '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/></svg>',
-    'TB': '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>',
-    'HIV': '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-6.5-4.5-9-8.5A5 5 0 0 1 12 7a5 5 0 0 1 9 5.5c-2.5 4-9 8.5-9 8.5z"/></svg>',
-    'Serology': '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>'
-  };
+  // Timeline flow for PT (premium like training)
   const timelineSteps = ptList.slice(0,8).map((p,i)=>{
-    const isPass = p.overall==='Pass';
-    const dotIcon = isPass ? checkSVG : (p.overall==='Fail' ? crossSVG : (progIcon[p.program]||checkSVG));
+    const icons = {Hematology:'', Biochemistry:'', TB:'', HIV:'', Serology:''};
     return `<div class="timeline-step">
-      <div class="timeline-year" style="${isPass?'background:var(--teal-soft); border-color:var(--teal-border); color:var(--teal)':'background:var(--rose-soft); border-color:var(--rose-border); color:var(--rose)'}">${esc(p.code||quarterLabel(p.delivered))}</div>
-      <div class="timeline-dot ${isPass?'':'next'}" style="${isPass?'border-color:var(--teal); background:var(--teal-soft); color:var(--teal)':'border-color:var(--rose); background:var(--rose-soft); color:var(--rose)'}">${dotIcon}</div>
-      <div class="timeline-content"><b>${esc(p.program)} · ${esc(p.overall||'Pending')}</b><small>${fmtDate(p.delivered)} → Score: ${p.score!=null?p.score+' SD':(p.scorePercent!=null?p.scorePercent+'%':'—')}</small></div>
+      <div class="timeline-year">${esc(p.code||quarterLabel(p.delivered))}</div>
+      <div class="timeline-dot ${p.overall==='Pass'?'':'next'}" style="${p.overall==='Pass'?'border-color:var(--teal)':'border-color:var(--rose)'}">${icons[p.program]||''}</div>
+      <div class="timeline-content"><b>${esc(p.program)} · ${esc(p.overall||'Pending')}</b><small>${fmtDate(p.delivered)} → Score: ${p.score!=null?p.score:(p.scorePercent!=null?p.scorePercent+'%':'—')}</small></div>
     </div>`;
   }).join('');
 
