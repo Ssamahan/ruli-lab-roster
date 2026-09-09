@@ -1759,7 +1759,13 @@ async function exportPlanPNG(key){
       drawCell(x0+nameW+i*cellW, yy, cellW, rowH, fill, code, tcol);
     }
   }
-  // Dashed line for upcoming month - draw AFTER body so it goes through last staff (not covered)
+  // Gold lines top and bottom of table to mark endings (only shifts+staff table) + dashed for upcoming month
+  g.save();
+  g.strokeStyle='#C9A84C'; g.lineWidth=2.5;
+  g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0+nameW+cols*cellW, y0); g.stroke(); // top
+  g.beginPath(); g.moveTo(x0, y0+tableH); g.lineTo(x0+nameW+cols*cellW, y0+tableH); g.stroke(); // bottom
+  g.restore();
+  // Dashed line for upcoming month - through last staff
   for(let i=0;i<cols;i++){
     const c=ex.colInfo[i];
     if(c.next && i>0 && !ex.colInfo[i-1].next){
@@ -1872,12 +1878,14 @@ function exportPlanPDF(key){
       d.rectBorder(24+nameW+i*cellW,yy,cellW,rowH,{width:0.3,color:'#d4d9e6'});
     }
   }
-  // Dashed line for upcoming month - AFTER body through last staff
+  // Gold lines top and bottom of table to mark endings (only shifts+staff table)
+  d.line(24, y0, 24+nameW+cols*cellW, y0, {width:2.5, color:'#C9A84C'}); // top
+  d.line(24, y0+hdrH+nRows*rowH, 24+nameW+cols*cellW, y0+hdrH+nRows*rowH, {width:2.5, color:'#C9A84C'}); // bottom
+  // Dashed line for upcoming month - through last staff
   for(let i=0;i<cols;i++){
     const c=ex.colInfo[i];
     if(c.next && i>0 && !ex.colInfo[i-1].next){
       const x=24+nameW+i*cellW;
-      // Draw vertical dashed gold line through full table
       for(let yy=y0; yy<y0+hdrH+nRows*rowH; yy+=10){
         d.line(x, yy, x, Math.min(yy+5, y0+hdrH+nRows*rowH), {width:1.5, color:'#C9A84C'});
       }
