@@ -1800,8 +1800,8 @@ async function exportPlanPNG(key){
     g.fillStyle='#F7F8FC'; g.beginPath(); if(g.roundRect) g.roundRect(pcx,pcy,cW-6,cH,10); else g.rect(pcx,pcy,cW-6,cH); g.fill();
     g.strokeStyle='#e6e9f1'; g.lineWidth=0.8; if(g.roundRect) g.roundRect(pcx,pcy,cW-6,cH,10); else g.rect(pcx,pcy,cW-6,cH); g.stroke();
     g.fillStyle='#C9A84C'; g.fillRect(pcx,pcy,3,cH);
-    g.fillStyle='#000000'; g.font='700 10.5px Trebuchet MS'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(p.name, pcx+14, pcy+10);
-    g.fillStyle='#000000'; g.font='500 9.5px Trebuchet MS'; g.fillText(p.phone, pcx+14, pcy+21);
+    g.fillStyle='#000000'; g.font='700 10.5px Trebuchet MS'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(p.name, pcx+14, pcy+cH/2-6);
+    g.fillStyle='#000000'; g.font='500 9.5px Trebuchet MS'; g.fillText(p.phone, pcx+14, pcy+cH/2+7);
     pcx+=cW;
   });
   ly=pcy+cH+12;
@@ -1809,9 +1809,9 @@ async function exportPlanPNG(key){
   g.strokeStyle='#C9A84C'; g.lineWidth=1.2; g.beginPath(); g.moveTo(24,sy-10); g.lineTo(W-24,sy-10); g.stroke();
   for(let i=0;i<3;i++){
     const sx=24+i*(W-48)/3;
-    g.fillStyle='#000000'; g.font='700 10px Trebuchet MS'; g.textAlign='left'; g.fillText(ex.sig[i].l, sx+10, sy+8);
-    g.fillStyle='#000000'; g.font='800 11px Trebuchet MS'; g.fillText(ex.sig[i].n, sx+10, sy+22);
-    g.fillStyle='#000000'; g.font='500 10px Trebuchet MS'; g.fillText(ex.sig[i].r, sx+10, sy+36);
+    g.fillStyle='#000000'; g.font='700 10px Trebuchet MS'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(ex.sig[i].l, sx+10, sy+12);
+    g.fillStyle='#000000'; g.font='800 11px Trebuchet MS'; g.fillText(ex.sig[i].n, sx+10, sy+28);
+    g.fillStyle='#000000'; g.font='500 10px Trebuchet MS'; g.fillText(ex.sig[i].r, sx+10, sy+44);
   }
   cv.toBlob(b=>{ if(b) download(b,'Working-Plan-'+ex.key+'.png'); else toast('PNG export failed','err'); });
 }
@@ -1837,24 +1837,24 @@ function exportPlanPDF(key){
   d.text('Date: '+ex.date+'   FY: '+ex.fy, W/2, y+20, {size:9, color:'0 0 0 rg', align:'center'}); // Period removed
   y+=36;
   const y0=y;
-  // header - Days first row, Dates second row, centered both H and V
+  // header - Days first row, Dates second row, centered H and V middle
   for(let i=0;i<cols;i++){
     const c=ex.colInfo[i]; const x=24+nameW+i*cellW;
     const fill=c.holiday?'#fde2e2':(c.weekend?'#fdf3d7':'#F7F8FC');
     d.rect(x,y0,cellW,18,{fill});
-    d.text(c.dow,x+cellW/2,y0+6,{size:7,bold:true,color:'0 0 0 rg', align:'center'});
+    d.text(c.dow,x+cellW/2,y0+18/2+1,{size:7,bold:true,color:'0 0 0 rg', align:'center'});
     d.rect(x,y0+18,cellW,26,{fill:c.holiday?'#fbd0d0':(c.weekend?'#f9e9cb':'#eef1f6')});
-    d.text(String(c.dom),x+cellW/2,y0+26,{size:8,bold:true,color:'0 0 0 rg', align:'center'});
+    d.text(String(c.dom),x+cellW/2,y0+18+26/2+1,{size:8,bold:true,color:'0 0 0 rg', align:'center'});
   }
   // Single STAFF/Name column - left aligned
   d.rect(24,y0,nameW,44,{fill:'#0B1C3D'});
   d.text('STAFF',28,y0+8,{size:8,bold:true,color:'1 1 1 rg'});
   d.text('Name',28,y0+24,{size:8,bold:true,color:'1 1 1 rg'});
-  // body - with names, dates, days - centered V+H
+  // body - with names, dates, days - centered V+H middle
   for(let r=0;r<nRows;r++){
     const yy=y0+hdrH+r*rowH;
     d.rect(24,yy,nameW,rowH,{fill:(r%2)?'#fbfcff':'#ffffff'});
-    d.text(ex.staff[r],26,yy+8,{size:8,bold:true,color:'0 0 0 rg'});
+    d.text(ex.staff[r],26,yy+rowH/2-1,{size:8,bold:true,color:'0 0 0 rg'});
     for(let i=0;i<cols;i++){
       const code=(ex.codes[r]||[])[i]||''; const c=ex.colInfo[i];
       let fill='#ffffff';
@@ -1867,7 +1867,7 @@ function exportPlanPDF(key){
       d.rect(24+nameW+i*cellW,yy,cellW,rowH,{fill});
       if(code){
         const col = (code==='N'||code==='DN') ? '1 1 1 rg' : '0 0 0 rg';
-        d.text(code,24+nameW+i*cellW+cellW/2,yy+8,{size:7.5,bold:true,color:col, align:'center'});
+        d.text(code,24+nameW+i*cellW+cellW/2,yy+rowH/2+1,{size:7.5,bold:true,color:col, align:'center'});
       }
       d.rectBorder(24+nameW+i*cellW,yy,cellW,rowH,{width:0.3,color:'#d4d9e6'});
     }
@@ -1888,31 +1888,31 @@ function exportPlanPDF(key){
   ly+=12;
   ex.legends.forEach((lg,idx)=>{
     const col=idx%4, row=Math.floor(idx/4);
-    d.text(lg, 24+col*190, ly+row*12, {size:7, color:'0 0 0 rg'});
+    d.text(lg, 24+col*190, ly+row*12+4, {size:7, color:'0 0 0 rg'});
   });
   ly+= Math.ceil(ex.legends.length/4)*12 + 8;
   if(ex.holidays.length){
-    d.text('Holidays: '+ex.holidays.join(' · '), 24, ly, {size:7, color:'0 0 0 rg'});
+    d.text('Holidays: '+ex.holidays.join(' · '), 24, ly+4, {size:7, color:'0 0 0 rg'});
     ly+=10;
   }
-  d.text('Staff contacts:', 24, ly, {size:9, bold:true, color:'0 0 0 rg'});
-  ly+=12;
+  d.text('Staff contacts:', 24, ly+4, {size:9, bold:true, color:'0 0 0 rg'});
+  ly+=14;
   ex.phones.forEach((p,i)=>{
     const col=i%3, row=Math.floor(i/3);
-    const x=24+col*250, y=ly+row*14;
-    d.rect(x,y,238,12,{fill:'#F7F8FC'});
-    d.rect(x,y,2,12,{fill:'#C9A84C'});
-    d.text(p.name+' — '+p.phone, x+8, y+3, {size:7, color:'0 0 0 rg'});
+    const x=24+col*250, y=ly+row*16;
+    d.rect(x,y,238,14,{fill:'#F7F8FC'});
+    d.rect(x,y,2,14,{fill:'#C9A84C'});
+    d.text(p.name+' — '+p.phone, x+8, y+14/2+1, {size:7, color:'0 0 0 rg'});
   });
-  ly+= Math.ceil(ex.phones.length/3)*14 + 10;
-  const sy=ly+8; // footer closer
+  ly+= Math.ceil(ex.phones.length/3)*16 + 10;
+  const sy=ly+10; // footer closer, not far
   d.line(24,sy-10,W-24,sy-10,{width:1.2,color:'#C9A84C'});
   for(let i=0;i<3;i++){
     const sx=24+i*(W-48)/3;
-    d.text(ex.sig[i].l, sx+8, sy+2, {size:8, bold:true, color:'0 0 0 rg'});
-    d.text(ex.sig[i].n, sx+8, sy+14, {size:10, bold:true, color:'0 0 0 rg'});
-    d.text(ex.sig[i].r, sx+8, sy+24, {size:8, color:'0 0 0 rg'});
-    // No line below - signing next to names per request
+    d.text(ex.sig[i].l, sx+8, sy+6, {size:8, bold:true, color:'0 0 0 rg'});
+    d.text(ex.sig[i].n, sx+8, sy+16, {size:10, bold:true, color:'0 0 0 rg'});
+    d.text(ex.sig[i].r, sx+8, sy+26, {size:8, color:'0 0 0 rg'});
+    // No line below - signing next to names, centered V
   }
   download(new Blob([d.save()],{type:'application/pdf'}),'Working-Plan-'+ex.key+'.pdf');
 }
