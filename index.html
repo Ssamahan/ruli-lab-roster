@@ -678,12 +678,12 @@ function buildSeed(){
     ],
     catalog:{
       hospitals:[
-        {id:'h1', name:'National Reference Laboratory (NRL)', type:'Reference'},
-        {id:'h2', name:'Kibagabaga LTTH', type:'Hospital'},
-        {id:'h3', name:'CHUK (Kigali)', type:'Hospital'}
+        {id:'h1', name:'NRL', type:'Reference'},
+        {id:'h2', name:'Kibagabaga', type:'Hospital'},
+        {id:'h3', name:'CHUK', type:'Hospital'}
       ],
       tests:[
-        {id:'t1', name:'Blood Culture', cat:'General', code:'BC', tat:4, prefHosp:'CHUK (Kigali)'},
+        {id:'t1', name:'Blood Culture', cat:'General', code:'BC', tat:4, prefHosp:'CHUK'},
         {id:'t2', name:'HIV Recency Viral Load', cat:'General', code:'HIV', tat:5},
         {id:'t3', name:'TB Culture', cat:'General', code:'TB', tat:21},
         {id:'t4', name:'Measles & Rubella PCR', cat:'Outbreaks & Surveillance', code:'MEA', tat:5},
@@ -733,11 +733,11 @@ function buildSeed(){
       ]
     },
     samples:[
-      {id:'sm1', sampleId:'MRB260730001', patientName:'NTAKINANIRIMANA Emmanuel', patientId:'430129', dob:'', sex:'Male', test:'Marburg', hospital:'National Reference Laboratory (NRL)', healthFacility:'Ruli DH', district:'Gakenke', collectionDate:'2026-07-30', sentDate:'2026-07-31', transporter:'', status:'Pending', resultDate:null, barcode:'', notes:'Overdue — 9 days elapsed', manifestId:null},
-      {id:'sm2', sampleId:'BC260721001', patientName:'INEZAYIMANA I. Bright', patientId:'', dob:'', sex:'Male', test:'Blood Culture', hospital:'CHUK (Kigali)', healthFacility:'Ruli DH', district:'Gakenke', collectionDate:'2026-07-21', sentDate:'2026-07-21', transporter:'Kelvin SAMAHANI', status:'Positive', resultDate:'2026-07-24', barcode:'', notes:'Referred to CHUK per new guideline', manifestId:null},
-      {id:'sm3', sampleId:'BC260722001', patientName:'BENI Delphine', patientId:'', dob:'', sex:'Female', test:'Blood Culture', hospital:'CHUK (Kigali)', healthFacility:'Ruli DH', district:'Gakenke', collectionDate:'2026-07-22', sentDate:'2026-07-22', transporter:'', status:'Positive', resultDate:'2026-07-25', barcode:'', notes:'Referred to CHUK per new guideline', manifestId:null},
-      {id:'sm4', sampleId:'BC260725001', patientName:'NYIRAHIRWA Stephanie', patientId:'', dob:'', sex:'Female', test:'Blood Culture', hospital:'CHUK (Kigali)', healthFacility:'Ruli DH', district:'Gakenke', collectionDate:'2026-07-25', sentDate:'2026-07-25', transporter:'', status:'Positive', resultDate:'2026-07-28', barcode:'', notes:'Referred to CHUK per new guideline', manifestId:null},
-      {id:'sm5', sampleId:'BC260727001', patientName:'MUJAWASE XXX', patientId:'', dob:'', sex:'Female', test:'Blood Culture', hospital:'CHUK (Kigali)', healthFacility:'Ruli DH', district:'Gakenke', collectionDate:'2026-07-27', sentDate:'2026-07-27', transporter:'', status:'Negative', resultDate:'2026-07-30', barcode:'', notes:'Referred to CHUK per new guideline', manifestId:null},
+      {id:'sm1', sampleId:'MRB260730001', patientName:'NTAKINANIRIMANA Emmanuel', patientId:'430129', dob:'', sex:'Male', test:'Marburg', hospital:'NRL', healthFacility:'Ruli DH', district:'Gakenke', collectionDate:'2026-07-30', sentDate:'2026-07-31', transporter:'', status:'Pending', resultDate:null, barcode:'', notes:'Overdue — 9 days elapsed', manifestId:null},
+      {id:'sm2', sampleId:'BC260721001', patientName:'INEZAYIMANA I. Bright', patientId:'', dob:'', sex:'Male', test:'Blood Culture', hospital:'CHUK', healthFacility:'Ruli DH', district:'Gakenke', collectionDate:'2026-07-21', sentDate:'2026-07-21', transporter:'Kelvin SAMAHANI', status:'Positive', resultDate:'2026-07-24', barcode:'', notes:'Referred to CHUK per new guideline', manifestId:null},
+      {id:'sm3', sampleId:'BC260722001', patientName:'BENI Delphine', patientId:'', dob:'', sex:'Female', test:'Blood Culture', hospital:'CHUK', healthFacility:'Ruli DH', district:'Gakenke', collectionDate:'2026-07-22', sentDate:'2026-07-22', transporter:'', status:'Positive', resultDate:'2026-07-25', barcode:'', notes:'Referred to CHUK per new guideline', manifestId:null},
+      {id:'sm4', sampleId:'BC260725001', patientName:'NYIRAHIRWA Stephanie', patientId:'', dob:'', sex:'Female', test:'Blood Culture', hospital:'CHUK', healthFacility:'Ruli DH', district:'Gakenke', collectionDate:'2026-07-25', sentDate:'2026-07-25', transporter:'', status:'Positive', resultDate:'2026-07-28', barcode:'', notes:'Referred to CHUK per new guideline', manifestId:null},
+      {id:'sm5', sampleId:'BC260727001', patientName:'MUJAWASE XXX', patientId:'', dob:'', sex:'Female', test:'Blood Culture', hospital:'CHUK', healthFacility:'Ruli DH', district:'Gakenke', collectionDate:'2026-07-27', sentDate:'2026-07-27', transporter:'', status:'Negative', resultDate:'2026-07-30', barcode:'', notes:'Referred to CHUK per new guideline', manifestId:null},
       {id:'sm6', sampleId:'HEP260728001', patientName:'Blandine NZAMBA ZAMARIYA', patientId:'', dob:'1994-11-01', sex:'Female', test:'Hepatitis (HEP)', hospital:'Ruli DH - GeneXpert', healthFacility:'Coko (ruli) CS', district:'Gakenke', collectionDate:'2026-07-28', sentDate:'2026-07-29', transporter:'', status:'Done', resultDate:'2026-07-31', barcode:'', notes:'On manifest HEP26030410GEDK', manifestId:'man1'}
     ],
     manifests:[
@@ -788,30 +788,29 @@ function buildSeed(){
       {id:'te9', title:'Mentorship on HIV Service Delivery', organizer:'RBC', location:'Gicumbi District', start:'2025-09-08', end:'2025-09-12', linkedTraining:null, expenses:[{id:'x9', cat:'Other', desc:'Expenses as recorded', amount:35500, date:'2025-09-12'}], reimbursements:[{id:'r9', amount:99000, date:'2025-09-26', source:'RBC', note:''}], note:''}
     ],
     leaves:[
-      // Patrick ISHIMWE - EXACT per manager: 30d previous FY + 15d current FY = 45d total, then CLOSE (back Oct1)
+      // Patrick ISHIMWE - EXACT per manager: 30d previous FY + 15d current FY = 45d total Aug17-Sep30, back Oct1, closes - NO 2 AL at same time per Ruli policy
       {id:'l11', staffId:'s5', type:'AL', from:'2026-08-17', to:'2026-09-15', backOn:'2026-09-16', status:'Planned', fy:'2025/2026', note:'Previous FY 2025/26 — 30d carry-over (Aug17-Sep15) — Patrick in AL, not in roster'},
-      {id:'l9', staffId:'s5', type:'AL', from:'2026-09-16', to:'2026-09-30', backOn:'2026-10-01', status:'Planned', fy:'2026/2027', note:'Current FY 2026/27 — 15d after current 30d, 1st installment of 30d (Sep16-30) — closes Sep, back Oct1'},
-      {id:'l10', staffId:'s5', type:'W', from:'2026-08-29', to:'2026-08-29', backOn:'2026-08-30', status:'Planned', fy:'2026/2027', note:'Wedding day — overlaps AL, W priority, '},
-      // Other staff - NO overlapping AL with Patrick (per Ruli policy: no 2 AL same time)
+      {id:'l9', staffId:'s5', type:'AL', from:'2026-09-16', to:'2026-09-30', backOn:'2026-10-01', status:'Planned', fy:'2026/2027', note:'Current FY 2026/27 — 15d after current 30d, 1st installment (Sep16-30) — closes Sep, back Oct1'},
+      {id:'l10', staffId:'s5', type:'W', from:'2026-08-29', to:'2026-08-29', backOn:'2026-08-30', status:'Planned', fy:'2026/2027', note:'Wedding day — overlaps AL, W priority'},
+      // Other staff - NO overlapping AL with Patrick in Sep 2026 - Aurelie will NOT go for AL in Sep if administration fails to give new staff (shortage activeCount<=6)
       {id:'l1', staffId:'s9', type:'AL', from:'2027-06-01', to:'2027-06-15', backOn:'2027-06-16', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — Part 2 of 2'},
       {id:'l2', staffId:'s6', type:'AL', from:'2027-04-26', to:'2027-05-25', backOn:'2027-05-26', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027'},
       {id:'l3', staffId:'s1', type:'AL', from:'2027-03-01', to:'2027-03-15', backOn:'2027-03-16', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027'},
-      {id:'l4', staffId:'s5', type:'AL', from:'2027-03-01', to:'2027-03-15', backOn:'2027-03-16', status:'Planned', fy:'2026/2027', note:'2026/27 FY — 2nd installment of 30d (15d) — Mar 2027'},
+      {id:'l4', staffId:'s5', type:'AL', from:'2027-03-01', to:'2027-03-15', backOn:'2027-03-16', status:'Planned', fy:'2026/2027', note:'2026/27 FY — 2nd installment 15d — Mar 2027'},
       {id:'l5', staffId:'s9', type:'AL', from:'2027-01-18', to:'2027-02-02', backOn:'2027-02-03', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — Part 1 of 2'},
       {id:'l6', staffId:'s3', type:'AL', from:'2026-12-14', to:'2027-01-13', backOn:'2027-01-14', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027'},
-      {id:'l7', staffId:'s1', type:'AL', from:'2026-12-08', to:'2026-12-09', backOn:'2026-12-10', status:'Planned', fy:'2026/2027', note:'Carry-over from previous FY (30d) — not yet used'},
-      {id:'l8', staffId:'s4', type:'AL', from:'2026-11-10', to:'2026-11-24', backOn:'2026-11-25', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — weekend shifts redistributed while away (moved to avoid 2 AL overlap with Patrick)'},
-      {id:'l11', staffId:'s5', type:'AL', from:'2026-08-17', to:'2026-09-15', backOn:'2026-09-16', status:'Planned', fy:'2026/2027', note:'Carry-over from previous FY (30d) — not yet used'},
+      {id:'l7', staffId:'s1', type:'AL', from:'2026-12-08', to:'2026-12-09', backOn:'2026-12-10', status:'Planned', fy:'2026/2027', note:'Carry-over from previous FY'},
+      {id:'l8', staffId:'s4', type:'AL', from:'2026-11-10', to:'2026-11-24', backOn:'2026-11-25', status:'Planned', fy:'2026/2027', note:'Current FY — moved from Sep to Nov to avoid 2 AL overlap, weekend split while away, cancelled if shortage activeCount<=6'},
       {id:'l12', staffId:'s4', type:'TR', from:'2026-07-24', to:'2026-07-25', backOn:'2026-07-25', status:'Planned', fy:'2026/2027', note:'Weekly Skills Training'},
       {id:'l13', staffId:'s3', type:'TR', from:'2026-07-20', to:'2026-07-24', backOn:'2026-07-25', status:'Planned', fy:'2026/2027', note:'Weekly Skills Training'},
-      {id:'l14', staffId:'s2', type:'AL', from:'2026-07-13', to:'2026-08-11', backOn:'2026-08-12', status:'Planned', fy:'2026/2027', note:'Current FY 2026/2027 — 30-day entitlement'},
+      {id:'l14', staffId:'s2', type:'AL', from:'2026-07-13', to:'2026-08-11', backOn:'2026-08-12', status:'Planned', fy:'2026/2027', note:'Current FY — 30d entitlement'},
       {id:'l15', staffId:'s2', type:'W', from:'2026-07-05', to:'2026-07-05', backOn:'2026-07-06', status:'Planned', fy:'2026/2027', note:'Wedding day'},
       {id:'l16', staffId:'s2', type:'AL', from:'2026-06-29', to:'2026-06-30', backOn:'2026-06-30', status:'Planned', fy:'2026/2027', note:'From archived working plan'},
-      {id:'l17', staffId:'s2', type:'AL', from:'2026-06-01', to:'2026-06-20', backOn:'2026-06-21', status:'Planned', fy:'2025/2026', note:'Previous fiscal year balance (20d)'},
-      {id:'l18', staffId:'s1', type:'AL', from:'2026-05-25', to:'2026-05-31', backOn:'2026-06-01', status:'Planned', fy:'2025/2026', note:'Previous FY 2025/2026 — last week of May'},
+      {id:'l17', staffId:'s2', type:'AL', from:'2026-06-01', to:'2026-06-20', backOn:'2026-06-21', status:'Planned', fy:'2025/2026', note:'Previous FY balance 20d'},
+      {id:'l18', staffId:'s1', type:'AL', from:'2026-05-25', to:'2026-05-31', backOn:'2026-06-01', status:'Planned', fy:'2025/2026', note:'Previous FY last week May'},
       {id:'l19', staffId:'s6', type:'AL', from:'2026-04-20', to:'2026-05-19', backOn:'2026-05-20', status:'Planned', fy:'2025/2026', note:'From archived working plan'},
       {id:'l20', staffId:'s3', type:'AL', from:'2026-03-02', to:'2026-03-31', backOn:'2026-04-01', status:'Planned', fy:'2025/2026', note:'From archived working plan'},
-      {id:'l21', staffId:'s5', type:'AL', from:'2026-03-01', to:'2026-03-15', backOn:'2026-03-16', status:'Planned', fy:'2025/2026', note:'Previous FY 2025/2026 — part 2 of 2 (15d)'},
+      {id:'l21', staffId:'s5', type:'AL', from:'2026-03-01', to:'2026-03-15', backOn:'2026-03-16', status:'Planned', fy:'2025/2026', note:'Previous FY part 2 of 2 15d'},
       {id:'l22', staffId:'s8', type:'AL', from:'2026-02-16', to:'2026-02-20', backOn:'2026-02-21', status:'Planned', fy:'2025/2026', note:'From archived working plan'}
     ],
     holidays:[
@@ -869,8 +868,21 @@ function buildSeed(){
       {id:'eqa4', code:'Q2 2026/27', program:'TB', scoring:'%', delivered:'2026-10-10', tested:'2026-10-11', reported:'2026-10-12', scorePublished:'2026-11-02', score:null, scorePercent:100, analytes:{'MTB GeneXpert':100}, overall:'Pass', note:'TB GeneXpert %'},
       {id:'eqa5', code:'Q1 2026/27', program:'Serology', scoring:'SD', delivered:'2026-07-15', tested:'2026-07-16', reported:'2026-07-18', scorePublished:'2026-08-05', score:0.4, scorePercent:null, analytes:{RPR:0.3,HCV:0.5}, overall:'Pass', note:'Serology may come soon - RPR, HCV'}
     ],
+    workingPlans:{
+      '2026-09': {
+        primary: {
+          staff: [{"name": "Kelvin SAMAHANI", "codes": ["D", "D", "D", "D", "D", "", "", "D", "D", "D", "D", "D", "", "", "D", "D", "D", "D", "D", "", "", "D", "D", "D", "D", "D", "", "", "D", "D", "D", "D", "D", "", "", "D", "D"]}, {"name": "Beatrice NGEZEKURE", "codes": ["D", "D", "D", "D", "D", "", "", "D", "D", "D", "D", "D", "", "", "D", "D", "D", "D", "D", "", "", "D", "D", "D", "D", "D", "", "", "D", "D", "D", "D", "D", "", "", "D", "D"]}, {"name": "Aurelie YANSONEYE", "codes": ["OFF", "OFF", "OFF", "OFF", "OFF", "DN", "DN", "OFF", "OFF", "OFF", "OFF", "OFF", "DN", "DN", "OFF", "OFF", "OFF", "OFF", "OFF", "DN", "DN", "OFF", "OFF", "OFF", "OFF", "OFF", "DN", "DN", "OFF", "OFF", "OFF", "OFF", "OFF", "DN", "DN", "OFF", "OFF"]}, {"name": "Patrick ISHIMWE", "codes": ["AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "AL", "D", "D", "N", "N", "OFF", "OFF"]}, {"name": "Jean Paul NSENGIYUMVA", "codes": ["N", "N", "N", "OFF", "OFF", "", "", "D", "D", "D", "N", "N", "", "", "N", "N", "N", "OFF", "OFF", "", "", "D", "D", "D", "N", "N", "", "", "N", "N", "N", "OFF", "OFF", "", "", "D", "D"]}, {"name": "Dieudonne NIYIDUHABYOSE", "codes": ["D", "D", "D", "N", "N", "", "", "N", "N", "N", "OFF", "OFF", "", "", "D", "D", "D", "N", "N", "", "", "N", "N", "N", "OFF", "OFF", "", "", "D", "D", "D", "N", "N", "", "", "N", "N"]}],
+          dates: ["2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-12", "2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19", "2026-09-20", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-26", "2026-09-27", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06"],
+          meta: {label:'Official September 2026 - pushed from attached image, no 2 AL, Aurelie not in AL in Sep per shortage rule', date:'2026-09-09', fy:'2026/2027', period:'September 2026', revised:false}
+        },
+        versions: []
+      }
+    },
     versions:[]
   };
+  mergeLeaveTrainings(out); mergeRevenueTrainings(out);
+  return out;
+}
   mergeLeaveTrainings(out); mergeRevenueTrainings(out);
   return out;
 }
@@ -2897,7 +2909,11 @@ function renderCatalog(body){
   document.querySelectorAll('[data-hcedit]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); const hc=DB.catalog.healthCenters.find(x=>x.id===b.dataset.hcedit); if(!hc) return; const name=prompt('Edit health center:',hc.name); if(name){ hc.name=name.trim(); saveDB(); renderStock(); } });
   document.querySelectorAll('[data-cedit]').forEach(b=>b.onclick=()=>{ if(!isAdmin()) return requireAdmin(); const c=DB.catalog.consumables.find(x=>x.id===b.dataset.cedit); if(!c) return; const name=prompt('Edit consumable name:',c.name); if(name){ c.name=name.trim(); const thr=prompt('Threshold:',c.threshold); if(thr) c.threshold=+thr; saveDB(); renderStock(); } });
   document.querySelectorAll('[data-tedit2]').forEach(b=>b.onclick=()=>editTest(b.dataset.tedit2));
-  document.querySelectorAll('[data-hedit]').forEach(b=>b.onclick=()=>{ if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin(); const h=DB.catalog.hospitals.find(x=>x.id===b.dataset.hedit); if(!h) return; const name=prompt('Edit hospital name:',h.name); if(name && name.trim()){ h.name=name.trim(); saveDB(); renderStock(); toast('Hospital updated'); } });
+  document.querySelectorAll('[data-hedit]').forEach(b=>b.onclick=()=>{ if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin(); const h=DB.catalog.hospitals.find(x=>x.id===b.dataset.hedit); if(!h) return; const oldName=h.name; const name=prompt('Edit hospital name (short, e.g., NRL, CHUK):',h.name); if(name && name.trim() && name.trim()!==oldName){ const newName=name.trim(); h.name=newName; // Sync across website - update all samples and manifests using old name
+      (DB.samples||[]).forEach(s=>{ if(s.hospital===oldName) s.hospital=newName; if(s.healthFacility===oldName) s.healthFacility=newName; });
+      (DB.manifests||[]).forEach(m=>{ if(m.testingHospital===oldName) m.testingHospital=newName; });
+      (DB.catalog.tests||[]).forEach(t=>{ if(t.prefHosp===oldName) t.prefHosp=newName; });
+      saveDB(); renderStock(); if(typeof renderDash==='function') try{ renderDash(); }catch(e){} toast('Hospital updated & synced across samples/charts — now '+newName); } });
   document.querySelectorAll('[data-hcedit]').forEach(b=>b.onclick=()=>{ if(typeof isAdmin==='function' && !isAdmin()) return requireAdmin(); const hc=DB.catalog.healthCenters.find(x=>x.id===b.dataset.hcedit); if(!hc) return; const name=prompt('Edit health center:',hc.name); if(name && name.trim()){ hc.name=name.trim(); saveDB(); renderStock(); toast('Health center updated'); } });
   document.querySelectorAll('[data-cedit]').forEach(b=>b.onclick=()=>{ addConsumable(b.dataset.cedit); });
 }
@@ -3240,7 +3256,7 @@ function renderRevenue(){
   const perSession=sessions.map(s=>({label:s.title.slice(0,18), exp:s.expenses.reduce((a,x)=>a+(+x.amount||0),0), reim:s.reimbursements.reduce((a,r)=>a+(+r.amount||0),0)}));
   const cats={}; sessions.forEach(s=>s.expenses.forEach(x=>{ cats[x.cat]=cats[x.cat]||0; cats[x.cat]+=(+x.amount||0); }));
   const catArr=Object.entries(cats).map(([k,v])=>({label:k,value:v})).sort((a,b)=>b.value-a.value);
-  const months={}; sessions.forEach(s=>{ const m=s.start.slice(0,7); months[m]=months[m]||{exp:0,reim:0,profit:0,count:0}; s.expenses.forEach(x=>months[m].exp+=(+x.amount||0)); s.reimbursements.forEach(r=>months[m].reim+=(+r.amount||0)); months[m].count++; });
+  const months={}; sessions.forEach(s=>{ const m=s.start.slice(0,7); months[m]=months[m]||{exp:0,reim:0,profit:0,count:0,cats:{}}; s.expenses.forEach(x=>{ months[m].exp+=(+x.amount||0); const cat=x.cat||'Other'; months[m].cats[cat]=(months[m].cats[cat]||0)+(+x.amount||0); }); s.reimbursements.forEach(r=>months[m].reim+=(+r.amount||0)); months[m].count++; });
   Object.keys(months).forEach(k=>months[k].profit=months[k].reim-months[k].exp);
   const mArr=Object.entries(months).sort((a,b)=>a[0].localeCompare(b[0]));
   const trendX=mArr.map(([k])=>k.slice(5,7)+'/'+k.slice(2,4));
@@ -3302,11 +3318,11 @@ function renderRevenue(){
     </div>
   </div>
 
-  <!-- Second Charts Row - HBar and Bar well arranged -->
+  <!-- Second Charts Row - HBar and Bar well arranged + Expense Trends per Item -->
   <div class="grid g-2" style="gap:16px; margin-bottom:20px">
     <div class="card"><h3> Net Gain/Loss per Training Session — Bar</h3>
       <div class="chart-box">${net.length?svgBar(net):'<div class="empty">No sessions yet</div>'}</div>
-      <p class="hint" style="margin-top:8px">Per-session profit — which trainings most profitable. Visualizes net balance block.</p>
+      <p class="hint" style="margin-top:8px">Per-session profit — which trainings most profitable.</p>
     </div>
     <div class="card"><h3> Expense Breakdown — Food · Transport · Lodging · Drinks · Other — HBar + Donut</h3>
       ${catArr.length?`<div class="grid" style="grid-template-columns:1.2fr 0.8fr; gap:12px; align-items:center">
@@ -3316,6 +3332,38 @@ function renderRevenue(){
       <div class="row" style="gap:10px; margin-top:12px; flex-wrap:wrap">${catArr.map(c=>`<span class="chip" style="border-left:3px solid var(--gold)"><b>${esc(c.label)}</b>: ${fmtRWF(c.value)}</span>`).join('')}</div>
       <div class="hint" style="margin-top:10px">Food=meals, Transport=travel, Lodging=hotel, Drinks=beverages, Other=misc — premium gold highlights, donut + HBar combo like Stexo widgets.</div>`:'<div class="empty">No expenses logged — categories will appear here with donut + bar</div>'}
     </div>
+  </div>
+
+  <div class="card gold-accent"><h3> Expense Trends per Item — Whole Time — Food vs Transport vs Lodging (Line)</h3>
+      <div class="chart-box">${(function(){
+        // Build per-category per-month trends for whole time
+        const cats = ['Food','Transport / Travel','Lodging','Drinks','Other'];
+        const colors = {'Food':'#C9A84C','Transport / Travel':'#0B1C3D','Lodging':'#0e9f8a','Drinks':'#e8a33d','Other':'#c94c5a'};
+        const series = cats.map(cat=>{
+          const vals = mArr.map(([k,v])=>{
+            const amt = (v.cats && v.cats[cat]) ? v.cats[cat] : (cat==='Food' && v.cats ? (v.cats['Food']||0) : 0);
+            // Also check for short names: Food may be stored as 'Food', Transport as 'Transport / Travel'
+            let a = 0;
+            if(v.cats){
+              // Sum matching cat (allow partial)
+              Object.keys(v.cats).forEach(ck=>{
+                if(ck.toLowerCase().includes(cat.toLowerCase().split(' ')[0]) || cat.toLowerCase().includes(ck.toLowerCase().split(' ')[0])){
+                  a += v.cats[ck]||0;
+                }
+              });
+            }
+            return a;
+          });
+          // If all zeros, try alternative aggregation from sessions directly per month
+          return {label:cat, color:colors[cat]||'#5a6b8c', values: vals.map((val,i)=>({x:i, y:val}))};
+        }).filter(s=>s.values.some(v=>v.y>0));
+        if(!series.length) return '<div class="empty">No categorized expense trends yet — log expenses with Food/Transport/Lodging</div>';
+        return svgLineChart(series, {xLabels: trendX});
+      })()}</div>
+      <div class="chart-legend"><span><i style="background:#C9A84C"></i>Food</span><span><i style="background:#0B1C3D"></i>Transport</span><span><i style="background:#0e9f8a"></i>Lodging</span><span><i style="background:#e8a33d"></i>Drinks</span><span><i style="background:#c94c5a"></i>Other</span></div>
+      <p class="hint" style="margin-top:8px">Trend of money spent on every item for whole time — see you spend more on foods than transport or accommodation. Curved lines, premium dots.</p>
+    </div>
+
   </div>
 
   <div class="card"><h3> Logged Training Sessions — Detailed</h3>
