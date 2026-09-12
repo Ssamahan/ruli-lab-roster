@@ -457,6 +457,22 @@ body.viewer-mode #btnAuth {
   box-shadow:var(--shadow-gold) !important; font-weight:800 !important;
 }
 
+
+/* Arena Ai - Premium clarity for lab staff: reduced cognitive load, professional */
+.lab-member {
+  margin-bottom: 2.5rem !important;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--edge);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.lab-member:last-child { border-bottom:none; margin-bottom:0; }
+.lab-member h3, .lab-member .role, .lab-member .research { margin-bottom:0.3rem; }
+.lab-member:hover { transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.05); }
+#alert-banner { background:var(--surface); border:1px solid var(--edge); border-left:4px solid var(--gold); border-radius:12px; padding:16px 18px; margin-bottom:20px; box-shadow:var(--shadow); transition:all 250ms ease; }
+#alert-banner.expanded { height:auto !important; }
+#alert-banner p { margin:6px 0; font-size:13px; color:var(--text); line-height:1.5; }
+#alert-toggle { background:none; border:none; color:var(--gold-2); font-weight:800; cursor:pointer; margin-top:8px; font-size:12px; letter-spacing:0.2px; }
+#alert-toggle:hover { color:var(--gold); text-decoration:underline; }
 </style>
 </head>
 <body>
@@ -2313,7 +2329,17 @@ function renderDash(){
   el.innerHTML=`
   <div class="section-title"> Lab Command Center <small>${todayISO()} · ${samples.length} samples · ${act.length} active staff · FY ${fyInfo(today).label}</small></div>
 
-  ${alerts.length?`<div class="card gold-accent" style="padding:16px 18px; margin-bottom:20px"><h3 style="margin-bottom:10px"> Alerts & Insights <span class="sub">${alerts.length} active</span></h3><div class="alerts-grid">${alerts.slice(0,6).map(a=>`<div class="alert ${a.t}">${a.m}</div>`).join('')}</div></div>`:''}
+  ${alerts.length?`
+  <section id="alert-banner">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+      <h3 style="margin:0"> Alerts & Insights <span class="sub">${alerts.length} active</span></h3>
+      <span class="tag gold">${alerts.length} insights</span>
+    </div>
+    <div id="alert-content">
+      <div class="alert ${alerts[0].t}">${alerts[0].m}</div>
+    </div>
+    ${alerts.length>1?`<button id="alert-toggle">See ${alerts.length-1} more alerts</button>`:''}
+  </section>`:''}
 
   <!-- Main KPI Row - 4 premium cards like Stexo, big numbers, gold accent -->
   <div class="grid g-4" style="gap:16px; margin-bottom:20px">
@@ -2404,6 +2430,24 @@ function renderDash(){
       </div></div>
   </div>
   `;
+  // Arena Ai - Alert toggle for >=2 alerts
+  (function(){
+    const banner=document.getElementById('alert-banner');
+    const toggle=document.getElementById('alert-toggle');
+    const content=document.getElementById('alert-content');
+    if(banner && toggle && content){
+      let expanded=false;
+      const allHtml = alerts.map(a=>`<div class="alert ${a.t}">${a.m}</div>`).join('');
+      const firstHtml = alerts.length?`<div class="alert ${alerts[0].t}">${alerts[0].m}</div>`:'';
+      toggle.onclick=function(){
+        expanded=!expanded;
+        content.innerHTML = expanded ? allHtml : firstHtml;
+        toggle.textContent = expanded ? 'See less' : 'See '+(alerts.length-1)+' more alerts';
+        banner.classList.toggle('expanded', expanded);
+      };
+    }
+  })();
+
   const dT=document.getElementById('dashToggle'); if(dT){
     const kp=document.getElementById('dashKpis'); const lbl=document.getElementById('dashToggleLbl');
     const sync=()=>{ const hid=kp&&kp.classList.contains('hidden'); if(lbl) lbl.textContent=hid?'Show KPIs':'Hide KPIs'; };
