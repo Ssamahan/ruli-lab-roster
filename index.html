@@ -458,20 +458,29 @@ body.viewer-mode #btnAuth {
 }
 
 /* Arena Ai - Premium clarity for lab staff: reduced cognitive load, professional */
+/* Arena Ai - Prevent Team Card Overflow (Most Critical) + Alert Overflow + Global Safety */
 .lab-member {
   margin-bottom: 2.5rem !important;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid var(--edge);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  max-width: 100%; /* Prevents cards from exceeding viewport */
+  word-wrap: break-word; /* Legacy */
+  overflow-wrap: break-word; /* Modern - breaks long words */
+  hyphens: auto; /* Hyphenation for better wrapping */
 }
 .lab-member:last-child { border-bottom:none; margin-bottom:0; }
-.lab-member h3, .lab-member .role, .lab-member .research { margin-bottom:0.3rem; }
+.lab-member h3, .lab-member .role, .lab-member .research { margin-bottom:0.3rem; max-width:100%; /* prevents child overflow */ }
 .lab-member:hover { transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.05); }
 #alert-banner { background:var(--surface); border:1px solid var(--edge); border-left:4px solid var(--gold); border-radius:12px; padding:16px 18px; margin-bottom:20px; box-shadow:var(--shadow); transition:all 250ms ease; }
-#alert-banner.expanded { height:auto !important; }
+#alert-banner.expanded { height:auto !important; max-height:200px; overflow-y:auto; /* cap height, scrollbar if needed */ }
 #alert-banner p { margin:6px 0; font-size:13px; color:var(--text); line-height:1.5; }
-#alert-toggle { background:none; border:none; color:var(--gold-2); font-weight:800; cursor:pointer; margin-top:8px; font-size:12px; letter-spacing:0.2px; }
+#alert-content { max-width:100%; overflow-wrap:break-word; word-wrap:break-word; }
+#alert-toggle { background:none; border:none; color:var(--gold-2); font-weight:800; cursor:pointer; margin-top:8px; font-size:12px; letter-spacing:0.2px; display:inline-block; white-space:nowrap; margin-left:0.5rem; }
 #alert-toggle:hover { color:var(--gold); text-decoration:underline; }
+body { overflow-x:hidden; /* prevents horizontal scrollbar */ }
+pre, code { overflow-x:auto; /* preserves scroll for code */ }
+
 </style>
 </head>
 <body>
