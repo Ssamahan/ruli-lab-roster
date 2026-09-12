@@ -5458,9 +5458,18 @@ let firebaseApp=null, firebaseDB=null, cloudSyncEnabled=false;
 function getFirebaseConfig(){
   try{
     const raw=localStorage.getItem(FIREBASE_KEY);
-    if(raw) return JSON.parse(raw);
+    if(raw){
+      const cfg=JSON.parse(raw);
+      // If user has config, ensure path and enabled defaults
+      if(!cfg.path) cfg.path='ruli-lab-roster/v1';
+      if(cfg.enabled==null) cfg.enabled=true;
+      return cfg;
+    }
   }catch(e){}
-  return null;
+  // Default live config for Ruli - auto live instantly using your project ruli-lab-roster DB (free, no apiKey needed via REST)
+  // User created project ruli-lab-roster, DB exists at https://ruli-lab-roster-default-rtdb.firebaseio.com
+  // This makes EQA on phone appear on PC instantly without manual paste
+  return {enabled:true, databaseURL:'https://ruli-lab-roster-default-rtdb.firebaseio.com', path:'ruli-lab-roster/v1', apiKey:'', authDomain:'', projectId:'ruli-lab-roster'};
 }
 function saveFirebaseConfig(cfg){
   try{ localStorage.setItem(FIREBASE_KEY, JSON.stringify(cfg)); }catch(e){ console.warn('saveFirebase', e.message); }
@@ -5486,20 +5495,95 @@ function initFirebase(){
 }
 function cloudSave(){
   try{
-    if(!cloudSyncEnabled) return;
-    if(!firebaseDB) return;
-    if(typeof isAdmin==='function' && !isAdmin()) return; // only admin writes to cloud
+    const cfg = (typeof getFirebaseConfig==='function') ? getFirebaseConfig() : null;
+    const enabled = cfg ? cfg.enabled : cloudSyncEnabled;
+    if(!enabled) return;
+    if(typeof isAdmin==='function' && !isAdmin()) return;
     const payload = JSON.parse(JSON.stringify(DB));
-    // Don't save huge base64 photos twice? Keep but try
-    firebaseDB.ref(CLOUD_PATH).set({data: payload, at: Date.now(), by: (typeof getAuthRec==='function'?getAuthRec().username:'admin')});
-    console.log('Cloud save OK');
+    const path = (cfg && cfg.path) ? cfg.path : CLOUD_PATH;
+    // Try Firebase SDK first
+    if(firebaseDB && typeof firebaseDB.ref==='function'){
+      try{
+        firebaseDB.ref(path).set({data: payload, at: Date.now(), by: (typeof getAuthRec==='function'?getAuthRec().username:'admin')});
+        console.log('Cloud save via SDK OK');
+        return;
+      }catch(e){ console.warn('SDK save failed, trying REST', e.message); }
+    }
+    // Fallback REST - works with databaseURL only, no apiKey needed, instant live across phone & PC
+    if(cfg && cfg.databaseURL){
+      const url = cfg.databaseURL.replace(/\/$/,'') + '/' + path.replace(/^\//,'') + '.json';
+      fetch(url, {method:'PUT', body: JSON.stringify({data: payload, at: Date.now()}), headers:{'Content-Type':'application/json'}})
+        .then(r=>{ if(r.ok) console.log('Cloud save via REST OK - live instantly'); else console.warn('REST save status', r.status); })
+        .catch(e=>{ console.warn('REST save err', e.message); });
+    }
   }catch(e){ console.warn('cloudSave', e.message); }
 }
 function cloudLoadAndListen(onFirst){
   try{
     const cfg=getFirebaseConfig();
     if(!cfg || !cfg.enabled) { if(onFirst) onFirst(false); return; }
-    if(!initFirebase()) { if(onFirst) onFirst(false); return; }
+    // Try SDK init, but don't fail if SDK not loaded yet (REST fallback)
+    try{ initFirebase(); }catch(e){}
+    const path = (cfg.path||CLOUD_PATH);
+    const useSDK = !!(firebaseDB && typeof firebaseDB.ref==='function');
+
+    if(!useSDK){
+      // REST fallback for instant live - no apiKey needed
+      if(cfg.databaseURL){
+        const url = cfg.databaseURL.replace(/\/$/,'') + '/' + path.replace(/^\//,'') + '.json';
+        fetch(url).then(r=>r.json()).then(val=>{
+          try{
+            if(val && val.data && val.data.meta){
+              const cloudData=val.data;
+              const localRaw=localStorage.getItem('labSystems.v1');
+              let shouldOverwrite=false;
+              if(!localRaw) shouldOverwrite=true;
+              else{
+                try{
+                  const local=JSON.parse(localRaw);
+                  const localTime = local.meta && local.meta.lastSave ? new Date(local.meta.lastSave).getTime() : 0;
+                  const cloudTime = cloudData.meta && cloudData.meta.lastSave ? new Date(cloudData.meta.lastSave).getTime() : (val.at||0);
+                  if(cloudTime > localTime) shouldOverwrite=true;
+                }catch(e){ shouldOverwrite=true; }
+              }
+              if(shouldOverwrite){
+                console.log('Cloud REST newer — overwriting local - EQA synced phone->PC');
+                DB=cloudData;
+                try{ localStorage.setItem('labSystems.v1', JSON.stringify(DB)); }catch(e){}
+                if(onFirst) onFirst(true);
+                try{ if(typeof toast==='function') toast('Live data from cloud — EQA synced phone→PC','ok'); }catch(e){}
+              }else{
+                if(onFirst) onFirst(false);
+              }
+            }else{
+              if(onFirst) onFirst(false);
+            }
+          }catch(e){ if(onFirst) onFirst(false); }
+        }).catch(e=>{ console.warn('REST load err', e.message); if(onFirst) onFirst(false); });
+        // For live updates, poll every 15s via REST (since SDK not available)
+        try{
+          setInterval(()=>{
+            const url2 = cfg.databaseURL.replace(/\/$/,'') + '/' + path.replace(/^\//,'') + '.json';
+            fetch(url2).then(r=>r.json()).then(val=>{
+              if(!val || !val.data) return;
+              const cloudData=val.data;
+              const cloudTime = cloudData.meta && cloudData.meta.lastSave ? new Date(cloudData.meta.lastSave).getTime() : (val.at||0);
+              const localTime = DB && DB.meta && DB.meta.lastSave ? new Date(DB.meta.lastSave).getTime() : 0;
+              if(cloudTime > localTime + 5000){
+                console.log('Live REST poll update');
+                DB=cloudData;
+                try{ localStorage.setItem('labSystems.v1', JSON.stringify(DB)); }catch(e){}
+                try{ if(UI && UI.tab && RENDER[UI.tab]){ RENDER[UI.tab](); updateChips(); updateAuthUI(); } }catch(e){}
+              }
+            });
+          }, 15000);
+        }catch(e){}
+        return;
+      }
+      if(onFirst) onFirst(false);
+      return;
+    }
+
     if(!firebaseDB) { if(onFirst) onFirst(false); return; }
     // One-time load
     firebaseDB.ref(CLOUD_PATH).once('value').then(snap=>{
